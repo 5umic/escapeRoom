@@ -1,0 +1,245 @@
+.game1-container {
+  background: #d70000;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.game1-content {
+  max-width: 1000px;
+  width: 100%;
+}
+
+.game1-title {
+  font-size: 36px;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.game1-instructions {
+  font-size: 18px;
+  color: #e0e0e0;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.code-display {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.code-block {
+  color: #d4d4d4;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.drop-zone {
+  display: inline-block;
+  min-width: 200px;
+  padding: 8px 12px;
+  background-color: #2d2d30;
+  border: 2px dashed #d70000;
+  border-radius: 4px;
+  color: #d70000;
+  font-style: italic;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.drop-zone.filled {
+  background-color: #264f78;
+  border-style: solid;
+  font-style: normal;
+  color: #4ec9b0;
+}
+
+.drop-zone.correct {
+  background-color: #1e5f3e;
+  border-color: #4ec9b0;
+  color: #4ec9b0;
+}
+
+.drop-zone.incorrect {
+  background-color: #5f1e1e;
+  border-color: #f48771;
+  color: #f48771;
+  animation: shake 0.5s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.reset-button {
+  display: block;
+  margin: 0 auto 20px;
+  padding: 10px 30px;
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.reset-button:hover {
+  background-color: #b71c1c;
+}
+
+.options-container {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.options-container h3 {
+  color: #fff;
+  font-size: 20px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.code-option {
+  background-color: #ffffff;
+  color: #d70000;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-weight:bold;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  cursor: grab;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.code-option:hover:not(.used) {
+  background-color: #d32f2f;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.code-option:active {
+  cursor: grabbing;
+}
+
+.code-option.used {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: #555;
+}
+
+.game1-success {
+  background: #d70000;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.success-content {
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 60px;
+  border-radius: 12px;
+  text-align: center;
+  animation: popIn 0.5s ease;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.success-content h2 {
+  font-size: 48px;
+  color: #d70000;
+  margin-bottom: 20px;
+}
+
+.reward-word {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.reward-word strong {
+  font-size: 32px;
+  color: #d32f2f;
+}
+
+.continue-button {
+  background-color: #fff;
+  color: #d32f2f;
+  border: 3px solid #fff;
+  padding: 15px 40px;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  min-width: 180px;
+  transition: all 0.3s ease;
+}
+
+.continue-button:hover {
+  background-color: #b71c1c;
+  transform: scale(1.05);
+}
+
+.info-section {
+  background-color: #d70000;
+  padding: 40px;
+  border-radius: 12px;
+  animation: slideDown 0.5s ease;
+  text-align: center;
+}
+
+@keyframes slideDown {
+  0% { transform: translateY(-20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.info-title {
+  font-size: 32px;
+  color: #ffffff;
+  margin-bottom: 25px;
+  font-family: 'Pixelify Sans', sans-serif;
+  font-weight: bold;
+  text-align: center;
+}
+
+.info-text {
+  color: #ffffff;
+  font-size: 19px;
+  line-height: 1.8;
+  margin-bottom: 30px;
+  font-family: 'Open Sans', sans-serif;
+
+}
+
+.info-text p {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.info-text p:last-child {
+  margin-bottom: 0;
+}

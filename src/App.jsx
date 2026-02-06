@@ -1,10 +1,10 @@
 import React from 'react';
-import WelcomePage from './pages/WelcomePage.jsx';
+import SelectPage from './pages/SelectPage.jsx';
 
 function App() {
   return (
     <div className="App">
-      <WelcomePage />
+      <SelectPage />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-.welcome-container {
+.welcome-page-container {
   background-color: #d70000;
   min-height: 100vh;
   display: flex;
@@ -7,47 +7,50 @@
   padding: 20px;
 }
 
-.welcome-content {
+.welcome-page-content {
   max-width: 800px;
   text-align: center;
 }
 
-.welcome-logo {
+.welcome-page-logo {
   max-width: 400px;
   width: 100%;
   height: auto;
   margin-bottom: 40px;
 }
 
-.welcome-text-container {
-  background-color: rgba(255, 255, 255, 0.95);
+.welcome-page-text-container {
+  background-color: #d70000;
   padding: 40px;
   border-radius: 12px;
   margin-bottom: 30px;
 }
 
-.welcome-title {
+.welcome-page-title {
   font-size: 32px;
-  color: #333;
+  color: #ffffff;
   margin-bottom: 20px;
   font-weight: bold;
+  font-family: 'Open Sans', sans-serif;
 }
 
-.welcome-description {
-  font-size: 18px;
-  color: #555;
+.welcome-page-description {
+  font-size: 22px;
+  color: #ffffff;
   line-height: 1.6;
   margin-bottom: 15px;
+  font-family: 'Pixelify Sans', sans-serif;
+  white-space: pre-wrap;
 }
 
-.welcome-button-container {
+.welcome-page-button-container {
   display: flex;
   gap: 20px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-.welcome-button {
+.welcome-page-button {
   background-color: #fff;
   color: #d32f2f;
   border: 3px solid #fff;
@@ -60,7 +63,7 @@
   transition: all 0.3s ease;
 }
 
-.welcome-button:hover {
+.welcome-page-button:hover {
   background-color: #d32f2f;
   color: #fff;
   transform: scale(1.05);

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import './SharedWelcomePage.css';
 import TypewriterText from '../components/TypewriterText.jsx';
-import Game1 from '../minigames/Game1.jsx';
+import Game1 from '../minigames/hogskolaGames/Game1.jsx';
 
 
 export default function HogskolaWelcomePage() {

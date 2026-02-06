@@ -60,7 +60,8 @@ export default function Game1() {
       <div className="game1-success">
         <div className="success-content">
           <h2>Rätt svar!</h2>
-          <p className="reward-word">Ditt ord: <strong>Alla</strong></p>
+          <p className="reward-word">
+            <span className="reward-label">Ditt ord:</span> <strong>ALLA</strong></p>
           <button className="continue-button">Fortsätt</button>
         </div>
       </div>

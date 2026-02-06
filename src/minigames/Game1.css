@@ -20,10 +20,12 @@
 }
 
 .game1-instructions {
-  font-size: 18px;
+  font-size: 22px;
   color: #e0e0e0;
   text-align: center;
   margin-bottom: 30px;
+  font-family: 'Pixelify Sans', sans-serif;
+
 }
 
 .code-display {
@@ -100,7 +102,7 @@
 }
 
 .options-container {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #d70000;
   padding: 20px;
   border-radius: 8px;
 }
@@ -157,7 +159,7 @@
 }
 
 .success-content {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: d#d70000;
   padding: 60px;
   border-radius: 12px;
   text-align: center;
@@ -171,19 +173,24 @@
 
 .success-content h2 {
   font-size: 48px;
-  color: #d70000;
+  color: #ffffff;
   margin-bottom: 20px;
 }
 
 .reward-word {
   font-size: 24px;
-  color: #333;
+  color: #ffffff;
   margin-bottom: 30px;
 }
 
 .reward-word strong {
-  font-size: 32px;
-  color: #d32f2f;
+  font-size: 40px;
+  color: #ffffff;
+}
+
+.reward-label{
+      font-size: 25px; /* Adjust the size as needed */
+      font-weight: bold; /* Make it bold if desired */
 }
 
 .continue-button {

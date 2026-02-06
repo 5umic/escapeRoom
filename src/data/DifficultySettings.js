@@ -1,0 +1,1 @@
+// Gymnasium vs Högskola parameters

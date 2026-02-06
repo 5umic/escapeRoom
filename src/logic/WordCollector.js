@@ -1,0 +1,1 @@
+// Manage collected words array

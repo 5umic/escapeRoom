@@ -1,0 +1,128 @@
+// Security Hunt Game - Find the Hidden Code
+import React, { useState } from 'react';
+import './Game2.css';
+
+export default function Game2() {
+  const [userInput, setUserInput] = useState('');
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [hint, setHint] = useState('');
+
+  const correctCode = "SÄKERHET";
+
+  const handleSecurityCheck = () => {
+    // Log clues to the console
+    console.log('%cSäkerhetssystem aktiverat', 'color: #d70000; font-size: 16px; font-weight: bold;');
+    console.log('%cSystemkod: SÄK', 'color: #a65050; font-size: 14px;');
+    console.log('%cTips: Kombinera systemkod + verifikation', 'color: #666; font-size: 12px; font-style: italic;');
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (userInput.toUpperCase() === correctCode) {
+      setIsCorrect(true);
+      setTimeout(() => {
+        setShowInfo(true);
+      }, 500);
+    } else {
+      setHint('Fel kod. Försök igen! Tips: Tryck på knappen och kolla i konsolen.');
+    }
+  };
+
+  if (showSuccess) {
+    return (
+      <div className="game2-success">
+        <div className="success-content">
+          <h2>Rätt svar!</h2>
+          <p className="reward-word">
+            <span className="reward-label">Ditt ord:</span> <strong>KOMMER</strong>
+          </p>
+          <button className="continue-button">Fortsätt</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (showInfo) {
+    return (
+      <div className="game2-container">
+        <div className="game2-content">
+          <div className="info-section">
+            <h2 className="info-title">Bra jobbat!</h2>
+            
+            <div className="info-text">
+              <p>
+                Säkerhet är en central del av Trafikverkets IT-verksamhet. Varje dag arbetar vi med att skydda känslig information och säkerställa att våra system är robusta mot hot.
+              </p>
+              <p>
+                Genom att använda webbläsarens utvecklarverktyg kan du inspektera hur webbsidor fungerar "bakom kulisserna". Detta är viktiga verktyg för utvecklare, men också för att förstå säkerhetsaspekter. Att kunna granska nätverkstrafik, läsa konsolmeddelanden och inspektera källkod är grundläggande färdigheter inom säker webbutveckling.
+              </p>
+              <p>
+                På Trafikverket använder vi dessa verktyg dagligen för att säkerställa att vår kod är säker och att inga känsliga uppgifter exponeras oavsiktligt.
+              </p>
+            </div>
+
+            <button className="continue-button" onClick={() => setShowSuccess(true)}>
+              Fortsätt
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="game2-container">
+      <div className="game2-content">
+        <h1 className="game2-title">Säkerhetsjakt</h1>
+        <p className="game2-instructions">
+          Vi på Trafikverket satsar mycket på säkerhet, det är viktigt för oss att man ska vara medveten om säkerhetsfrågor, samt utveckla säker kod.
+        </p>
+
+        <div className="security-panel">
+            <h2 className="panel-title">Säkerhetskontroll</h2>
+          <p className="panel-description">
+            Hitta den dolda säkerhetskoden genom att använda webbläsarens inspektör.
+          </p>
+
+          <button onClick={handleSecurityCheck} className="test-button">
+            Inled säkerhetskontroll
+          </button>
+
+          <form onSubmit={handleSubmit} className="code-form">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder="Ange säkerhetskod"
+              className="code-input"
+            />
+            <button type="submit" className="submit-button">
+              Verifiera
+            </button>
+          </form>
+
+          {hint && <p className="hint-message">{hint}</p>}
+
+          {isCorrect && (
+            <div className="success-message">
+              Säkerhetskoden verifierad!
+            </div>
+          )}
+        </div>
+
+        <div className="hints-container">
+          <h3>Ledtrådar:</h3>
+          <ul className="hints-list">
+            <li>Tryck på "Kör säkerhetskontroll" knappen</li>
+            <li>När du har gjort det, högerklicka sidan och tryck "inspect"</li>
+            <li>Kolla i Console-fliken efter meddelanden samt granska HTML koden</li>
+            <li>Kombinera de delar du hittar</li>
+          </ul>
+        </div>
+        <span className="SYSTEMKOD">ERHET</span>
+      </div>
+    </div>
+  );
+}

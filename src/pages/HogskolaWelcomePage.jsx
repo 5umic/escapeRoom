@@ -36,7 +36,7 @@ export default function HogskolaWelcomePage() {
 
         <div className="welcome-page-button-container">
           <button className="welcome-page-button" onClick={() => setStartGame(true)}>
-            Starta
+            Börja
           </button>
         </div>
       </div>

@@ -29,7 +29,7 @@ export default function GymnasiumWelcomePage() {
 
         <div className="welcome-page-button-container">
           <button className="welcome-page-button">
-            Starta
+            Börja
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 // Code Quiz Game - Train System (C#)
 import React, { useState } from 'react';
 import './Game1.css';
+import Game2 from './Game2.jsx';
 
 export default function Game1() {
   const [selectedOption, setSelectedOption] = useState(null);
@@ -8,6 +9,7 @@ export default function Game1() {
   const [isCorrect, setIsCorrect] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showGame2, setShowGame2] = useState(false);
 
   const correctAnswer = "Distance / Speed";
   
@@ -55,6 +57,10 @@ export default function Game1() {
     setIsCorrect(false);
   };
 
+  if (showGame2) {
+    return <Game2 />;
+  }
+
   if (showSuccess) {
     return (
       <div className="game1-success">
@@ -62,7 +68,7 @@ export default function Game1() {
           <h2>Rätt svar!</h2>
           <p className="reward-word">
             <span className="reward-label">Ditt ord:</span> <strong>ALLA</strong></p>
-          <button className="continue-button">Fortsätt</button>
+          <button className="continue-button" onClick={() => setShowGame2(true)}>Fortsätt</button>
         </div>
       </div>
     );

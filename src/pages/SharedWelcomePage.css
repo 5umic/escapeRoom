@@ -16,14 +16,12 @@
   max-width: 400px;
   width: 100%;
   height: auto;
-  margin-bottom: 40px;
 }
 
 .welcome-page-text-container {
   background-color: #d70000;
-  padding: 40px;
+  padding: 10px;
   border-radius: 12px;
-  margin-bottom: 30px;
 }
 
 .welcome-page-title {

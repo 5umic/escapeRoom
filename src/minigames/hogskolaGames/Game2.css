@@ -31,12 +31,12 @@
 }
 
 .security-panel {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: #d70000;
   border-radius: 12px;
   padding: 40px;
   margin-bottom: 30px;
   text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 .security-icon {
@@ -46,7 +46,7 @@
 
 .panel-title {
   font-size: 28px;
-  color: #d70000;
+  color: #FFFFFF;
   margin-bottom: 15px;
   font-family: 'Pixelify Sans', sans-serif;
   font-weight: bold;
@@ -54,7 +54,7 @@
 
 .panel-description {
   font-size: 18px;
-  color: #333;
+  color: #FFFFFF;
   margin-bottom: 30px;
   line-height: 1.6;
 }
@@ -74,9 +74,9 @@
 }
 
 .test-button:hover {
-  background-color: #d70000;
-  color: white;
-  transform: translateY(-2px);
+  background-color: #d32f2f;
+  color: #fff;
+  transform: scale(1.05);
 }
 
 .code-form {
@@ -104,26 +104,28 @@
 }
 
 .submit-button {
-  background-color: #d70000;
-  color: white;
-  border: none;
+  background-color: #fff;
+  color: #d32f2f;
+  border: 3px solid #fff;
   padding: 15px 40px;
   font-size: 20px;
   font-weight: bold;
   border-radius: 8px;
   cursor: pointer;
+  min-width: 180px;
   transition: all 0.3s ease;
   font-family: 'Pixelify Sans', sans-serif;
 }
 
 .submit-button:hover {
-  background-color: #b71c1c;
+  background-color: #d32f2f;
+  color: #fff;
   transform: scale(1.05);
 }
 
 .hint-message {
   margin-top: 20px;
-  color: #d32f2f;
+  color: #ffffff;
   font-size: 16px;
   font-weight: bold;
 }
@@ -164,7 +166,45 @@
   margin-bottom: 10px;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
 
+.hints-list li.obscured {
+  user-select: none;
+}
+
+.hints-list li.obscured .hint-text {
+  filter: blur(8px);
+  color: transparent;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.hints-list li.obscured:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.hints-list li.revealed .hint-text {
+  filter: none;
+  color: #fff;
+}
+
+.hint-label {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: #ffcc00;
+  font-weight: bold;
+  pointer-events: none;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+.hints-list li.revealed .hint-label {
+  display: none;
 }
 
 .game2-success {

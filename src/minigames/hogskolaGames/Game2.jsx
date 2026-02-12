@@ -8,14 +8,21 @@ export default function Game2() {
   const [showInfo, setShowInfo] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [hint, setHint] = useState('');
+  const [revealedHints, setRevealedHints] = useState([false, false, false, false]);
 
   const correctCode = "SÄKERHET";
 
+  const toggleHint = (index) => {
+    setRevealedHints(prev => {
+      const newRevealed = [...prev];
+      newRevealed[index] = !newRevealed[index];
+      return newRevealed;
+    });
+  };
+
   const handleSecurityCheck = () => {
-    // Log clues to the console
     console.log('%cSäkerhetssystem aktiverat', 'color: #d70000; font-size: 16px; font-weight: bold;');
     console.log('%cSystemkod: SÄK', 'color: #a65050; font-size: 14px;');
-    console.log('%cTips: Kombinera systemkod + verifikation', 'color: #666; font-size: 12px; font-style: italic;');
   };
 
   const handleSubmit = (e) => {
@@ -95,7 +102,7 @@ export default function Game2() {
               type="text"
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              placeholder="Ange säkerhetskod"
+              placeholder="_ _ _ _ _ _ _ _"
               className="code-input"
             />
             <button type="submit" className="submit-button">
@@ -115,10 +122,34 @@ export default function Game2() {
         <div className="hints-container">
           <h3>Ledtrådar:</h3>
           <ul className="hints-list">
-            <li>Tryck på "Kör säkerhetskontroll" knappen</li>
-            <li>När du har gjort det, högerklicka sidan och tryck "inspect"</li>
-            <li>Kolla i Console-fliken efter meddelanden samt granska HTML koden</li>
-            <li>Kombinera de delar du hittar</li>
+            <li 
+              className={revealedHints[0] ? 'revealed' : 'obscured'}
+              onClick={() => toggleHint(0)}
+            >
+              <span className="hint-text">Tryck på "Kör säkerhetskontroll" knappen</span>
+              {!revealedHints[0] && <span className="hint-label">1.</span>}
+            </li>
+            <li 
+              className={revealedHints[1] ? 'revealed' : 'obscured'}
+              onClick={() => toggleHint(1)}
+            >
+              <span className="hint-text">När du har gjort det, högerklicka sidan och tryck "inspect"</span>
+              {!revealedHints[1] && <span className="hint-label">2.</span>}
+            </li>
+            <li 
+              className={revealedHints[2] ? 'revealed' : 'obscured'}
+              onClick={() => toggleHint(2)}
+            >
+              <span className="hint-text">Kolla i Console-fliken efter meddelanden samt granska HTML koden</span>
+              {!revealedHints[2] && <span className="hint-label">3.</span>}
+            </li>
+            <li 
+              className={revealedHints[3] ? 'revealed' : 'obscured'}
+              onClick={() => toggleHint(3)}
+            >
+              <span className="hint-text">Kombinera de delar du hittar</span>
+              {!revealedHints[3] && <span className="hint-label">4.</span>}
+            </li>
           </ul>
         </div>
         <span className="SYSTEMKOD">ERHET</span>

@@ -41,7 +41,8 @@ public class GamesController : ControllerBase
             challenge.Options, 
             challenge.TimeLimitSeconds, 
             // Skicka det uträknade indexet istället för det lagrade
-            CorrectOptionIndex = calculatedIndex 
+            CorrectOptionIndex = calculatedIndex,
+            challenge.Answer
         };
 
         return Ok(response);

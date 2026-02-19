@@ -45,6 +45,44 @@ public static class DbSeeder
             db.Games.Add(game2);
         }
 
+        var game3 = await db.Games.FirstOrDefaultAsync(g => g.Title == "Digital Säkerhet (Game 3)");
+        if (game3 == null)
+        {
+             game3 = new Game
+            {
+                Mode = gymnasium,
+                Title = "Digital Säkerhet (Game 3)",
+                MaxDurationSeconds = 600
+            };
+            db.Games.Add(game3);
+        }
+
+        var game4 = await db.Games.FirstOrDefaultAsync(g => g.Title == "Pixeljakten (Game 4)");
+        if (game4 == null)
+        {
+             game4 = new Game
+            {
+                Mode = gymnasium,
+                Title = "Pixeljakten (Game 4)",
+                MaxDurationSeconds = 600
+            };
+            db.Games.Add(game4);
+        }
+
+        var game5 = await db.Games.FirstOrDefaultAsync(g => g.Title == "Sortera Rätt (Game 5)");
+        if (game5 == null)
+        {
+             game5 = new Game
+            {
+                Mode = gymnasium,
+                Title = "Sortera Rätt (Game 5)",
+                MaxDurationSeconds = 600
+            };
+            db.Games.Add(game5);
+        }
+
+        // 👆 SLUT PÅ DET SAKNADE BLOCKET 👆
+
         // Vi sparar spelen först så de får ID:n innan vi kopplar frågor
         await db.SaveChangesAsync();
 
@@ -52,8 +90,16 @@ public static class DbSeeder
         Challenge CreateChallenge(Game game, string prompt, string answer, int time, List<string> options, ChallengeType type, string? img = null)
         {
             var index = options.IndexOf(answer);
-            if (index == -1) throw new Exception($"Answer '{answer}' not found in options for '{prompt}'");
 
+            if (type != ChallengeType.Sorting)
+            {
+                index = options.IndexOf(answer);    
+                if (index == -1) throw new Exception($"Answer '{answer}' not found in options for '{prompt}'");
+            }
+            else
+            {
+                index = 0;
+            }
             return new Challenge
             {
                 Game = game,
@@ -144,6 +190,106 @@ public static class DbSeeder
                 20,
                 matchingOptions,
                 ChallengeType.Matching
+            ));
+        }
+
+        if (!await db.Challenges.AnyAsync(c => c.GameId == game3.Id))
+        {
+            var tfOptions = new List<string> { "Sant", "Falskt" };
+
+            // Fråga 1: Backup
+            newChallenges.Add(CreateChallenge(
+                game3,
+                "Backup av data gör att system aldrig kan få problem.", // Påstående
+                "Falskt", // Rätt svar
+                10,      // Tid (kortare för snabba frågor)
+                tfOptions,
+                ChallengeType.TrueFalse
+            ));
+
+            // Fråga 2: Trafikinformation
+            newChallenges.Add(CreateChallenge(
+                game3,
+                "Trafikinformation som visas för allmänheten bygger ofta på realtidsdata.",
+                "Sant",
+                10,
+                tfOptions,
+                ChallengeType.TrueFalse
+            ));
+
+            // Fråga 3: IT-problem
+            newChallenges.Add(CreateChallenge(
+                game3,
+                "IT-problem kan få konsekvenser även om inga vägar är avstängda.",
+                "Sant",
+                10,
+                tfOptions,
+                ChallengeType.TrueFalse
+            ));
+        }
+
+        if (!await db.Challenges.AnyAsync(c => c.GameId == game4.Id))
+        {
+            // Exempel 1: Ett tåg
+            newChallenges.Add(CreateChallenge(
+                game4,
+                "Vad döljer sig bakom pixlarna?",
+                "Snabbtåg",
+                30, // Lite mer tid för att hinna klicka
+                new List<string> { "Godståg", "Snabbtåg", "Spårvagn" },
+                ChallengeType.PixelHunt,
+                "/images/pixel/train.jpg" // Se till att denna bild finns!
+            ));
+
+            // Exempel 2: En övervakningskamera
+            newChallenges.Add(CreateChallenge(
+                game4,
+                "Vilken teknisk utrustning ser du?",
+                "Fartkamera",
+                30,
+                new List<string> { "Gatubelysning", "Fartkamera", "Trafikljus" },
+                ChallengeType.PixelHunt,
+                "/images/pixel/camera.jpg"
+            ));
+
+            // Exempel 3: En vägkon
+            newChallenges.Add(CreateChallenge(
+                game4,
+                "Vad är detta för objekt?",
+                "Vägkon",
+                30,
+                new List<string> { "Vägkon", "Hinder", "Stolpe" },
+                ChallengeType.PixelHunt,
+                "/images/pixel/cone.jpg"
+            ));
+        }
+
+        if (!await db.Challenges.AnyAsync(c => c.GameId == game5.Id))
+        {
+            // Vi skapar en lista med alla ord
+            var allWords = new List<string> 
+            { 
+                // IKT Ord
+                "Serverhall", "Fiberkabel", "Databas",
+                // Trafik Ord
+                "Vägräcke", "Signalsystem", "Asfalt",
+                // Miljö Ord
+                "Viltstängsel", "Bullerplank", "Ecoduct",
+                // Felaktiga ord (Distractors)
+                "Kaffemaskin", "Semester", "Hundvalp"
+            };
+
+            // Vi skapar facit manuellt som en JSON-sträng
+            // OBS: Vi använder enkla citattecken inuti strängen för att slippa escape:a allt
+            string jsonAnswer = "{\"IKT\":[\"Serverhall\",\"Fiberkabel\",\"Databas\"], \"Trafik\":[\"Vägräcke\",\"Signalsystem\",\"Asfalt\"], \"Miljö\":[\"Viltstängsel\",\"Bullerplank\",\"Ecoduct\"]}";
+
+            newChallenges.Add(CreateChallenge(
+                game5,
+                "Sortera begreppen till rätt avdelning på Trafikverket. Se upp för ord som inte hör hemma någonstans!",
+                jsonAnswer, // Här skickar vi JSON-facit
+                60, 
+                allWords, // Alla ord blandade
+                ChallengeType.Sorting
             ));
         }
 

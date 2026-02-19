@@ -7,6 +7,8 @@ import WelcomePage from "./pages/WelcomePage.jsx"; // Den nya delade sidan
 import Game1 from "./minigames/gymnasiumGames/Game1.jsx";
 import Game2 from "./minigames/gymnasiumGames/Game2.jsx"; // När du skapat denna
 import Game3 from "./minigames/gymnasiumGames/Game3.jsx"; // När du skapat denna
+import Game4 from "./minigames/gymnasiumGames/Game4.jsx";
+import Game5 from "./minigames/gymnasiumGames/Game5.jsx"; // När du skapat denna
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
       <Route path="/gymnasium/Game1" element={<Game1 />} />
       <Route path="/gymnasium/Game2" element={<Game2 />} />
       <Route path="/gymnasium/Game3" element={<Game3 />} />
+      <Route path="/gymnasium/Game4" element={<Game4 />} />
+      <Route path="/gymnasium/Game5" element={<Game5 />} />
 
       {/* 3. Högskola-flödet (återanvänder samma komponent!) */}
       <Route

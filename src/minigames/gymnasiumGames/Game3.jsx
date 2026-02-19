@@ -79,18 +79,22 @@ export default function Game3() {
     if (gameID) fetchRandomChallenge();
   }, [gameID]);
 
-  // 3. Timer
+  // Timer (Uppdaterad med strafftid)
   useEffect(() => {
     if (status === "answered_correctly" || status === "time_out") return;
 
     if (secondsLeft <= 0) {
+      // Lägg till hela omgångens tid till totaltiden
+      const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+      sessionStorage.setItem("totalGameTime", currentTotal + totalTimeLimit);
+
       setStatus("time_out");
       return;
     }
 
     const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(timer);
-  }, [secondsLeft, status]);
+  }, [secondsLeft, status, totalTimeLimit]);
 
   // 4. Hantera svar
   const onAnswer = (optionText, optionIndex) => {

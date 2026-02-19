@@ -89,18 +89,22 @@ export default function Game2() {
     })();
   }, [gameID]);
 
-  // 3. Timer (Stannar vid success eller time_out)
+  // Timer (Uppdaterad med strafftid)
   useEffect(() => {
     if (status === "success" || status === "time_out") return;
 
     if (secondsLeft <= 0) {
+      // Lägg till hela omgångens tid till totaltiden
+      const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+      sessionStorage.setItem("totalGameTime", currentTotal + totalTimeLimit);
+
       setStatus("time_out");
       return;
     }
 
-    const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [secondsLeft, status]);
+    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [secondsLeft, status, totalTimeLimit]);
 
   // Hantera val i dropdown
   const handleSelectChange = (challengeId, selectedValue) => {

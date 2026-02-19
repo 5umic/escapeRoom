@@ -155,16 +155,22 @@ export default function Game5() {
     if (gameID) fetchChallenge();
   }, [gameID]);
 
-  // 3. Timer
+  // Timer (Uppdaterad med strafftid)
   useEffect(() => {
     if (status === "success" || status === "time_out") return;
+
     if (secondsLeft <= 0) {
+      // Lägg till hela omgångens tid till totaltiden
+      const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+      sessionStorage.setItem("totalGameTime", currentTotal + totalTimeLimit);
+
       setStatus("time_out");
       return;
     }
+
     const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
-  }, [secondsLeft, status]);
+  }, [secondsLeft, status, totalTimeLimit]);
 
   const handleDragStart = () => {
     if (Object.keys(validation).length > 0) {
@@ -285,7 +291,7 @@ export default function Game5() {
 
           {/* STARTPOOL */}
           <div style={styles.poolArea}>
-            <DroppableBox id="pool" title="Ord att sortera">
+            <DroppableBox id="pool" title="Möjliga ord att sortera">
               <div style={styles.poolGrid}>
                 {containers.pool.map((w) => (
                   <DraggableCard

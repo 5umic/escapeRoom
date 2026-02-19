@@ -52,9 +52,14 @@ function SortableWord({ id, text, validationStatus, isDisabled }) {
 export default function Game6() {
   const navigate = useNavigate();
 
-  // State
+  // Data State
   const [gameID, setGameID] = useState(null);
-  const [challenge, setChallenge] = useState(null);
+
+  // STATS FÖR FLERA OMGÅNGAR
+  const [challenges, setChallenges] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const challenge = challenges[currentIndex];
   const [status, setStatus] = useState("loading");
 
   // Timer & Poäng
@@ -63,7 +68,7 @@ export default function Game6() {
   const [timeTaken, setTimeTaken] = useState(0);
 
   // Orden (deras nuvarande ordning) och Validering
-  const [items, setItems] = useState([]); // Array av ord-strängar
+  const [items, setItems] = useState([]);
   const [validation, setValidation] = useState({});
 
   // 1. Hämta Game ID
@@ -80,45 +85,75 @@ export default function Game6() {
     })();
   }, []);
 
-  // 2. Hämta Fråga
-  const fetchChallenge = async () => {
+  // 2. Hämta ALLA unika frågor dynamiskt
+  useEffect(() => {
     if (!gameID) return;
+
+    const fetchAllChallenges = async () => {
+      setStatus("loading");
+      let uniqueChallenges = [];
+      let duplicateCount = 0;
+
+      // Hämta tills vi får 5 dubbletter i rad, då vet vi att vi har alla
+      while (duplicateCount < 5 && uniqueChallenges.length < 20) {
+        try {
+          const res = await fetch(
+            `${API_BASE}/api/games/${gameID}/challenges/random`,
+          );
+          if (!res.ok) continue;
+
+          const data = await res.json();
+
+          if (!uniqueChallenges.find((c) => c.id === data.id)) {
+            uniqueChallenges.push(data);
+            duplicateCount = 0;
+          } else {
+            duplicateCount++;
+          }
+        } catch (err) {
+          break;
+        }
+      }
+
+      setChallenges(uniqueChallenges);
+      setCurrentIndex(0);
+      loadRound(uniqueChallenges[0]);
+    };
+
+    fetchAllChallenges();
+  }, [gameID]);
+
+  // Ladda in en ny runda
+  const loadRound = (currentChall) => {
+    if (!currentChall) return;
     setStatus("loading");
     setValidation({});
 
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/games/${gameID}/challenges/random`,
-      );
-      const data = await res.json();
-      setChallenge(data);
+    const limit = currentChall.timeLimitSeconds || 30;
+    setTotalTimeLimit(limit);
+    setSecondsLeft(limit);
 
-      const limit = data.timeLimitSeconds || 30;
-      setTotalTimeLimit(limit);
-      setSecondsLeft(limit);
-
-      // Slumpa orden så de inte ligger i rätt ordning från början
-      setItems(shuffleArray(data.options));
-      setStatus("playing");
-    } catch (err) {
-      console.error(err);
-    }
+    // Slumpa orden så de inte ligger i rätt ordning från början
+    setItems(shuffleArray(currentChall.options));
+    setStatus("playing");
   };
 
-  useEffect(() => {
-    if (gameID) fetchChallenge();
-  }, [gameID]);
-
-  // 3. Timer
+  // Timer (Uppdaterad med strafftid)
   useEffect(() => {
     if (status === "success" || status === "time_out") return;
+
     if (secondsLeft <= 0) {
+      // Lägg till hela omgångens tid till totaltiden
+      const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+      sessionStorage.setItem("totalGameTime", currentTotal + totalTimeLimit);
+
       setStatus("time_out");
       return;
     }
+
     const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
-  }, [secondsLeft, status]);
+  }, [secondsLeft, status, totalTimeLimit]);
 
   // Nollställ färgerna om spelaren börjar dra i ord igen
   const handleDragStart = () => {
@@ -129,12 +164,11 @@ export default function Game6() {
   const handleDragEnd = (event) => {
     const { active, over } = event;
 
-    // Om vi släpper på samma plats gör vi inget
     if (active.id !== over.id) {
       setItems((items) => {
         const oldIndex = items.indexOf(active.id);
         const newIndex = items.indexOf(over.id);
-        return arrayMove(items, oldIndex, newIndex); // dnd-kit funktion för att byta plats
+        return arrayMove(items, oldIndex, newIndex);
       });
     }
   };
@@ -145,7 +179,6 @@ export default function Game6() {
     let allCorrect = true;
     const newValidation = {};
 
-    // Kolla om varje ord ligger på exakt rätt index jämfört med facit
     items.forEach((item, index) => {
       if (item === correctOrder[index]) {
         newValidation[item] = "correct";
@@ -166,22 +199,35 @@ export default function Game6() {
     }
   };
 
-  // 6. Börja om vid Time Out
+  // 6. Gå till nästa ord eller börja om
+  const handleNext = () => {
+    if (currentIndex < challenges.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+      loadRound(challenges[currentIndex + 1]);
+    } else {
+      navigate("/gymnasium"); // Gå till menyn eller ett "Grattis"-slut när alla 6 spel är klara!
+    }
+  };
+
   const handleRetry = () => {
-    setSecondsLeft(totalTimeLimit);
-    setStatus("playing");
-    setValidation({});
-    setItems(shuffleArray(challenge.options)); // Blanda om orden igen
+    loadRound(challenge);
   };
 
   // --- RENDER ---
   if (status === "loading" || !challenge)
     return <div style={styles.container}>Laddar...</div>;
 
+  const isLastQuestion = currentIndex === challenges.length - 1;
+
   return (
     <div style={styles.container}>
       <div style={styles.content}>
+        {/* Visar runda och timer */}
+        <div style={styles.roundInfo}>
+          Ord {currentIndex + 1} av {challenges.length}
+        </div>
         <div style={styles.timer}>{secondsLeft}s</div>
+
         <h2>Bilda Rätta Ordet</h2>
         <p>{challenge.prompt}</p>
 
@@ -192,7 +238,6 @@ export default function Game6() {
           onDragEnd={handleDragEnd}
         >
           <div style={styles.sortableContainer}>
-            {/* Våra ord ritas ut här i en horisontell linje */}
             <SortableContext
               items={items}
               strategy={horizontalListSortingStrategy}
@@ -223,19 +268,9 @@ export default function Game6() {
                 {sessionStorage.getItem("totalGameTime")} sekunder
               </strong>
             </p>
-            <div
-              style={{ display: "flex", gap: "10px", justifyContent: "center" }}
-            >
-              <button onClick={fetchChallenge} style={styles.btnNext}>
-                Nästa Ord
-              </button>
-              <button
-                onClick={() => navigate("/gymnasium")}
-                style={styles.btnMenu}
-              >
-                Till Menyn
-              </button>
-            </div>
+            <button onClick={handleNext} style={styles.btnNext}>
+              {isLastQuestion ? "Slutför och gå till Meny" : "Nästa Ord"}
+            </button>
           </div>
         )}
 
@@ -250,7 +285,7 @@ export default function Game6() {
 
         {status === "playing" && (
           <button onClick={checkAnswer} style={styles.checkBtn}>
-            Rätt svar
+            Kontrollera
           </button>
         )}
       </div>
@@ -279,15 +314,28 @@ const styles = {
     position: "relative",
     boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
   },
+
+  // Timer & Runda
+  roundInfo: {
+    position: "absolute",
+    top: -50,
+    right: 0,
+    background: "rgba(255,255,255,0.2)",
+    color: "white",
+    padding: "10px 20px",
+    borderRadius: 20,
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   timer: {
     position: "absolute",
-    top: -20,
-    left: -20,
+    top: -50,
+    left: 0,
     fontSize: 24,
     fontWeight: "bold",
     background: "#fff6b0",
-    padding: "20px",
-    borderRadius: 10,
+    padding: "10px 20px",
+    borderRadius: 20,
     boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
   },
 
@@ -315,7 +363,7 @@ const styles = {
     padding: "15px 40px",
     fontSize: 18,
     fontWeight: "bold",
-    background: "#b10000",
+    background: "#333",
     color: "white",
     border: "none",
     borderRadius: 8,
@@ -331,16 +379,7 @@ const styles = {
     fontSize: 16,
     fontWeight: "bold",
     cursor: "pointer",
-  },
-  btnMenu: {
-    padding: "12px 24px",
-    background: "#333",
-    color: "white",
-    border: "none",
-    borderRadius: 8,
-    fontSize: 16,
-    fontWeight: "bold",
-    cursor: "pointer",
+    marginTop: 10,
   },
   btnRetry: {
     padding: "15px 40px",

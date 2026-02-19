@@ -6,8 +6,13 @@ const API_BASE = "http://localhost:5261";
 export default function Game1() {
   const navigate = useNavigate();
 
+  // Data State
   const [gameID, setGameID] = useState(null);
-  const [challenge, setChallenge] = useState(null);
+  const [challenges, setChallenges] = useState([]); // Håller alla unika frågor
+  const [currentIndex, setCurrentIndex] = useState(0); // Vilken runda vi är på
+
+  // Det aktuella kortet/frågan
+  const challenge = challenges[currentIndex];
 
   // Status: 'loading', 'playing', 'answered_correctly', 'answered_wrong', 'time_out'
   const [status, setStatus] = useState("loading");
@@ -20,70 +25,86 @@ export default function Game1() {
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
 
   // 1. Hämta Game ID
-  // 1. Hämta Game ID
   useEffect(() => {
     (async () => {
       try {
         const res = await fetch(`${API_BASE}/api/modes/gymnasium/games`);
         const games = await res.json();
-
-        // ÄNDRING HÄR: Vi letar efter "Trafikverket" eftersom spelet heter "Trafikverket (Gymnasium)"
-        // Vi tar också bort "|| games[0]" så att vi inte laddar fel spel av misstag.
-        const g1 = games.find((g) => g.title.includes("Trafikverket"));
-
-        if (g1) {
-          setGameID(g1.id);
-        } else {
-          console.error("Kunde inte hitta spelet 'Trafikverket'!");
-        }
+        const targetGame = games.find((g) => g.title.includes("Trafikverket"));
+        if (targetGame) setGameID(targetGame.id);
       } catch (err) {
         console.error("Kunde inte hämta spel:", err);
       }
     })();
   }, []);
 
-  // 2. Hämta fråga
-  const fetchRandomChallenge = async () => {
-    if (!gameID) return;
-    setStatus("loading");
-    setChallenge(null);
-    setSelectedOptionIndex(null);
-
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/games/${gameID}/challenges/random`,
-      );
-      if (!res.ok) return;
-
-      const data = await res.json();
-      setChallenge(data);
-
-      const limit = data.timeLimitSeconds || 20;
-      setTotalTimeLimit(limit);
-      setSecondsLeft(limit);
-      setStatus("playing");
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
+  // 2. Hämta ALLA unika frågor dynamiskt
   useEffect(() => {
-    if (gameID) fetchRandomChallenge();
+    if (!gameID) return;
+
+    const fetchAllChallenges = async () => {
+      setStatus("loading");
+      let uniqueChallenges = [];
+      let duplicateCount = 0;
+
+      // Smart loop: Fortsätt hämta tills vi får 5 dubbletter i rad
+      // Då vet vi med stor säkerhet att vi hittat alla frågor!
+      while (duplicateCount < 5 && uniqueChallenges.length < 20) {
+        try {
+          const res = await fetch(
+            `${API_BASE}/api/games/${gameID}/challenges/random`,
+          );
+          if (!res.ok) continue;
+
+          const data = await res.json();
+
+          // Kolla om vi redan har denna fråga
+          if (!uniqueChallenges.find((c) => c.id === data.id)) {
+            uniqueChallenges.push(data);
+            duplicateCount = 0; // Nollställ dubbletträknaren
+          } else {
+            duplicateCount++; // Vi hittade en dubblett
+          }
+        } catch (err) {
+          console.error(err);
+          break;
+        }
+      }
+
+      setChallenges(uniqueChallenges);
+      setCurrentIndex(0);
+      startRound(uniqueChallenges[0]);
+    };
+
+    fetchAllChallenges();
   }, [gameID]);
 
-  // 3. Timer
+  // Starta en runda
+  const startRound = (currentChall) => {
+    if (!currentChall) return;
+    const limit = currentChall.timeLimitSeconds || 20;
+    setTotalTimeLimit(limit);
+    setSecondsLeft(limit);
+    setSelectedOptionIndex(null);
+    setStatus("playing");
+  };
+
+  // Timer (Uppdaterad med strafftid)
   useEffect(() => {
-    // Stoppa klockan om man svarat rätt eller tiden är ute
     if (status === "answered_correctly" || status === "time_out") return;
 
     if (secondsLeft <= 0) {
+      // Lägg till hela omgångens tid till totaltiden
+      const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+      sessionStorage.setItem("totalGameTime", currentTotal + totalTimeLimit);
+
       setStatus("time_out");
       return;
     }
 
     const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(timer);
-  }, [secondsLeft, status]);
+  }, [secondsLeft, status, totalTimeLimit]);
 
   // 4. Hantera svar
   const onPick = (index) => {
@@ -93,15 +114,11 @@ export default function Game1() {
 
     if (index === challenge.correctOptionIndex) {
       // --- RÄTT SVAR ---
-
-      // 1. Räkna ut tiden för just detta spel
       const spent = totalTimeLimit - secondsLeft;
       setTimeTaken(spent);
 
-      // 2. Uppdatera totaltiden i sessionen
       const currentTotal = Number(sessionStorage.getItem("totalGameTime") || 0);
-      const newTotal = currentTotal + spent;
-      sessionStorage.setItem("totalGameTime", newTotal);
+      sessionStorage.setItem("totalGameTime", currentTotal + spent);
 
       setStatus("answered_correctly");
     } else {
@@ -110,11 +127,25 @@ export default function Game1() {
     }
   };
 
+  // 5. Gå till nästa fråga eller nästa spel
+  const handleNext = () => {
+    if (currentIndex < challenges.length - 1) {
+      // Det finns fler frågor i detta spel
+      setCurrentIndex((prev) => prev + 1);
+      startRound(challenges[currentIndex + 1]);
+    } else {
+      // Alla frågor är klara, gå till Game 2
+      navigate("/gymnasium/game2");
+    }
+  };
+
   // --- RENDERING ---
 
-  if (!challenge || status === "loading") {
-    return <div style={styles.container}>Laddar fråga...</div>;
+  if (status === "loading" || !challenge) {
+    return <div style={styles.container}>Laddar frågor...</div>;
   }
+
+  const isLastQuestion = currentIndex === challenges.length - 1;
 
   return (
     <div style={styles.container}>
@@ -125,7 +156,10 @@ export default function Game1() {
           position: "relative",
         }}
       >
-        {/* Timer */}
+        {/* Visar runda och timer */}
+        <div style={styles.roundInfo}>
+          Fråga {currentIndex + 1} av {challenges.length}
+        </div>
         <div style={styles.timer}>{secondsLeft}s</div>
 
         <h2>Trafikverket</h2>
@@ -146,14 +180,13 @@ export default function Game1() {
           {challenge.options.map((opt, index) => {
             let btnStyle = { ...styles.optionBtn };
 
-            // Färgkodning baserat på status
             if (index === selectedOptionIndex) {
               if (status === "answered_correctly") {
-                btnStyle.backgroundColor = "#2ea44f"; // Grön
+                btnStyle.backgroundColor = "#2ea44f";
                 btnStyle.color = "white";
                 btnStyle.border = "2px solid #207a38";
               } else if (status === "answered_wrong") {
-                btnStyle.backgroundColor = "#c62828"; // Röd
+                btnStyle.backgroundColor = "#c62828";
                 btnStyle.color = "white";
                 btnStyle.border = "2px solid #8e1c1c";
               }
@@ -175,14 +208,9 @@ export default function Game1() {
         </div>
 
         {/* --- FEEDBACK-RUTOR --- */}
-
-        {/* SCENARIO: RÄTT SVAR (Med tider) */}
         {status === "answered_correctly" && (
           <div style={styles.feedbackBoxSuccess}>
             <h3>Rätt svar! ✅</h3>
-            <p>Snyggt jobbat!</p>
-
-            {/* HÄR VISAS TIDERNA */}
             <div style={styles.timeInfoBox}>
               <p>
                 ⏱️ Tid för denna fråga: <strong>{timeTaken} sekunder</strong>
@@ -195,16 +223,14 @@ export default function Game1() {
               </p>
             </div>
 
-            <button
-              onClick={() => navigate("/gymnasium/game2")}
-              style={styles.btnNext}
-            >
-              Gå vidare till nästa spel (Risk & Säkerhet)
+            <button onClick={handleNext} style={styles.btnNext}>
+              {isLastQuestion
+                ? "Gå vidare till nästa spel (Game 2)"
+                : "Nästa fråga"}
             </button>
           </div>
         )}
 
-        {/* SCENARIO: FEL SVAR */}
         {status === "answered_wrong" && (
           <div style={styles.feedbackBoxError}>
             <h3>Fel svar ❌</h3>
@@ -212,15 +238,12 @@ export default function Game1() {
           </div>
         )}
 
-        {/* SCENARIO: TIDEN UTE */}
         {status === "time_out" && (
           <div style={styles.feedbackBoxError}>
             <h3>Tiden är ute! ⏱️</h3>
             <button
               onClick={() => {
-                setSecondsLeft(totalTimeLimit);
-                setStatus("playing");
-                setSelectedOptionIndex(null);
+                startRound(challenge);
               }}
               style={styles.btnRetry}
             >
@@ -245,6 +268,17 @@ const styles = {
     fontFamily: "sans-serif",
     paddingBottom: "50px",
   },
+  roundInfo: {
+    position: "absolute",
+    top: -50,
+    right: 0,
+    background: "rgba(255,255,255,0.2)",
+    color: "white",
+    padding: "10px 20px",
+    borderRadius: 20,
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   timer: {
     position: "absolute",
     top: -50,
@@ -265,11 +299,7 @@ const styles = {
     backgroundColor: "white",
     padding: "5px",
   },
-  question: {
-    fontSize: 22,
-    fontWeight: "bold",
-    margin: "20px 0",
-  },
+  question: { fontSize: 22, fontWeight: "bold", margin: "20px 0" },
   grid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",

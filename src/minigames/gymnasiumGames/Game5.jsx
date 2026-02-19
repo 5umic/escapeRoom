@@ -314,11 +314,17 @@ export default function Game5() {
                 </strong>
               </p>
               <button
+                onClick={() => navigate("/gymnasium/game6")}
+                style={styles.btnNext}
+              >
+                Gå vidare till Sortera Ord (Game 6)
+              </button>
+              {/* <button
                 onClick={() => navigate("/gymnasium")}
                 style={styles.btnSuccess}
               >
                 Till Menyn (Klart!)
-              </button>
+              </button> */}
             </div>
           )}
 
@@ -419,6 +425,17 @@ const styles = {
     borderRadius: 8,
     cursor: "pointer",
     marginTop: 20,
+  },
+  btnNext: {
+    marginTop: 10,
+    padding: "12px 24px",
+    background: "#2ea44f",
+    color: "white",
+    border: "none",
+    borderRadius: 8,
+    fontSize: 18,
+    fontWeight: "bold",
+    cursor: "pointer",
   },
   btnSuccess: {
     padding: "15px 40px",

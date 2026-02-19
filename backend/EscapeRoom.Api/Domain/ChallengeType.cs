@@ -9,4 +9,5 @@ public enum ChallengeType
     TrueFalse = 4,
     PixelHunt = 5,
     Sorting = 6,
+    WordAssembly = 7,
 }

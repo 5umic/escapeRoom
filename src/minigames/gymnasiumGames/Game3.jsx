@@ -1,86 +1,60 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = "http://localhost:5261";
+import {
+  fetchGameIdByTitle,
+  fetchUniqueChallenges,
+} from "../gymnasiumGames/api/gameApi";
+import { useGameTimer } from "../gymnasiumGames/hooks/useGameTimer";
+import {
+  GameContainer,
+  FeedbackSuccess,
+  FeedbackError,
+} from "../gymnasiumGames/components/GameUI";
 
 export default function Game3() {
   const navigate = useNavigate();
 
-  // LÅS 1: För att förhindra dubbelklick visuellt
-  const answerLocked = useRef(false);
-
-  // LÅS 2 (NYTT): Minne för vilka frågor vi redan räknat poäng för
-  // Detta stoppar "dubbel räkning" även om man klickar snabbt
-  const processedIds = useRef(new Set());
-
-  // Data State
-  const [gameID, setGameID] = useState(null);
-  const [challenge, setChallenge] = useState(null);
-
-  // Status
-  const [status, setStatus] = useState("loading");
-
-  // Timer och Statistik
-  const [secondsLeft, setSecondsLeft] = useState(60);
-  const [totalTimeLimit, setTotalTimeLimit] = useState(60);
-  const [timeTaken, setTimeTaken] = useState(0);
+  // State för spelet
+  const [challenges, setChallenges] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [status, setStatus] = useState("loading"); // loading, playing, answered_correctly, answered_wrong, time_out
   const [selectedOption, setSelectedOption] = useState(null);
+  const [totalTimeLimit, setTotalTimeLimit] = useState(15);
 
-  // 1. Hämta Game ID
+  const challenge = challenges[currentIndex];
+
+  // Vår anpassade Timer-hook
+  const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
+    useGameTimer(totalTimeLimit, status, setStatus);
+
+  // 1. Hämta all data vid start
   useEffect(() => {
-    console.log(
-      "GAME 3 START - Total tid i minnet:",
-      sessionStorage.getItem("totalGameTime"),
-    );
-
-    (async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/modes/gymnasium/games`);
-        const games = await res.json();
-        const targetGame = games.find((g) => g.title.includes("Game 3"));
-        if (targetGame) setGameID(targetGame.id);
-      } catch (err) {
-        console.error("Kunde inte hämta spel:", err);
+    const initGame = async () => {
+      setStatus("loading");
+      const id = await fetchGameIdByTitle("gymnasium", "Game 3");
+      if (id) {
+        const data = await fetchUniqueChallenges(id);
+        setChallenges(data);
+        startRound(data[0]);
       }
-    })();
+    };
+    initGame();
   }, []);
 
-  // 2. Hämta EN slumpmässig fråga
-  const fetchRandomChallenge = async () => {
-    if (!gameID) return;
-
-    // Nollställ state och LÅS UPP
-    setStatus("loading");
-    setChallenge(null);
+  // 2. Starta en runda
+  const startRound = (currentChall) => {
+    if (!currentChall) return;
+    const limit = currentChall.timeLimitSeconds || 15; // Sant/Falskt är snabba frågor
+    setTotalTimeLimit(limit);
+    setSecondsLeft(limit);
     setSelectedOption(null);
-
-    // Nollställ låset för knappar
-    answerLocked.current = false;
-
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/games/${gameID}/challenges/random`,
-      );
-      if (!res.ok) return;
-
-      const data = await res.json();
-      setChallenge(data);
-
-      const limit = data.timeLimitSeconds || 20;
-      setTotalTimeLimit(limit);
-      setSecondsLeft(limit);
-      setStatus("playing");
-    } catch (err) {
-      console.error(err);
-    }
+    setStatus("playing");
   };
 
-  useEffect(() => {
-    if (gameID) fetchRandomChallenge();
-  }, [gameID]);
-
-  // Timer (Uppdaterad med strafftid)
-  useEffect(() => {
+  // 3. Hantera svar
+  const onAnswer = (optionText, optionIndex) => {
+    // Förhindra klick om spelet är pausat
     if (
       status === "answered_correctly" ||
       status === "answered_wrong" ||
@@ -88,282 +62,152 @@ export default function Game3() {
     )
       return;
 
-    if (secondsLeft <= 0) {
-      // Lägg till hela omgångens tid till totaltiden
-      const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
-      sessionStorage.setItem("totalGameTime", currentTotal + totalTimeLimit);
-
-      setStatus("time_out");
-      return;
-    }
-
-    const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [secondsLeft, status, totalTimeLimit]);
-
-  // 4. Hantera svar
-  // 4. Hantera svar
-  const onAnswer = (optionText, optionIndex) => {
-    if (
-      status === "answered_correctly" ||
-      status === "time_out" ||
-      answerLocked.current
-    )
-      return;
-
-    answerLocked.current = true;
     setSelectedOption(optionText);
-
-    const spent = totalTimeLimit - secondsLeft;
-    const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+    const spent = getTimeTaken();
 
     if (optionIndex === challenge.correctOptionIndex) {
-      if (processedIds.current && processedIds.current.has(challenge.id))
-        return;
-      if (processedIds.current) processedIds.current.add(challenge.id);
-
-      setTimeTaken(spent);
-      sessionStorage.setItem("totalGameTime", currentTotal + spent);
+      // RÄTT SVAR
+      addTimeToSession(spent);
       setStatus("answered_correctly");
     } else {
       // FEL SVAR (STRAFF!)
-      sessionStorage.setItem("totalGameTime", currentTotal + spent);
+      addTimeToSession(spent);
       setStatus("answered_wrong");
-      // OBS: Vi låser INTE upp answerLocked.current här, det görs via knappen nedan!
+    }
+  };
+
+  // 4. Navigering
+  const handleNext = () => {
+    if (currentIndex < challenges.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+      startRound(challenges[currentIndex + 1]);
+    } else {
+      navigate("/gymnasium/game4"); // Gå vidare till Pixeljakten
     }
   };
 
   const handleRetry = () => {
-    setSecondsLeft(totalTimeLimit);
-    setStatus("playing");
-    setSelectedOption(null);
-    answerLocked.current = false; // Lås upp vid retry
+    setSecondsLeft(totalTimeLimit); // Nollställ klockan
+    setStatus("playing"); // Lås upp spelet
+    setSelectedOption(null); // Ta bort röd markering
   };
 
   // --- RENDER ---
+  if (status === "loading" || !challenge) {
+    return (
+      <GameContainer>
+        <h2>Laddar...</h2>
+      </GameContainer>
+    );
+  }
 
-  if (status === "loading" || !challenge)
-    return <div style={styles.container}>Laddar...</div>;
+  const isLastQuestion = currentIndex === challenges.length - 1;
 
   return (
-    <div style={styles.container}>
-      <div style={styles.content}>
-        <div style={styles.timer}>{secondsLeft}s</div>
-
-        <h2>Digital Säkerhet</h2>
-        <p style={{ marginBottom: 20, fontSize: "18px" }}>Sant eller Falskt?</p>
-
-        <div style={styles.card}>
-          <p style={styles.prompt}>{challenge.prompt}</p>
-
-          <div style={styles.buttonGroup}>
-            {challenge.options.map((opt, index) => {
-              let btnStyle = { ...styles.optionBtn };
-
-              if (selectedOption === opt) {
-                if (status === "answered_correctly") {
-                  btnStyle.backgroundColor = "#2ea44f";
-                  btnStyle.border = "2px solid #207a38";
-                } else if (status === "answered_wrong") {
-                  btnStyle.backgroundColor = "#c62828";
-                  btnStyle.border = "2px solid #8e1c1c";
-                }
-              }
-
-              return (
-                <button
-                  key={opt}
-                  onClick={() => onAnswer(opt, index)}
-                  style={btnStyle}
-                  disabled={
-                    status === "answered_correctly" || status === "time_out"
-                  }
-                >
-                  {opt}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* FEEDBACK */}
-        {status === "answered_correctly" && (
-          <div style={styles.feedbackBoxSuccess}>
-            <h3>Rätt svar! ✅</h3>
-            <div style={styles.timeInfoBox}>
-              <p>
-                ⏱️ Tid för denna fråga: <strong>{timeTaken} sekunder</strong>
-              </p>
-              <p>
-                📊 Total tid hittills:{" "}
-                <strong>
-                  {sessionStorage.getItem("totalGameTime")} sekunder
-                </strong>
-              </p>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                justifyContent: "center",
-                marginTop: "10px",
-              }}
-            >
-              <button
-                onClick={() => navigate("/gymnasium/game4")}
-                style={styles.btnNext}
-              >
-                Gå vidare till Pixeljakten (Game 4)
-              </button>
-              {/* <button
-                onClick={() => navigate("/gymnasium")}
-                style={styles.btnMenu}
-              >
-                Till Menyn
-              </button> */}
-            </div>
-          </div>
-        )}
-
-        {status === "answered_wrong" && (
-          <div style={styles.feedbackBoxError}>
-            <h3>Fel svar ❌</h3>
-            <p>
-              Du fick <strong>{totalTimeLimit - secondsLeft} sekunder</strong> i
-              straff!
-            </p>
-            <button
-              onClick={() => {
-                setSecondsLeft(totalTimeLimit);
-                setStatus("playing");
-                setSelectedOption(null);
-                answerLocked.current = false; // Lås upp
-              }}
-              style={styles.btnRetry}
-            >
-              Försök igen
-            </button>
-          </div>
-        )}
+    <GameContainer secondsLeft={secondsLeft}>
+      <div style={styles.roundInfo}>
+        Fråga {currentIndex + 1} av {challenges.length}
       </div>
-    </div>
+
+      <h2>Digital Säkerhet</h2>
+      <p style={styles.prompt}>{challenge.prompt}</p>
+
+      <div style={styles.buttonGroup}>
+        {challenge.options.map((opt, index) => {
+          let btnStyle = { ...styles.optionBtn };
+
+          // Färgmarkering av det valda alternativet
+          if (selectedOption === opt) {
+            if (status === "answered_correctly") {
+              btnStyle.backgroundColor = "#2ea44f";
+              btnStyle.color = "white";
+              btnStyle.border = "2px solid #207a38";
+            } else if (status === "answered_wrong") {
+              btnStyle.backgroundColor = "#c62828";
+              btnStyle.color = "white";
+              btnStyle.border = "2px solid #8e1c1c";
+            }
+          }
+
+          return (
+            <button
+              key={index}
+              onClick={() => onAnswer(opt, index)}
+              style={btnStyle}
+              disabled={
+                status === "answered_correctly" || status === "time_out"
+              }
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* --- DRY Feedback-komponenter --- */}
+      {status === "answered_correctly" && (
+        <FeedbackSuccess
+          title="Rätt svar!"
+          timeTaken={getTimeTaken()}
+          totalTime={sessionStorage.getItem("totalGameTime")}
+          onNext={handleNext}
+          nextText={
+            isLastQuestion
+              ? "Gå vidare till Pixeljakten (Game 4)"
+              : "Nästa fråga"
+          }
+        />
+      )}
+
+      {status === "answered_wrong" && (
+        <FeedbackError
+          title="Fel svar"
+          message="Det var tyvärr inte rätt."
+          penalty={getTimeTaken()}
+          onRetry={handleRetry}
+        />
+      )}
+
+      {status === "time_out" && (
+        <FeedbackError
+          title="Tiden är ute!"
+          message="Du hann inte svara."
+          onRetry={() => startRound(challenge)}
+        />
+      )}
+    </GameContainer>
   );
 }
 
+// Minimal styling tack vare GameContainer!
 const styles = {
-  container: {
-    minHeight: "100vh",
-    background: "#b10000",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    color: "white",
-    fontFamily: "sans-serif",
-    padding: 20,
-  },
-  content: {
-    maxWidth: "600px",
-    width: "100%",
-    position: "relative",
-    textAlign: "center",
-  },
-  timer: {
+  roundInfo: {
     position: "absolute",
-    top: -60,
+    top: -50,
     right: 0,
-    background: "#fff6b0",
-    color: "#000",
+    background: "rgba(255,255,255,0.2)",
+    color: "white",
     padding: "10px 20px",
     borderRadius: 20,
     fontWeight: "bold",
-    fontSize: 24,
+    fontSize: 16,
   },
-  card: {
-    background: "white",
-    padding: "30px",
-    borderRadius: "10px",
-    color: "#333",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
-  },
-  prompt: {
-    fontSize: "22px",
-    fontWeight: "bold",
-    marginBottom: "30px",
-    lineHeight: "1.4",
-  },
+  prompt: { fontSize: "22px", fontWeight: "bold", margin: "30px 0" },
   buttonGroup: {
-    display: "flex",
-    gap: "20px",
-    justifyContent: "center",
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "15px",
+    marginBottom: "20px",
   },
   optionBtn: {
-    flex: 1,
     padding: "20px",
-    fontSize: "20px",
+    fontSize: "18px",
     fontWeight: "bold",
     borderRadius: "8px",
-    border: "2px solid #eee",
+    border: "2px solid #ccc",
     cursor: "pointer",
-    background: "#f9f9f9",
+    background: "white",
     color: "#333",
-    transition: "all 0.2s",
-  },
-  feedbackBoxSuccess: {
-    backgroundColor: "#e6fffa",
-    color: "#207a38",
-    padding: "20px",
-    borderRadius: "10px",
-    marginTop: "20px",
-    border: "2px solid #2ea44f",
-    animation: "fadeIn 0.5s",
-  },
-  feedbackBoxError: {
-    backgroundColor: "#ffe6e6",
-    color: "#c62828",
-    padding: "15px",
-    borderRadius: "10px",
-    marginTop: "20px",
-    border: "2px solid #c62828",
-    fontWeight: "bold",
-  },
-  timeInfoBox: {
-    margin: "15px 0",
-    padding: "10px",
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    borderRadius: "5px",
-    fontSize: "16px",
-    color: "#333",
-  },
-  btnNext: {
-    padding: "12px 24px",
-    background: "#2ea44f",
-    color: "white",
-    border: "none",
-    borderRadius: 8,
-    fontSize: 16,
-    fontWeight: "bold",
-    cursor: "pointer",
-  },
-  btnMenu: {
-    padding: "12px 24px",
-    background: "#333",
-    color: "white",
-    border: "none",
-    borderRadius: 8,
-    fontSize: 16,
-    fontWeight: "bold",
-    cursor: "pointer",
-  },
-  btnRetry: {
-    marginTop: 10,
-    padding: "12px 24px",
-    background: "#c62828",
-    color: "white",
-    border: "none",
-    borderRadius: 8,
-    fontSize: 16,
-    fontWeight: "bold",
-    cursor: "pointer",
+    transition: "0.2s",
   },
 };

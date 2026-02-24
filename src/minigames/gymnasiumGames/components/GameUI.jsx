@@ -1,0 +1,174 @@
+import React from "react";
+
+// --- HUVUDCONTAINER ---
+export function GameContainer({ children, secondsLeft }) {
+  return (
+    <div style={styles.container}>
+      <div style={styles.content}>
+        {secondsLeft !== undefined && (
+          <div style={styles.timer}>{secondsLeft}s</div>
+        )}
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// --- FEEDBACK BOX: SUCCESS ---
+// --- FEEDBACK BOX: SUCCESS ---
+export function FeedbackSuccess({
+  title,
+  timeTaken,
+  totalTime,
+  penaltyTime = 0, // NY: Standardvärde 0 så den inte kraschar andra spel
+  onNext,
+  nextText,
+}) {
+  return (
+    <div style={styles.feedbackBoxSuccess}>
+      <h3>{title} ✅</h3>
+      {timeTaken !== undefined && (
+        <div style={styles.timeInfoBox}>
+          {/* Om det finns strafftid, visa en snygg uppdelning */}
+          {penaltyTime > 0 && (
+            <>
+              <p>
+                ⏳ Grundtid: <strong>{timeTaken - penaltyTime}s</strong>
+              </p>
+              <p style={{ color: "#c62828" }}>
+                ⚠️ Strafftid (Klick): <strong>+{penaltyTime}s</strong>
+              </p>
+              <hr
+                style={{
+                  margin: "8px 0",
+                  border: "none",
+                  borderTop: "1px solid rgba(0,0,0,0.1)",
+                }}
+              />
+            </>
+          )}
+
+          <p>
+            ⏱️{" "}
+            {penaltyTime > 0
+              ? "Total tid för frågan:"
+              : "Tid för detta moment:"}{" "}
+            <strong>{timeTaken}s</strong>
+          </p>
+          <p>
+            📊 Total tid i Escape Room: <strong>{totalTime}s</strong>
+          </p>
+        </div>
+      )}
+      {onNext && (
+        <button onClick={onNext} style={styles.btnSuccess}>
+          {nextText || "Nästa"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// --- FEEDBACK BOX: ERROR / PENALTY ---
+export function FeedbackError({ title, message, penalty, onRetry, retryText }) {
+  return (
+    <div style={styles.feedbackBoxError}>
+      <h3>{title} ❌</h3>
+      <p>{message}</p>
+      {penalty > 0 && (
+        <p>
+          Du fick precis <strong>{penalty} sekunder</strong> i straff!
+        </p>
+      )}
+      {onRetry && (
+        <button onClick={onRetry} style={styles.btnRetry}>
+          {retryText || "Försök igen"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+const styles = {
+  container: {
+    minHeight: "100vh",
+    background: "#b10000",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    fontFamily: "sans-serif",
+    color: "#333",
+  },
+  content: {
+    width: "100%",
+    maxWidth: "800px",
+    background: "white",
+    padding: 40,
+    borderRadius: 10,
+    textAlign: "center",
+    position: "relative",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+  },
+  timer: {
+    position: "absolute",
+    top: -20,
+    right: 20,
+    fontSize: 24,
+    fontWeight: "bold",
+    background: "#fff6b0",
+    padding: "10px 20px",
+    borderRadius: 15,
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+    zIndex: 10,
+  },
+  feedbackBoxSuccess: {
+    backgroundColor: "#e6fffa",
+    color: "#207a38",
+    padding: "20px",
+    borderRadius: "10px",
+    marginTop: "20px",
+    border: "2px solid #2ea44f",
+    textAlign: "center",
+  },
+  feedbackBoxError: {
+    backgroundColor: "#ffe6e6",
+    color: "#c62828",
+    padding: "15px",
+    borderRadius: "10px",
+    marginTop: "20px",
+    border: "2px solid #c62828",
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  timeInfoBox: {
+    margin: "15px 0",
+    padding: "10px",
+    // backgroundColor: "rgba(255, 255, 255, 0.8)",
+    borderRadius: "5px",
+    fontSize: "16px",
+    color: "#333",
+  },
+  btnSuccess: {
+    marginTop: 10,
+    padding: "12px 24px",
+    background: "#2ea44f",
+    color: "white",
+    border: "none",
+    borderRadius: 8,
+    fontSize: 18,
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+  btnRetry: {
+    marginTop: 10,
+    padding: "12px 24px",
+    background: "#c62828",
+    color: "white",
+    border: "none",
+    borderRadius: 8,
+    fontSize: 18,
+    fontWeight: "bold",
+    cursor: "pointer",
+  },
+};

@@ -2,20 +2,26 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
 
-const API_BASE = "http://localhost:5261";
+// DRY-verktyg!
+import {
+  fetchGameIdByTitle,
+  fetchUniqueChallenges,
+} from "../gymnasiumGames/api/gameApi";
+import { useGameTimer } from "../gymnasiumGames/hooks/useGameTimer";
+import {
+  GameContainer,
+  FeedbackSuccess,
+  FeedbackError,
+} from "../gymnasiumGames/components/GameUI";
 
-// Hjäpfunktion för att slumpa ordningen i en array
-const shuffleArray = (array) => {
-  return [...array].sort(() => Math.random() - 0.5);
-};
+const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
 
 // --- KOMPONENT: DRAGGABLE CARD (ORDET) ---
 function DraggableCard({ id, text, isDisabled, validationStatus }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: id,
+    id,
     disabled: isDisabled,
   });
-
   const style = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
@@ -23,10 +29,9 @@ function DraggableCard({ id, text, isDisabled, validationStatus }) {
       }
     : undefined;
 
-  let bgColor = "white";
-  let color = "#333";
-  let borderColor = "#999";
-
+  let bgColor = "white",
+    color = "#333",
+    borderColor = "#999";
   if (validationStatus === "correct") {
     bgColor = "#2ea44f";
     color = "white";
@@ -44,8 +49,8 @@ function DraggableCard({ id, text, isDisabled, validationStatus }) {
         ...styles.card,
         ...style,
         backgroundColor: bgColor,
-        color: color,
-        borderColor: borderColor,
+        color,
+        borderColor,
       }}
       {...listeners}
       {...attributes}
@@ -58,7 +63,6 @@ function DraggableCard({ id, text, isDisabled, validationStatus }) {
 // --- KOMPONENT: DROPPABLE BOX (LÅDAN) ---
 function DroppableBox({ id, title, children }) {
   const { setNodeRef, isOver } = useDroppable({ id });
-
   const boxStyle = {
     ...styles.box,
     backgroundColor: isOver ? "#e3f2fd" : "white",
@@ -78,109 +82,65 @@ export default function Game5() {
   const navigate = useNavigate();
 
   // State
-  const [gameID, setGameID] = useState(null);
   const [challenge, setChallenge] = useState(null);
-
-  // Status och Straff
   const [status, setStatus] = useState("loading"); // loading, playing, success, check_failed, time_out
   const [lastPenalty, setLastPenalty] = useState(0);
   const [validation, setValidation] = useState({});
-
-  // DYNAMISKA KATEGORIER!
   const [categories, setCategories] = useState([]);
-
-  // Timer
-  const [secondsLeft, setSecondsLeft] = useState(60);
-  const [totalTimeLimit, setTotalTimeLimit] = useState(60);
-  const [timeTaken, setTimeTaken] = useState(0);
-
-  // Sorting State
   const [containers, setContainers] = useState({ pool: [] });
+  const [totalTimeLimit, setTotalTimeLimit] = useState(60);
 
-  // 1. Hämta Game ID
+  // Hook för timern
+  const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
+    useGameTimer(totalTimeLimit, status, setStatus);
+
+  // 1. Hämta Data vid start
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/modes/gymnasium/games`);
-        const games = await res.json();
-        const targetGame = games.find((g) => g.title.includes("Game 5"));
-        if (targetGame) setGameID(targetGame.id);
-      } catch (err) {
-        console.error(err);
+    const initGame = async () => {
+      setStatus("loading");
+      const id = await fetchGameIdByTitle("gymnasium", "Game 5");
+      if (id) {
+        // Hämtar en fråga (sortering)
+        const data = await fetchUniqueChallenges(id, 1);
+        if (data.length > 0) setupChallenge(data[0]);
       }
-    })();
+    };
+    initGame();
   }, []);
 
-  // 2. Hämta Utmaning och BYGG UPP DYNAMISKT
-  const fetchChallenge = async () => {
-    if (!gameID) return;
-    setStatus("loading");
-    setValidation({});
+  const setupChallenge = (data) => {
+    setChallenge(data);
+    const limit = data.timeLimitSeconds || 60;
+    setTotalTimeLimit(limit);
+    setSecondsLeft(limit);
     setLastPenalty(0);
+    setValidation({});
 
-    try {
-      const res = await fetch(
-        `${API_BASE}/api/games/${gameID}/challenges/random`,
-      );
-      const data = await res.json();
-      setChallenge(data);
+    const correctMapping = JSON.parse(data.answer);
+    const dynamicCategories = Object.keys(correctMapping);
+    setCategories(dynamicCategories);
 
-      const limit = data.timeLimitSeconds || 60;
-      setTotalTimeLimit(limit);
-      setSecondsLeft(limit);
-
-      const correctMapping = JSON.parse(data.answer);
-      const dynamicCategories = Object.keys(correctMapping);
-      setCategories(dynamicCategories);
-
-      const initialContainers = {
-        pool: shuffleArray(data.options),
-      };
-
-      dynamicCategories.forEach((cat) => {
-        initialContainers[cat] = [];
-      });
-
-      setContainers(initialContainers);
-      setStatus("playing");
-    } catch (err) {
-      console.error("Fel vid hämtning av fråga:", err);
-    }
+    const initialContainers = { pool: shuffleArray(data.options) };
+    dynamicCategories.forEach((cat) => (initialContainers[cat] = []));
+    setContainers(initialContainers);
+    setStatus("playing");
   };
 
-  useEffect(() => {
-    if (gameID) fetchChallenge();
-  }, [gameID]);
-
-  // 3. Timer (Uppdaterad för att inte pausa på check_failed)
-  useEffect(() => {
-    // Klockan stannar BARA när man vinner eller när tiden går ut.
-    // Vid check_failed tickar den vidare!
-    if (status === "success" || status === "time_out") return;
-
-    if (secondsLeft <= 0) {
-      const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
-      sessionStorage.setItem("totalGameTime", currentTotal + totalTimeLimit);
-      setStatus("time_out");
-      return;
-    }
-    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [secondsLeft, status, totalTimeLimit]);
-
-  // Nollställ färgerna och status om man börjar dra i ett kort
+  // Nollställ färgerna och lås upp kontroll-knappen vid drag
   const handleDragStart = () => {
     if (Object.keys(validation).length > 0) setValidation({});
-    if (status === "check_failed") setStatus("playing"); // Låser upp knappen igen
+    if (status === "check_failed") setStatus("playing");
   };
 
-  // 4. Hantera Drag & Drop Slut
+  // 2. Hantera Drag & Drop Slut
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (!over) return;
 
     const word = active.id;
-    const fromContainer = findContainer(word);
+    const fromContainer = Object.keys(containers).find((key) =>
+      containers[key].includes(word),
+    );
     const toContainer = over.id;
 
     if (!fromContainer || !toContainer || fromContainer === toContainer) return;
@@ -192,13 +152,7 @@ export default function Game5() {
     });
   };
 
-  const findContainer = (word) => {
-    return Object.keys(containers).find((key) =>
-      containers[key].includes(word),
-    );
-  };
-
-  // 5. Rätta Svar DYNAMISKT
+  // 3. Rätta Svar
   const checkAnswer = () => {
     if (status === "check_failed") return; // Förhindra dubbelklick
 
@@ -209,15 +163,11 @@ export default function Game5() {
     categories.forEach((category) => {
       const userWords = containers[category] || [];
       const correctWords = correctMapping[category] || [];
-
-      if (userWords.length !== correctWords.length) {
-        allCorrect = false;
-      }
+      if (userWords.length !== correctWords.length) allCorrect = false;
 
       userWords.forEach((word) => {
-        if (correctWords.includes(word)) {
-          newValidation[word] = "correct";
-        } else {
+        if (correctWords.includes(word)) newValidation[word] = "correct";
+        else {
           newValidation[word] = "incorrect";
           allCorrect = false;
         }
@@ -225,24 +175,19 @@ export default function Game5() {
     });
 
     setValidation(newValidation);
-
-    const spent = totalTimeLimit - secondsLeft;
-    const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+    const spent = getTimeTaken(); // Hämta spenderad tid via hook
 
     if (allCorrect) {
-      // ALLA RÄTT
-      setTimeTaken(spent);
-      sessionStorage.setItem("totalGameTime", currentTotal + spent);
+      addTimeToSession(spent);
       setStatus("success");
     } else {
-      // STRAFF (Ingen alert, visa i UI)
-      sessionStorage.setItem("totalGameTime", currentTotal + spent);
+      addTimeToSession(spent);
       setLastPenalty(spent);
       setStatus("check_failed");
     }
   };
 
-  // 6. Börja om vid Time Out
+  // 4. Börja om vid Time Out
   const handleRetry = () => {
     setSecondsLeft(totalTimeLimit);
     setStatus("playing");
@@ -250,162 +195,118 @@ export default function Game5() {
     setLastPenalty(0);
 
     const allWords = Object.values(containers).flat();
-
-    const resetContainers = {
-      pool: shuffleArray(allWords),
-    };
-
-    categories.forEach((cat) => {
-      resetContainers[cat] = [];
-    });
-
+    const resetContainers = { pool: shuffleArray(allWords) };
+    categories.forEach((cat) => (resetContainers[cat] = []));
     setContainers(resetContainers);
   };
 
   // --- RENDER ---
   if (status === "loading" || !challenge)
-    return <div style={styles.container}>Laddar...</div>;
+    return (
+      <GameContainer>
+        <h2>Laddar...</h2>
+      </GameContainer>
+    );
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div style={styles.container}>
-        <div style={styles.content}>
-          <div style={styles.timer}>{secondsLeft}s</div>
-          <h2>Sortera Korten</h2>
-          <p>{challenge.prompt}</p>
+      <GameContainer secondsLeft={secondsLeft}>
+        <h2>Sortera Korten</h2>
+        <p>{challenge.prompt}</p>
 
-          {/* DYNAMISKA BOXAR */}
-          <div style={styles.boxContainer}>
-            {categories.map((cat) => (
-              <DroppableBox key={cat} id={cat} title={cat}>
-                {containers[cat].map((w) => (
-                  <DraggableCard
-                    key={w}
-                    id={w}
-                    text={w}
-                    validationStatus={validation[w]}
-                    isDisabled={status === "success" || status === "time_out"} // Tillåter drag under check_failed!
-                  />
-                ))}
-              </DroppableBox>
-            ))}
-          </div>
-
-          {/* STARTPOOL */}
-          <div style={styles.poolArea}>
-            <DroppableBox id="pool" title="Ord att sortera">
-              <div style={styles.poolGrid}>
-                {containers.pool.map((w) => (
-                  <DraggableCard
-                    key={w}
-                    id={w}
-                    text={w}
-                    validationStatus={validation[w]}
-                    isDisabled={status === "success" || status === "time_out"}
-                  />
-                ))}
-              </div>
+        {/* DYNAMISKA BOXAR */}
+        <div style={styles.boxContainer}>
+          {categories.map((cat) => (
+            <DroppableBox key={cat} id={cat} title={cat}>
+              {containers[cat].map((w) => (
+                <DraggableCard
+                  key={w}
+                  id={w}
+                  text={w}
+                  validationStatus={validation[w]}
+                  isDisabled={status === "success" || status === "time_out"}
+                />
+              ))}
             </DroppableBox>
-          </div>
-
-          {/* FEEDBACK & KNAPPAR */}
-          {status === "success" && (
-            <div style={styles.feedbackBoxSuccess}>
-              <h3>Snyggt sorterat! ✅</h3>
-              <p>
-                Tid för detta spel: {timeTaken}s. Total tid hittills:{" "}
-                {sessionStorage.getItem("totalGameTime")}s
-              </p>
-              <button
-                onClick={() => navigate("/gymnasium/game6")}
-                style={styles.btnSuccess}
-              >
-                Gå vidare till Bilda Ordet (Game 6)
-              </button>
-            </div>
-          )}
-
-          {status === "check_failed" && (
-            <div style={styles.feedbackBoxError}>
-              <h3>Inte helt rätt ❌</h3>
-              <p>
-                Du fick precis <strong>{lastPenalty} sekunder</strong> adderat
-                som straff!
-              </p>
-              <p style={{ fontSize: "15px", marginTop: "10px" }}>
-                Flytta de röda korten och försök igen. Klockan tickar!
-              </p>
-            </div>
-          )}
-
-          {status === "time_out" && (
-            <div style={styles.feedbackBoxError}>
-              <h3>Tiden är ute! ⏱️</h3>
-              <p>Du hann inte sortera alla kort i tid.</p>
-              <button onClick={handleRetry} style={styles.btnRetry}>
-                Försök igen
-              </button>
-            </div>
-          )}
-
-          {status !== "success" && status !== "time_out" && (
-            <button
-              onClick={checkAnswer}
-              style={{
-                ...styles.checkBtn,
-                opacity: status === "check_failed" ? 0.6 : 1,
-                cursor: status === "check_failed" ? "not-allowed" : "pointer",
-              }}
-              disabled={status === "check_failed"}
-            >
-              Kontrollera svar
-            </button>
-          )}
+          ))}
         </div>
-      </div>
+
+        {/* STARTPOOL */}
+        <div style={styles.poolArea}>
+          <DroppableBox id="pool" title="Ord att sortera">
+            <div style={styles.poolGrid}>
+              {containers.pool.map((w) => (
+                <DraggableCard
+                  key={w}
+                  id={w}
+                  text={w}
+                  validationStatus={validation[w]}
+                  isDisabled={status === "success" || status === "time_out"}
+                />
+              ))}
+            </div>
+          </DroppableBox>
+        </div>
+
+        {/* --- DRY FEEDBACK --- */}
+        {status === "success" && (
+          <FeedbackSuccess
+            title="Snyggt sorterat!"
+            timeTaken={getTimeTaken()}
+            totalTime={sessionStorage.getItem("totalGameTime")}
+            onNext={() => navigate("/gymnasium/game6")}
+            nextText="Gå vidare till Bilda Ordet (Game 6)"
+          />
+        )}
+
+        {status === "check_failed" && (
+          <FeedbackError
+            title="Inte helt rätt"
+            message="Flytta de röda korten och försök igen. Klockan tickar!"
+            penalty={lastPenalty}
+            // Notera: Vi skickar inte in onRetry här, så det dyker inte upp någon knapp!
+          />
+        )}
+
+        {status === "time_out" && (
+          <FeedbackError
+            title="Tiden är ute!"
+            message="Du hann inte sortera alla kort i tid."
+            onRetry={handleRetry}
+          />
+        )}
+
+        {status !== "success" && status !== "time_out" && (
+          <button
+            onClick={checkAnswer}
+            style={{
+              ...styles.checkBtn,
+              opacity: status === "check_failed" ? 0.6 : 1,
+              cursor: status === "check_failed" ? "not-allowed" : "pointer",
+            }}
+            disabled={status === "check_failed"}
+          >
+            Kontrollera svar
+          </button>
+        )}
+      </GameContainer>
     </DndContext>
   );
 }
 
+// Styling (Betydligt kortare igen)
 const styles = {
-  container: {
-    minHeight: "100vh",
-    background: "#b10000",
-    display: "flex",
-    justifyContent: "center",
-    padding: 20,
-    fontFamily: "sans-serif",
-    color: "#333",
-    alignItems: "center",
-  },
-  content: {
-    width: "100%",
-    maxWidth: "1000px",
-    background: "white",
-    padding: 30,
-    borderRadius: 10,
-    textAlign: "center",
-    position: "relative",
-  },
-  timer: {
-    position: "absolute",
-    top: 20,
-    right: 20,
-    fontSize: 24,
-    fontWeight: "bold",
-    background: "#fff6b0",
-    padding: "5px 15px",
-    borderRadius: 15,
-  },
   boxContainer: {
     display: "flex",
+    flexWrap: "wrap",
     gap: 20,
-    justifyContent: "space-between",
+    justifyContent: "center",
     marginBottom: 30,
     marginTop: 20,
   },
   box: {
-    flex: 1,
+    flex: "1 1 30%",
+    minWidth: "200px",
     minHeight: "200px",
     borderRadius: 8,
     padding: 15,
@@ -426,69 +327,25 @@ const styles = {
   },
   card: {
     padding: "10px 15px",
-    background: "white",
-    border: "1px solid #999",
+    border: "2px solid #999",
     borderRadius: 5,
     cursor: "grab",
     boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
     fontWeight: "bold",
-    touchAction: "none", // Viktigt för touch-enheter
+    touchAction: "none",
+    transition: "background-color 0.3s, border-color 0.3s, color 0.3s",
   },
   checkBtn: {
     padding: "15px 40px",
     fontSize: 18,
+    fontWeight: "bold",
     background: "#333",
     color: "white",
     border: "none",
     borderRadius: 8,
     cursor: "pointer",
     marginTop: 20,
-  },
-  btnNext: {
-    marginTop: 10,
-    padding: "12px 24px",
-    background: "#2ea44f",
-    color: "white",
-    border: "none",
-    borderRadius: 8,
-    fontSize: 18,
-    fontWeight: "bold",
-    cursor: "pointer",
-  },
-  btnSuccess: {
-    padding: "15px 40px",
-    fontSize: 18,
-    background: "#2ea44f",
-    color: "white",
-    border: "none",
-    borderRadius: 8,
-    cursor: "pointer",
-    marginTop: 20,
-  },
-  btnRetry: {
-    padding: "15px 40px",
-    fontSize: 18,
-    fontWeight: "bold",
-    background: "#c62828",
-    color: "white",
-    border: "none",
-    borderRadius: 8,
-    cursor: "pointer",
-    marginTop: 20,
-  },
-  feedbackBoxSuccess: {
-    background: "#e6fffa",
-    padding: 20,
-    borderRadius: 10,
-    marginTop: 20,
-    border: "2px solid #2ea44f",
-  },
-  feedbackBoxError: {
-    background: "#ffe6e6",
-    padding: 20,
-    borderRadius: 10,
-    marginTop: 20,
-    border: "2px solid #c62828",
-    color: "#c62828",
+    width: "100%",
+    maxWidth: "400px",
   },
 };

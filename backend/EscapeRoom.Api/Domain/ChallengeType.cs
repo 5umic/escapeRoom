@@ -10,4 +10,5 @@ public enum ChallengeType
     PixelHunt = 5,
     Sorting = 6,
     WordAssembly = 7,
+    Hangman = 8,
 }

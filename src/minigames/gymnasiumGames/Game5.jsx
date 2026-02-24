@@ -80,19 +80,21 @@ export default function Game5() {
   // State
   const [gameID, setGameID] = useState(null);
   const [challenge, setChallenge] = useState(null);
-  const [status, setStatus] = useState("loading");
 
-  // DYNAMISKA KATEGORIER! (Hämtas från JSON)
-  const [categories, setCategories] = useState([]);
-
+  // Status och Straff
+  const [status, setStatus] = useState("loading"); // loading, playing, success, check_failed, time_out
+  const [lastPenalty, setLastPenalty] = useState(0);
   const [validation, setValidation] = useState({});
+
+  // DYNAMISKA KATEGORIER!
+  const [categories, setCategories] = useState([]);
 
   // Timer
   const [secondsLeft, setSecondsLeft] = useState(60);
   const [totalTimeLimit, setTotalTimeLimit] = useState(60);
   const [timeTaken, setTimeTaken] = useState(0);
 
-  // Sorting State - Börjar med bara en pool
+  // Sorting State
   const [containers, setContainers] = useState({ pool: [] });
 
   // 1. Hämta Game ID
@@ -114,6 +116,7 @@ export default function Game5() {
     if (!gameID) return;
     setStatus("loading");
     setValidation({});
+    setLastPenalty(0);
 
     try {
       const res = await fetch(
@@ -126,25 +129,19 @@ export default function Game5() {
       setTotalTimeLimit(limit);
       setSecondsLeft(limit);
 
-      // --- DYNAMISK LOGIK START ---
       const correctMapping = JSON.parse(data.answer);
-      // Extrahera kategorierna från facit (t.ex. ["IKT", "Trafik", "Miljö"])
       const dynamicCategories = Object.keys(correctMapping);
       setCategories(dynamicCategories);
 
-      // Skapa start-statet dynamiskt
       const initialContainers = {
         pool: shuffleArray(data.options),
       };
 
-      // Skapa en tom array för varje kategori vi hittade
       dynamicCategories.forEach((cat) => {
         initialContainers[cat] = [];
       });
 
       setContainers(initialContainers);
-      // --- DYNAMISK LOGIK SLUT ---
-
       setStatus("playing");
     } catch (err) {
       console.error("Fel vid hämtning av fråga:", err);
@@ -155,27 +152,26 @@ export default function Game5() {
     if (gameID) fetchChallenge();
   }, [gameID]);
 
-  // Timer (Uppdaterad med strafftid)
+  // 3. Timer (Uppdaterad för att inte pausa på check_failed)
   useEffect(() => {
+    // Klockan stannar BARA när man vinner eller när tiden går ut.
+    // Vid check_failed tickar den vidare!
     if (status === "success" || status === "time_out") return;
 
     if (secondsLeft <= 0) {
-      // Lägg till hela omgångens tid till totaltiden
       const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
       sessionStorage.setItem("totalGameTime", currentTotal + totalTimeLimit);
-
       setStatus("time_out");
       return;
     }
-
     const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [secondsLeft, status, totalTimeLimit]);
 
+  // Nollställ färgerna och status om man börjar dra i ett kort
   const handleDragStart = () => {
-    if (Object.keys(validation).length > 0) {
-      setValidation({});
-    }
+    if (Object.keys(validation).length > 0) setValidation({});
+    if (status === "check_failed") setStatus("playing"); // Låser upp knappen igen
   };
 
   // 4. Hantera Drag & Drop Slut
@@ -204,11 +200,12 @@ export default function Game5() {
 
   // 5. Rätta Svar DYNAMISKT
   const checkAnswer = () => {
+    if (status === "check_failed") return; // Förhindra dubbelklick
+
     const correctMapping = JSON.parse(challenge.answer);
     let allCorrect = true;
     const newValidation = {};
 
-    // Loopa över vår dynamiska state-array istället för hårdkodad lista
     categories.forEach((category) => {
       const userWords = containers[category] || [];
       const correctWords = correctMapping[category] || [];
@@ -229,26 +226,31 @@ export default function Game5() {
 
     setValidation(newValidation);
 
+    const spent = totalTimeLimit - secondsLeft;
+    const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+
     if (allCorrect) {
-      const spent = totalTimeLimit - secondsLeft;
+      // ALLA RÄTT
       setTimeTaken(spent);
-      const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
       sessionStorage.setItem("totalGameTime", currentTotal + spent);
       setStatus("success");
+    } else {
+      // STRAFF (Ingen alert, visa i UI)
+      sessionStorage.setItem("totalGameTime", currentTotal + spent);
+      setLastPenalty(spent);
+      setStatus("check_failed");
     }
   };
 
-  // 6. Börja om vid Time Out DYNAMISKT
+  // 6. Börja om vid Time Out
   const handleRetry = () => {
     setSecondsLeft(totalTimeLimit);
     setStatus("playing");
     setValidation({});
+    setLastPenalty(0);
 
-    // Samla ihop alla ord från ALLA containrar med en cool JS-funktion (.flat())
-    // Det spelar ingen roll om det finns 3 eller 10 boxar, den hittar alla!
     const allWords = Object.values(containers).flat();
 
-    // Bygg det tomma statet igen
     const resetContainers = {
       pool: shuffleArray(allWords),
     };
@@ -282,7 +284,7 @@ export default function Game5() {
                     id={w}
                     text={w}
                     validationStatus={validation[w]}
-                    isDisabled={status !== "playing"}
+                    isDisabled={status === "success" || status === "time_out"} // Tillåter drag under check_failed!
                   />
                 ))}
               </DroppableBox>
@@ -291,7 +293,7 @@ export default function Game5() {
 
           {/* STARTPOOL */}
           <div style={styles.poolArea}>
-            <DroppableBox id="pool" title="Möjliga ord att sortera">
+            <DroppableBox id="pool" title="Ord att sortera">
               <div style={styles.poolGrid}>
                 {containers.pool.map((w) => (
                   <DraggableCard
@@ -299,7 +301,7 @@ export default function Game5() {
                     id={w}
                     text={w}
                     validationStatus={validation[w]}
-                    isDisabled={status !== "playing"}
+                    isDisabled={status === "success" || status === "time_out"}
                   />
                 ))}
               </div>
@@ -311,26 +313,28 @@ export default function Game5() {
             <div style={styles.feedbackBoxSuccess}>
               <h3>Snyggt sorterat! ✅</h3>
               <p>
-                ⏱️ Tid för denna fråga: <strong>{timeTaken} sekunder</strong>
-              </p>
-              <p>
-                📊 Total tid hittills:{" "}
-                <strong>
-                  {sessionStorage.getItem("totalGameTime")} sekunder
-                </strong>
+                Tid för detta spel: {timeTaken}s. Total tid hittills:{" "}
+                {sessionStorage.getItem("totalGameTime")}s
               </p>
               <button
                 onClick={() => navigate("/gymnasium/game6")}
-                style={styles.btnNext}
-              >
-                Gå vidare till Sortera Ord (Game 6)
-              </button>
-              {/* <button
-                onClick={() => navigate("/gymnasium")}
                 style={styles.btnSuccess}
               >
-                Till Menyn (Klart!)
-              </button> */}
+                Gå vidare till Bilda Ordet (Game 6)
+              </button>
+            </div>
+          )}
+
+          {status === "check_failed" && (
+            <div style={styles.feedbackBoxError}>
+              <h3>Inte helt rätt ❌</h3>
+              <p>
+                Du fick precis <strong>{lastPenalty} sekunder</strong> adderat
+                som straff!
+              </p>
+              <p style={{ fontSize: "15px", marginTop: "10px" }}>
+                Flytta de röda korten och försök igen. Klockan tickar!
+              </p>
             </div>
           )}
 
@@ -344,8 +348,16 @@ export default function Game5() {
             </div>
           )}
 
-          {status === "playing" && (
-            <button onClick={checkAnswer} style={styles.checkBtn}>
+          {status !== "success" && status !== "time_out" && (
+            <button
+              onClick={checkAnswer}
+              style={{
+                ...styles.checkBtn,
+                opacity: status === "check_failed" ? 0.6 : 1,
+                cursor: status === "check_failed" ? "not-allowed" : "pointer",
+              }}
+              disabled={status === "check_failed"}
+            >
               Kontrollera svar
             </button>
           )}

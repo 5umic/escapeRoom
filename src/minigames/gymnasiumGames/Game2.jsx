@@ -7,6 +7,7 @@ export default function Game2() {
   const navigate = useNavigate();
   const selectIdBase = useId();
 
+  // SÄKERHET: Förhindra dubbelklick
   const submissionLocked = useRef(false);
 
   // Data State
@@ -14,24 +15,18 @@ export default function Game2() {
   const [gameID, setGameID] = useState(null);
 
   // Gameplay State
-  const [userAnswers, setUserAnswers] = useState({}); // { challengeId: "Skola" }
-  const [validationResults, setValidationResults] = useState({}); // { challengeId: true/false }
+  const [userAnswers, setUserAnswers] = useState({});
+  const [validationResults, setValidationResults] = useState({});
+  const [status, setStatus] = useState("loading"); // loading, playing, success, check_failed, time_out
+  const [lastPenalty, setLastPenalty] = useState(0); // Sparar senaste straffet i sekunder
 
-  // Status: 'loading', 'playing', 'success', 'check_failed', 'time_out'
-  const [status, setStatus] = useState("loading");
-
-  // Timer State
+  // Timer
   const [secondsLeft, setSecondsLeft] = useState(60);
   const [totalTimeLimit, setTotalTimeLimit] = useState(60);
   const [timeTaken, setTimeTaken] = useState(0);
 
   // 1. Hämta Game ID
   useEffect(() => {
-    console.log(
-      "GAME 2 START - Total tid i minnet:",
-      sessionStorage.getItem("totalGameTime"),
-    );
-
     (async () => {
       try {
         const res = await fetch(`${API_BASE}/api/modes/gymnasium/games`);
@@ -44,143 +39,127 @@ export default function Game2() {
     })();
   }, []);
 
-  // 2. Hämta alla 3 frågor
+  // 2. Hämta alla unika frågor
   useEffect(() => {
     if (!gameID) return;
 
     (async () => {
       let fetched = [];
       let attempts = 0;
-
-      // Vi loopar tills vi har 3 st ELLER tills vi försökt 50 gånger (skydd mot evig loop)
+      // Hämta tills vi har 3 unika eller har försökt 50 gånger
       while (fetched.length < 3 && attempts < 50) {
         attempts++;
         try {
           const res = await fetch(
             `${API_BASE}/api/games/${gameID}/challenges/random`,
           );
-          if (!res.ok) continue; // Om anropet misslyckas, försök igen
-
+          if (!res.ok) continue;
           const data = await res.json();
-
-          // Lägg bara till om den är UNIK (inte redan finns i listan)
-          const alreadyExists = fetched.find((c) => c.id === data.id);
-          if (!alreadyExists) {
+          if (!fetched.find((c) => c.id === data.id)) {
             fetched.push(data);
           }
-        } catch (err) {
-          console.error("Fel vid hämtning:", err);
-        }
-      }
-
-      // Om vi mot förmodan bara fick 2, logga en varning
-      if (fetched.length < 3) {
-        console.warn(
-          `Varning: Hittade bara ${fetched.length} unika frågor efter ${attempts} försök.`,
-        );
+        } catch (err) {}
       }
 
       setChallenges(fetched);
-
-      const totalTime = 30;
+      const totalTime = 60;
       setTotalTimeLimit(totalTime);
       setSecondsLeft(totalTime);
       setStatus("playing");
     })();
   }, [gameID]);
 
-  // Timer (Uppdaterad med strafftid)
+  // 3. Timer
   useEffect(() => {
+    // VIKTIGT: Klockan stannar BARA vid success eller time_out.
+    // Vid check_failed (fel svar) fortsätter klockan ticka!
     if (status === "success" || status === "time_out") return;
 
     if (secondsLeft <= 0) {
-      // Lägg till hela omgångens tid till totaltiden
       const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
       sessionStorage.setItem("totalGameTime", currentTotal + totalTimeLimit);
-
       setStatus("time_out");
       return;
     }
 
-    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
   }, [secondsLeft, status, totalTimeLimit]);
 
-  // Hantera val i dropdown
+  // --- DENNA FUNKTION SAKNADES ---
+  // Hanterar när spelaren väljer något i dropdown-menyn
   const handleSelectChange = (challengeId, selectedValue) => {
-    // Om vi redan har "rättat" och det var fel, nollställ status till "playing"
-    // så den röda rutan försvinner medan man ändrar.
-    if (status === "check_failed") setStatus("playing");
+    // Om vi var i ett fel-läge, låser vi upp knappen så de kan rätta igen
+    if (status === "check_failed") {
+      submissionLocked.current = false;
+    }
 
-    setUserAnswers((prev) => ({
-      ...prev,
-      [challengeId]: selectedValue,
-    }));
+    setUserAnswers((prev) => ({ ...prev, [challengeId]: selectedValue }));
   };
+  // ---------------------------------
 
-  // Rätta Svar
+  // --- RÄTTA SVAR ---
   const checkAnswers = () => {
-    if (submissionLocked.current) return; // SÄKERHETSKONTROLL 2: Förhindra dubbelklick
+    if (submissionLocked.current) return; // Förhindra dubbelklick
 
     const newValidation = {};
     let allCorrect = true;
 
     challenges.forEach((c) => {
-      // Hitta rätt svarstext (backend skickar index)
       const correctAnswerText = c.options[c.correctOptionIndex];
       const userAnswer = userAnswers[c.id];
-
       const isCorrect = userAnswer === correctAnswerText;
-      newValidation[c.id] = isCorrect;
 
+      newValidation[c.id] = isCorrect;
       if (!isCorrect) allCorrect = false;
     });
 
     setValidationResults(newValidation);
 
     if (allCorrect) {
-      submissionLocked.current = true; // Lås för att förhindra snabb omtryckning
-      // --- ALLA RÄTT ---
+      submissionLocked.current = true; // Lås knappen
+
       const spent = totalTimeLimit - secondsLeft;
       setTimeTaken(spent);
 
-      // Uppdatera totaltid
       const previousTotal =
         Number(sessionStorage.getItem("totalGameTime")) || 0;
       const newTotal = previousTotal + spent;
-
-      console.log(`GAME 2 KLAR!`);
-      console.log(`Tid spenderad: ${spent}s`);
-      console.log(`Gammal total: ${previousTotal}s`);
-      console.log(`Ny total som sparas: ${newTotal}s`);
-      // --------------------
-
       sessionStorage.setItem("totalGameTime", newTotal);
+
       setStatus("success");
     } else {
-      // --- NÅGOT FEL ---
+      // STRAFF! (Ingen alert, vi använder UI istället)
+      submissionLocked.current = true; // Lås tills de ändrar ett val
+
+      const spent = totalTimeLimit - secondsLeft;
+      const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+
+      // Lägg till straffsekunderna i sessionen
+      sessionStorage.setItem("totalGameTime", currentTotal + spent);
+
+      // Spara hur mycket straff de fick så vi kan visa det
+      setLastPenalty(spent);
       setStatus("check_failed");
     }
   };
 
-  // Starta om vid Tiden slut
   const handleRetry = () => {
     setSecondsLeft(totalTimeLimit);
     setUserAnswers({});
     setValidationResults({});
     setStatus("playing");
-    submissionLocked.current = false; // Lås upp vid retry
+    setLastPenalty(0);
+    submissionLocked.current = false;
   };
 
   // --- RENDER ---
-
   if (status === "loading")
-    return <div style={styles.container}>Laddar matchningsspel...</div>;
+    return <div style={styles.container}>Laddar...</div>;
 
   return (
     <div style={styles.container}>
       <div style={styles.content}>
-        {/* Timer */}
         <div style={styles.timer}>{secondsLeft}s</div>
 
         <h2>Risk & Säkerhet</h2>
@@ -196,22 +175,20 @@ export default function Game2() {
         >
           {challenges.map((c, index) => {
             const selectId = `${selectIdBase}-${index}`;
-
-            // Bestäm stil baserat på validering
             let blockStyle = { ...styles.questionBlock };
+
             const isValidated = validationResults.hasOwnProperty(c.id);
             const isCorrect = validationResults[c.id];
 
+            // Färgmarkering på boxarna efter man har tryckt rätta
             if (isValidated) {
-              if (isCorrect) {
-                blockStyle.borderLeft = "8px solid #2ea44f"; // Grön kant
-                blockStyle.backgroundColor = "rgb(0, 95, 55)"; // Ljusgrön bakgrund
-                blockStyle.color = "white";
-              } else {
-                blockStyle.borderLeft = "8px solid #c62828"; // Röd kant
-                blockStyle.backgroundColor = "rgb(95, 0, 0)"; // Ljusröd bakgrund
-                blockStyle.color = "white";
-              }
+              blockStyle.borderLeft = isCorrect
+                ? "8px solid #2ea44f"
+                : "8px solid #ed2828";
+              blockStyle.backgroundColor = isCorrect
+                ? "rgb(44, 100, 60)"
+                : "rgb(111, 37, 37)";
+              blockStyle.color = isCorrect ? "white" : "white";
             }
 
             return (
@@ -219,7 +196,6 @@ export default function Game2() {
                 <label htmlFor={selectId} style={styles.labelPrompt}>
                   {c.prompt}
                 </label>
-
                 <select
                   id={selectId}
                   style={styles.select}
@@ -236,40 +212,13 @@ export default function Game2() {
                     </option>
                   ))}
                 </select>
-
-                {/* --- HÄR KOMMER FRAMTIDA HINTS/FÖRKLARINGAR --- */}
-                {isValidated && !isCorrect && (
-                  <p
-                    style={{
-                      color: "#c62828",
-                      fontSize: "14px",
-                      marginTop: "5px",
-                    }}
-                  >
-                    ❌ Inte riktigt rätt. {/* Placeholder för DB-hint */}
-                  </p>
-                )}
-                {isValidated && isCorrect && status === "success" && (
-                  <p
-                    style={{
-                      color: "#2ea44f",
-                      fontSize: "14px",
-                      marginTop: "5px",
-                    }}
-                  >
-                    ✅ Stämmer bra! {/* Placeholder för DB-explanations */}
-                  </p>
-                )}
               </div>
             );
           })}
 
-          {/* --- FEEDBACK SEKTION --- */}
-
-          {/* SCENARIO: ALLA RÄTT */}
           {status === "success" && (
             <div style={styles.feedbackBoxSuccess}>
-              <h3>Bra jobbat! Alla matchningar är rätt. ✅</h3>
+              <h3>Bra jobbat! ✅</h3>
               <div style={styles.timeInfoBox}>
                 <p>
                   ⏱️ Tid för detta spel: <strong>{timeTaken} sekunder</strong>
@@ -281,28 +230,28 @@ export default function Game2() {
                   </strong>
                 </p>
               </div>
-
-              {/* Nästa spel skulle vara Game 3, just nu skickar vi till menyn */}
               <button
                 onClick={() => navigate("/gymnasium/game3")}
                 style={styles.btnSuccess}
               >
-                Nästa Spel (Sant eller Falskt)
+                Nästa Spel (Game 3)
               </button>
             </div>
           )}
 
-          {/* SCENARIO: NÅGOT FEL */}
           {status === "check_failed" && (
             <div style={styles.feedbackBoxError}>
-              <h3>Något stämmer inte ❌</h3>
+              <h3>Inte helt rätt ❌</h3>
               <p>
-                Kolla de rödmarkerade rutorna och försök igen. Tiden tickar!
+                Du fick precis <strong>{lastPenalty} sekunder</strong> adderat
+                som straff!
+              </p>
+              <p style={{ fontSize: "15px", marginTop: "10px" }}>
+                Ändra de röda fälten och försök igen. Klockan tickar!
               </p>
             </div>
           )}
 
-          {/* SCENARIO: TIDEN UTE */}
           {status === "time_out" && (
             <div style={styles.feedbackBoxError}>
               <h3>Tiden är ute! ⏱️</h3>
@@ -312,9 +261,12 @@ export default function Game2() {
             </div>
           )}
 
-          {/* RÄTTA-KNAPP (Visa bara om inte klar eller tiden slut) */}
           {status !== "success" && status !== "time_out" && (
-            <button type="submit" style={styles.submitBtn}>
+            <button
+              type="submit"
+              style={styles.submitBtn}
+              disabled={submissionLocked.current && status === "check_failed"} // Stäng av knappen tills de ändrar ett val
+            >
               Rätta svar
             </button>
           )}
@@ -335,15 +287,11 @@ const styles = {
     fontFamily: "sans-serif",
     padding: 20,
   },
-  content: {
-    maxWidth: "800px",
-    width: "100%",
-    position: "relative",
-  },
+  content: { maxWidth: "800px", width: "100%", position: "relative" },
   timer: {
     position: "absolute",
     top: -60,
-    right: 0, // Sätter timer till höger här för variation, eller left om du vill
+    right: 0,
     background: "#fff6b0",
     color: "#000",
     padding: "10px 20px",
@@ -352,12 +300,12 @@ const styles = {
     fontSize: 24,
   },
   questionBlock: {
-    background: "rgba(255, 255, 255, 0.95)", // Lite mer solid vit för läsbarhet
+    background: "rgba(255, 255, 255, 0.95)",
     color: "#333",
     padding: 20,
     borderRadius: 8,
     marginBottom: 20,
-    borderLeft: "8px solid #ccc", // Grå default kant
+    borderLeft: "8px solid #ccc",
     transition: "all 0.3s ease",
   },
   labelPrompt: {
@@ -381,7 +329,7 @@ const styles = {
     padding: "15px 40px",
     fontSize: "20px",
     fontWeight: "bold",
-    background: "#fff6b0", // Gul
+    background: "#fff6b0",
     color: "#000",
     border: "none",
     borderRadius: "8px",
@@ -389,7 +337,6 @@ const styles = {
     display: "block",
     width: "100%",
   },
-  // Feedback Styles
   feedbackBoxSuccess: {
     backgroundColor: "#e6fffa",
     color: "#207a38",

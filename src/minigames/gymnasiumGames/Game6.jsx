@@ -54,22 +54,21 @@ export default function Game6() {
 
   // Data State
   const [gameID, setGameID] = useState(null);
-
-  // STATS FÖR FLERA OMGÅNGAR
   const [challenges, setChallenges] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const challenge = challenges[currentIndex];
-  const [status, setStatus] = useState("loading");
+
+  // Gameplay State
+  const [status, setStatus] = useState("loading"); // loading, playing, success, check_failed, time_out
+  const [lastPenalty, setLastPenalty] = useState(0);
+  const [validation, setValidation] = useState({});
+  const [items, setItems] = useState([]);
 
   // Timer & Poäng
   const [secondsLeft, setSecondsLeft] = useState(60);
   const [totalTimeLimit, setTotalTimeLimit] = useState(60);
   const [timeTaken, setTimeTaken] = useState(0);
-
-  // Orden (deras nuvarande ordning) och Validering
-  const [items, setItems] = useState([]);
-  const [validation, setValidation] = useState({});
 
   // 1. Hämta Game ID
   useEffect(() => {
@@ -94,7 +93,6 @@ export default function Game6() {
       let uniqueChallenges = [];
       let duplicateCount = 0;
 
-      // Hämta tills vi får 5 dubbletter i rad, då vet vi att vi har alla
       while (duplicateCount < 5 && uniqueChallenges.length < 20) {
         try {
           const res = await fetch(
@@ -128,36 +126,36 @@ export default function Game6() {
     if (!currentChall) return;
     setStatus("loading");
     setValidation({});
+    setLastPenalty(0);
 
     const limit = currentChall.timeLimitSeconds || 30;
     setTotalTimeLimit(limit);
     setSecondsLeft(limit);
 
-    // Slumpa orden så de inte ligger i rätt ordning från början
     setItems(shuffleArray(currentChall.options));
     setStatus("playing");
   };
 
-  // Timer (Uppdaterad med strafftid)
+  // 3. Timer
   useEffect(() => {
+    // VIKTIGT: Klockan stannar BARA när man får alla rätt eller tiden är ute.
+    // Får man fel (check_failed) så tickar klockan vidare!
     if (status === "success" || status === "time_out") return;
 
     if (secondsLeft <= 0) {
-      // Lägg till hela omgångens tid till totaltiden
       const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
       sessionStorage.setItem("totalGameTime", currentTotal + totalTimeLimit);
-
       setStatus("time_out");
       return;
     }
-
     const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [secondsLeft, status, totalTimeLimit]);
 
-  // Nollställ färgerna om spelaren börjar dra i ord igen
+  // Nollställ färgerna och lås upp knappen om spelaren börjar dra i ord igen
   const handleDragStart = () => {
     if (Object.keys(validation).length > 0) setValidation({});
+    if (status === "check_failed") setStatus("playing");
   };
 
   // 4. Hantera Drag & Drop (Byt plats på ord)
@@ -175,6 +173,8 @@ export default function Game6() {
 
   // 5. Rätta Svar
   const checkAnswer = () => {
+    if (status === "check_failed") return; // Förhindra dubbelklick/spam
+
     const correctOrder = JSON.parse(challenge.answer);
     let allCorrect = true;
     const newValidation = {};
@@ -190,22 +190,29 @@ export default function Game6() {
 
     setValidation(newValidation);
 
+    const spent = totalTimeLimit - secondsLeft;
+    const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+
     if (allCorrect) {
-      const spent = totalTimeLimit - secondsLeft;
+      // ALLA RÄTT
       setTimeTaken(spent);
-      const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
       sessionStorage.setItem("totalGameTime", currentTotal + spent);
       setStatus("success");
+    } else {
+      // STRAFF! Ingen alert, visa i UI och fortsätt
+      sessionStorage.setItem("totalGameTime", currentTotal + spent);
+      setLastPenalty(spent);
+      setStatus("check_failed");
     }
   };
 
-  // 6. Gå till nästa ord eller börja om
+  // 6. Gå till nästa ord
   const handleNext = () => {
     if (currentIndex < challenges.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       loadRound(challenges[currentIndex + 1]);
     } else {
-      navigate("/gymnasium"); // Gå till menyn eller ett "Grattis"-slut när alla 6 spel är klara!
+      navigate("/gymnasium/game7"); // Gå vidare till Hänga Gubbe (Sista spelet!)
     }
   };
 
@@ -248,7 +255,7 @@ export default function Game6() {
                   id={word}
                   text={word}
                   validationStatus={validation[word]}
-                  isDisabled={status !== "playing"}
+                  isDisabled={status === "success" || status === "time_out"} // Tillåter drag under check_failed!
                 />
               ))}
             </SortableContext>
@@ -260,17 +267,27 @@ export default function Game6() {
           <div style={styles.feedbackBoxSuccess}>
             <h3>Snyggt pusslat! ✅</h3>
             <p>
-              ⏱️ Tid för denna fråga: <strong>{timeTaken} sekunder</strong>
-            </p>
-            <p>
-              📊 Total tid hittills:{" "}
-              <strong>
-                {sessionStorage.getItem("totalGameTime")} sekunder
-              </strong>
+              Tid för detta spel: {timeTaken}s. Total tid hittills:{" "}
+              {sessionStorage.getItem("totalGameTime")}s
             </p>
             <button onClick={handleNext} style={styles.btnNext}>
-              {isLastQuestion ? "Slutför och gå till Meny" : "Nästa Ord"}
+              {isLastQuestion
+                ? "Gå vidare till Hänga Gubbe (Game 7)"
+                : "Nästa Ord"}
             </button>
+          </div>
+        )}
+
+        {status === "check_failed" && (
+          <div style={styles.feedbackBoxError}>
+            <h3>Inte helt rätt ❌</h3>
+            <p>
+              Du fick precis <strong>{lastPenalty} sekunder</strong> adderat som
+              straff!
+            </p>
+            <p style={{ fontSize: "15px", marginTop: "10px" }}>
+              Byt plats på de röda orden och försök igen. Klockan tickar!
+            </p>
           </div>
         )}
 
@@ -283,8 +300,16 @@ export default function Game6() {
           </div>
         )}
 
-        {status === "playing" && (
-          <button onClick={checkAnswer} style={styles.checkBtn}>
+        {status !== "success" && status !== "time_out" && (
+          <button
+            onClick={checkAnswer}
+            style={{
+              ...styles.checkBtn,
+              opacity: status === "check_failed" ? 0.6 : 1,
+              cursor: status === "check_failed" ? "not-allowed" : "pointer",
+            }}
+            disabled={status === "check_failed"}
+          >
             Kontrollera
           </button>
         )}
@@ -315,7 +340,6 @@ const styles = {
     boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
   },
 
-  // Timer & Runda
   roundInfo: {
     position: "absolute",
     top: -50,
@@ -407,5 +431,6 @@ const styles = {
     marginTop: 20,
     border: "2px solid #c62828",
     color: "#c62828",
+    fontWeight: "bold",
   },
 };

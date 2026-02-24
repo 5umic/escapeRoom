@@ -81,7 +81,12 @@ export default function Game3() {
 
   // Timer (Uppdaterad med strafftid)
   useEffect(() => {
-    if (status === "answered_correctly" || status === "time_out") return;
+    if (
+      status === "answered_correctly" ||
+      status === "answered_wrong" ||
+      status === "time_out"
+    )
+      return;
 
     if (secondsLeft <= 0) {
       // Lägg till hela omgångens tid till totaltiden
@@ -97,8 +102,8 @@ export default function Game3() {
   }, [secondsLeft, status, totalTimeLimit]);
 
   // 4. Hantera svar
+  // 4. Hantera svar
   const onAnswer = (optionText, optionIndex) => {
-    // SÄKERHETSKONTROLL 1: Är spelet redan klart eller låst?
     if (
       status === "answered_correctly" ||
       status === "time_out" ||
@@ -106,49 +111,25 @@ export default function Game3() {
     )
       return;
 
-    // Lås knapparna direkt
     answerLocked.current = true;
     setSelectedOption(optionText);
 
+    const spent = totalTimeLimit - secondsLeft;
+    const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+
     if (optionIndex === challenge.correctOptionIndex) {
-      // --- RÄTT SVAR ---
-
-      // SÄKERHETSKONTROLL 2 (Den viktiga fixen):
-      // Har vi redan räknat tid för just DENNA fråga (challenge.id)?
-      if (processedIds.current.has(challenge.id)) {
-        console.warn(
-          "Försökte lägga till tid för samma fråga två gånger - stoppades.",
-        );
+      if (processedIds.current && processedIds.current.has(challenge.id))
         return;
-      }
+      if (processedIds.current) processedIds.current.add(challenge.id);
 
-      // Markera denna fråga som "betald"
-      processedIds.current.add(challenge.id);
-
-      const spent = totalTimeLimit - secondsLeft;
       setTimeTaken(spent);
-
-      // Uppdatera totaltid säkert
-      const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
-      const newTotal = currentTotal + spent;
-
-      console.log(`GAME 3 - Fråga Rätt!`);
-      console.log(`Tid för fråga: ${spent}s`);
-      console.log(`Gammal total: ${currentTotal}s`);
-      console.log(`Ny total: ${newTotal}s`);
-
-      sessionStorage.setItem("totalGameTime", newTotal);
-
-      // Logga för att bekräfta att det bara händer en gång
-      console.log(`✅ RÄTT! Tid: ${spent}s. Ny total: ${newTotal}s`);
-
+      sessionStorage.setItem("totalGameTime", currentTotal + spent);
       setStatus("answered_correctly");
     } else {
-      // --- FEL SVAR ---
+      // FEL SVAR (STRAFF!)
+      sessionStorage.setItem("totalGameTime", currentTotal + spent);
       setStatus("answered_wrong");
-
-      // Vid fel låser vi upp igen så man kan försöka på nytt
-      answerLocked.current = false;
+      // OBS: Vi låser INTE upp answerLocked.current här, det görs via knappen nedan!
     }
   };
 
@@ -248,14 +229,19 @@ export default function Game3() {
         {status === "answered_wrong" && (
           <div style={styles.feedbackBoxError}>
             <h3>Fel svar ❌</h3>
-            <p>Det stämmer inte. Försök igen!</p>
-          </div>
-        )}
-
-        {status === "time_out" && (
-          <div style={styles.feedbackBoxError}>
-            <h3>Tiden är ute! ⏱️</h3>
-            <button onClick={handleRetry} style={styles.btnRetry}>
+            <p>
+              Du fick <strong>{totalTimeLimit - secondsLeft} sekunder</strong> i
+              straff!
+            </p>
+            <button
+              onClick={() => {
+                setSecondsLeft(totalTimeLimit);
+                setStatus("playing");
+                setSelectedOption(null);
+                answerLocked.current = false; // Lås upp
+              }}
+              style={styles.btnRetry}
+            >
               Försök igen
             </button>
           </div>

@@ -154,7 +154,12 @@ export default function Game4() {
 
   // 4. Timer (Uppdaterad med maxtid + straffsekunder)
   useEffect(() => {
-    if (status === "answered_correctly" || status === "time_out") return;
+    if (
+      status === "answered_correctly" ||
+      status === "answered_wrong" ||
+      status === "time_out"
+    )
+      return;
 
     if (secondsLeft <= 0) {
       // Lägg till hela omgångens tid PLUS alla straffsekunder man samlat på sig

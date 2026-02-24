@@ -10,6 +10,7 @@ import Game3 from "./minigames/gymnasiumGames/Game3.jsx"; // När du skapat denn
 import Game4 from "./minigames/gymnasiumGames/Game4.jsx";
 import Game5 from "./minigames/gymnasiumGames/Game5.jsx"; // När du skapat denna
 import Game6 from "./minigames/gymnasiumGames/Game6.jsx"; // När du skapat denna
+import Game7 from "./minigames/gymnasiumGames/Game7.jsx"; // När du skapat denna
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
       <Route path="/gymnasium/Game4" element={<Game4 />} />
       <Route path="/gymnasium/Game5" element={<Game5 />} />
       <Route path="/gymnasium/Game6" element={<Game6 />} />
+      <Route path="/gymnasium/Game7" element={<Game7 />} />
 
       {/* 3. Högskola-flödet (återanvänder samma komponent!) */}
       <Route

@@ -28,6 +28,7 @@ public static class DbSeeder
         var game4 = await db.Games.FirstOrDefaultAsync(g => g.Title == "Pixeljakten (Game 4)") ?? new Game { Mode = gymnasium, Title = "Pixeljakten (Game 4)", MaxDurationSeconds = 600 };
         var game5 = await db.Games.FirstOrDefaultAsync(g => g.Title == "Sortera Rätt (Game 5)") ?? new Game { Mode = gymnasium, Title = "Sortera Rätt (Game 5)", MaxDurationSeconds = 600 };
         var game6 = await db.Games.FirstOrDefaultAsync(g => g.Title == "Bilda Ordet (Game 6)") ?? new Game { Mode = gymnasium, Title = "Bilda Ordet (Game 6)", MaxDurationSeconds = 600 };
+        var game7 = await db.Games.FirstOrDefaultAsync(g => g.Title == "Hänga Gubbe (Game 7)") ?? new Game { Mode = gymnasium, Title = "Hänga Gubbe (Game 7)", MaxDurationSeconds = 600 };
 
         if (game1.Id == Guid.Empty) db.Games.Add(game1);
         if (game2.Id == Guid.Empty) db.Games.Add(game2);
@@ -35,6 +36,7 @@ public static class DbSeeder
         if (game4.Id == Guid.Empty) db.Games.Add(game4);
         if (game5.Id == Guid.Empty) db.Games.Add(game5);
         if (game6.Id == Guid.Empty) db.Games.Add(game6);
+        if (game7.Id == Guid.Empty) db.Games.Add(game7);
 
         await db.SaveChangesAsync();
 
@@ -46,7 +48,7 @@ public static class DbSeeder
             int index = -1;
 
             // VIKTIG FIX: Hoppa över indexkoll för BÅDE Sorting (Game 5) och WordAssembly (Game 6)
-            if (type != ChallengeType.Sorting && type != ChallengeType.WordAssembly)
+            if (type != ChallengeType.Sorting && type != ChallengeType.WordAssembly && type != ChallengeType.Hangman)
             {
                 index = options.IndexOf(answer);
                 if (index == -1) throw new Exception($"Answer '{answer}' not found in options for '{prompt}'");
@@ -155,6 +157,19 @@ public static class DbSeeder
             newChallenges.Add(CreateChallenge(game6, "Dra rutorna så de bildar ett korrekt sammansatt ord.",
                 "[\"IT\", \"Säkerhets\", \"Hantering\"]", 30, 
                 new List<string> { "IT", "Säkerhets", "Hantering" }, ChallengeType.WordAssembly));
+        }
+
+        // ---------------------------------------------------
+        // GAME 7 DATA (HANGMAN)
+        // ---------------------------------------------------
+        if (!await db.Challenges.AnyAsync(c => c.GameId == game7.Id))
+        {
+            newChallenges.Add(CreateChallenge(game7, 
+                "Gissa ordet! (En svensk myndighet)", 
+                "TRAFIKVERKET", // Svaret (Viktigt med stora bokstäver)
+                120, 
+                new List<string> { "TRAFIKVERKET" }, // Behövs bara för databasstrukturen
+                ChallengeType.Hangman));
         }
 
         if (newChallenges.Count > 0)

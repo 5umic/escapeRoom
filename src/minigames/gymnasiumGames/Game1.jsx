@@ -91,11 +91,17 @@ export default function Game1() {
 
   // Timer (Uppdaterad med strafftid)
   useEffect(() => {
-    if (status === "answered_correctly" || status === "time_out") return;
+    // FIXEN: Vi lägger till || status === "answered_wrong" så att klockan fryser
+    if (
+      status === "answered_correctly" ||
+      status === "answered_wrong" ||
+      status === "time_out"
+    )
+      return;
 
     if (secondsLeft <= 0) {
-      // Lägg till hela omgångens tid till totaltiden
       const currentTotal = Number(sessionStorage.getItem("totalGameTime")) || 0;
+
       sessionStorage.setItem("totalGameTime", currentTotal + totalTimeLimit);
 
       setStatus("time_out");
@@ -104,25 +110,24 @@ export default function Game1() {
 
     const timer = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
     return () => clearTimeout(timer);
-  }, [secondsLeft, status, totalTimeLimit]);
+  }, [secondsLeft, status, totalTimeLimit]); // (I Game 4 ska penaltySeconds finnas i denna array också)
 
   // 4. Hantera svar
   const onPick = (index) => {
     if (status === "answered_correctly" || status === "time_out") return;
-
     setSelectedOptionIndex(index);
 
+    const spent = totalTimeLimit - secondsLeft; // Räkna ut tiden
+    const currentTotal = Number(sessionStorage.getItem("totalGameTime") || 0);
+
     if (index === challenge.correctOptionIndex) {
-      // --- RÄTT SVAR ---
-      const spent = totalTimeLimit - secondsLeft;
+      // RÄTT SVAR
       setTimeTaken(spent);
-
-      const currentTotal = Number(sessionStorage.getItem("totalGameTime") || 0);
       sessionStorage.setItem("totalGameTime", currentTotal + spent);
-
       setStatus("answered_correctly");
     } else {
-      // --- FEL SVAR ---
+      // FEL SVAR (STRAFF!)
+      sessionStorage.setItem("totalGameTime", currentTotal + spent);
       setStatus("answered_wrong");
     }
   };
@@ -234,7 +239,20 @@ export default function Game1() {
         {status === "answered_wrong" && (
           <div style={styles.feedbackBoxError}>
             <h3>Fel svar ❌</h3>
-            <p>Det där var inte riktigt rätt. Försök igen!</p>
+            <p>
+              Du fick <strong>{totalTimeLimit - secondsLeft} sekunder</strong> i
+              straff!
+            </p>
+            <button
+              onClick={() => {
+                setSecondsLeft(totalTimeLimit); // Nollställ klockan
+                setStatus("playing"); // Lås upp spelet
+                setSelectedOptionIndex(null); // Ta bort markeringen
+              }}
+              style={styles.btnRetry}
+            >
+              Försök igen
+            </button>
           </div>
         )}
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-// DRY-verktyg!
+// DRY-verktyg
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
@@ -34,9 +34,14 @@ export default function Game4() {
   const [penaltySeconds, setPenaltySeconds] = useState(0);
   const [totalTimeLimit, setTotalTimeLimit] = useState(30);
 
-  // Hook för timern (Nu med penaltySeconds!)
-  const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
-    useGameTimer(totalTimeLimit, status, setStatus, penaltySeconds);
+  // Hook för timern
+  const {
+    secondsLeft,
+    setSecondsLeft,
+    getTimeTaken,
+    penaltySeconds: penalty,
+    addTimeToSession,
+  } = useGameTimer(totalTimeLimit, status, setStatus, penaltySeconds);
 
   // 1. Hämta all data vid start
   useEffect(() => {
@@ -46,35 +51,44 @@ export default function Game4() {
       if (id) {
         const data = await fetchUniqueChallenges(id);
         setChallenges(data);
-        loadRound(data[0]);
       }
     };
     initGame();
   }, []);
 
-  // 2. Ladda in en runda (och bilden)
-  const loadRound = (currentChall) => {
-    if (!currentChall) return;
-    setStatus("loading");
+  // 2. FIXEN: React lyssnar nu på 'challenge' med en säkerhetsspärr!
+  useEffect(() => {
+    if (!challenge) return;
 
+    let isMounted = true; // Säkerhetsspärr
+
+    setStatus("loading");
     setPixelIndex(0);
     setPenaltySeconds(0);
     setSelectedOption(null);
 
-    const limit = currentChall.timeLimitSeconds || 30;
+    const limit = challenge.timeLimitSeconds || 30;
     setTotalTimeLimit(limit);
     setSecondsLeft(limit);
 
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = currentChall.imageUrl;
+    img.src = challenge.imageUrl;
     img.onload = () => {
-      imageRef.current = img;
-      setStatus("playing");
+      // Uppdatera BARA om vi fortfarande är kvar på samma fråga
+      if (isMounted) {
+        imageRef.current = img;
+        setStatus("playing");
+      }
     };
-  };
 
-  // 3. Rita på Canvas (Offscreen-fixen är kvar)
+    // Städar upp om spelaren klickar "Nästa" innan bilden ens hunnit ladda
+    return () => {
+      isMounted = false;
+    };
+  }, [challenge, setSecondsLeft]);
+
+  // 3. Rita på Canvas
   useEffect(() => {
     if (status !== "playing" || !canvasRef.current || !imageRef.current) return;
 
@@ -135,7 +149,7 @@ export default function Game4() {
       return;
 
     setSelectedOption(optionText);
-    const spent = getTimeTaken(); // Hooken räknar nu automatiskt in dina klick-straff!
+    const spent = getTimeTaken();
 
     if (index === challenge.correctOptionIndex) {
       setPixelIndex(PIXEL_LEVELS.length - 1); // Visa hela bilden skarp
@@ -147,18 +161,22 @@ export default function Game4() {
     }
   };
 
-  // 6. Navigering
+  // 6. Navigering - Mycket renare nu!
   const handleNext = () => {
     if (currentIndex < challenges.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      loadRound(challenges[currentIndex + 1]);
+      setCurrentIndex((prev) => prev + 1); // Ändrar bara index, useEffect fixar resten
     } else {
       navigate("/gymnasium/game5");
     }
   };
 
+  // 7. Börja om på samma bild
   const handleRetry = () => {
-    loadRound(challenge);
+    setPixelIndex(0);
+    setPenaltySeconds(0);
+    setSelectedOption(null);
+    setSecondsLeft(totalTimeLimit);
+    setStatus("playing");
   };
 
   // --- RENDER ---
@@ -173,13 +191,15 @@ export default function Game4() {
 
   return (
     <>
-      <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
+      <TimerBar
+        secondsLeft={secondsLeft}
+        totalTimeLimit={totalTimeLimit}
+      ></TimerBar>
       <GameContainer>
         <div style={styles.roundInfo}>
           Bild {currentIndex + 1} av {challenges.length}
         </div>
 
-        {/* Visa klick-straffet synligt under spelets gång */}
         {penaltySeconds > 0 && (
           <div style={styles.penaltyTracker}>+{penaltySeconds}s straff</div>
         )}
@@ -189,7 +209,7 @@ export default function Game4() {
           Klicka på bilden för att göra den tydligare (+5 sekunder per klick!)
         </p>
 
-        {/* CANVAS (Klickbar) */}
+        {/* CANVAS */}
         <div style={styles.canvasContainer} onClick={handleImageClick}>
           <canvas ref={canvasRef} style={styles.canvas} />
           {pixelIndex < PIXEL_LEVELS.length - 1 && status === "playing" && (
@@ -264,7 +284,6 @@ export default function Game4() {
   );
 }
 
-// Styling: Mycket städat igen!
 const styles = {
   roundInfo: {
     position: "absolute",
@@ -314,7 +333,7 @@ const styles = {
   prompt: { fontSize: "20px", fontWeight: "bold", marginBottom: "20px" },
   buttonGroup: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(186px, 1fr))",
+    gridTemplateColumns: "1fr 1fr 1fr",
     gap: "10px",
   },
   optionBtn: {
@@ -324,7 +343,7 @@ const styles = {
     borderRadius: "8px",
     border: "2px solid #ccc",
     cursor: "pointer",
-    background: "#f9f9f9",
+    backgroundColor: "#f9f9f9",
     color: "#333",
     transition: "0.2s",
   },

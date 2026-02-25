@@ -53,3 +53,30 @@ export const fetchSingleChallenge = async (gameId) => {
     return null;
   }
 };
+
+// 4. Spara spelarens resultat till Leaderboarden
+export const savePlayerScore = async (playerName, totalTimeSeconds) => {
+  try {
+    const response = await fetch(`${API_BASE}/api/leaderboard`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        playerName: playerName,
+        totalTimeSeconds: totalTimeSeconds,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Något gick fel vid sparandet av poäng");
+    }
+    return response.ok;
+  } catch (error) {
+    console.error(
+      "Kunde inte ansluta till servern för att spara poäng:",
+      error,
+    );
+    return false;
+  }
+};

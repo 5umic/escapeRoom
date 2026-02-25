@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Router } from "react-router-dom";
 
 // Importera dina sidor
 import SelectPage from "./pages/SelectPage.jsx";
@@ -11,6 +11,8 @@ import Game4 from "./minigames/gymnasiumGames/Game4.jsx";
 import Game5 from "./minigames/gymnasiumGames/Game5.jsx"; // När du skapat denna
 import Game6 from "./minigames/gymnasiumGames/Game6.jsx"; // När du skapat denna
 import Game7 from "./minigames/gymnasiumGames/Game7.jsx"; // När du skapat denna
+import StartScreen from "./minigames/gymnasiumGames/StartScreen.jsx";
+import Leaderboard from "./minigames/gymnasiumGames/Leaderboard.jsx";
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
           />
         }
       />
+      <Route path="/gymnasium/" element={<StartScreen />} />
+      <Route path="/gymnasium/leaderboard" element={<Leaderboard />} />
       <Route path="/gymnasium/Game1" element={<Game1 />} />
       <Route path="/gymnasium/Game2" element={<Game2 />} />
       <Route path="/gymnasium/Game3" element={<Game3 />} />

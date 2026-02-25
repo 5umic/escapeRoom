@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
+  savePlayerScore,
 } from "../gymnasiumGames/api/gameApi";
 import { useGameTimer } from "../gymnasiumGames/hooks/useGameTimer";
 import {
@@ -121,6 +122,12 @@ export default function Game7() {
       if (isWinner) {
         addTimeToSession(spent);
         setStatus("answered_correctly");
+
+        const finalTime = Number(sessionStorage.getItem("totalGameTime") || 0);
+        const playerName =
+          sessionStorage.getItem("playerName") || "Unknown Player";
+
+        savePlayerScore(playerName, finalTime);
       }
     }
   };
@@ -195,8 +202,8 @@ export default function Game7() {
             title="Grattis, du överlevde!"
             timeTaken={getTimeTaken()}
             totalTime={sessionStorage.getItem("totalGameTime")}
-            onNext={() => navigate("/gymnasium")}
-            nextText="Avsluta & Till Meny"
+            onNext={() => navigate("/gymnasium/leaderboard")}
+            nextText="Se dina resultat på Leaderboarden 🏆"
           />
         )}
 

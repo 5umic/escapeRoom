@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<Mode> Modes => Set<Mode>();
     public DbSet<Game> Games => Set<Game>();
     public DbSet<Challenge> Challenges => Set<Challenge>();
+    public DbSet<LeaderboardEntry> LeaderboardEntries { get; set; }
       protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -19,7 +19,7 @@ export default function Game3() {
   // State för spelet
   const [challenges, setChallenges] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [status, setStatus] = useState("loading"); // loading, playing, answered_correctly, answered_wrong, time_out
+  const [status, setStatus] = useState("loading");
   const [selectedOption, setSelectedOption] = useState(null);
   const [totalTimeLimit, setTotalTimeLimit] = useState(15);
 
@@ -189,7 +189,7 @@ const styles = {
     position: "absolute",
     top: -50,
     right: 0,
-    background: "rgba(255,255,255,0.2)",
+    backgroundColor: "rgba(255,255,255,0.2)",
     color: "white",
     padding: "10px 20px",
     borderRadius: 20,
@@ -210,7 +210,7 @@ const styles = {
     borderRadius: "8px",
     border: "2px solid #ccc",
     cursor: "pointer",
-    background: "white",
+    backgroundColor: "white",
     color: "#333",
     transition: "0.2s",
   },

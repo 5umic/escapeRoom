@@ -1,18 +1,16 @@
 import React from "react";
+import { formatTime } from "../hooks/useGameTimer";
 
+// --- NY KOMPONENT: KRYMPANDE TIMER-MÄTARE ---
 export function TimerBar({ secondsLeft, totalTimeLimit }) {
-  // Undvik division med noll om datan inte laddats
   const maxTime = totalTimeLimit || 1;
-
-  // Räkna ut hur många procent av tiden som är kvar
   const percentage = Math.max(0, Math.min(100, (secondsLeft / maxTime) * 100));
 
-  // Bestäm färg baserat på procenten
-  let barColor = "#2ea44f"; // Grön (Standard)
+  let barColor = "#2ea44f"; // Grön
   if (percentage <= 50 && percentage > 20) {
-    barColor = "#fbbc05"; // Gul/Orange (Mindre än hälften kvar)
+    barColor = "#fbbc05"; // Gul
   } else if (percentage <= 20) {
-    barColor = "#c62828"; // Röd (Bråttom!)
+    barColor = "#c62828"; // Röd
   }
 
   return (
@@ -24,12 +22,11 @@ export function TimerBar({ secondsLeft, totalTimeLimit }) {
           backgroundColor: barColor,
         }}
       />
-      {/* Valfritt: Om du vill ha siffrorna inuti mätaren */}
-      <span style={styles.timerText}>{secondsLeft} s</span>
+      {/* Siffrorna visar nu MM:SS istället för bara sekunder! */}
+      <span style={styles.timerText}>{formatTime(secondsLeft)}</span>
     </div>
   );
 }
-
 // --- HUVUDCONTAINER ---
 export function GameContainer({ children, secondsLeft }) {
   return (

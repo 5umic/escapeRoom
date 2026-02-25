@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
 
+export const formatTime = (totalSeconds) => {
+  if (totalSeconds === undefined || isNaN(totalSeconds)) return "0:00";
+  // Math.max ser till att vi aldrig får minus-minuter om något går fel
+  const minutes = Math.floor(Math.max(0, totalSeconds) / 60);
+  const seconds = Math.floor(Math.max(0, totalSeconds) % 60);
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+};
+
 export function useGameTimer(
   totalTimeLimit,
   status,
@@ -22,13 +30,10 @@ export function useGameTimer(
       return;
 
     if (secondsLeft <= 0) {
-      // FIXEN: Vi väntar 1000 millisekunder (1 sekund) så att den grafiska mätaren
-      // hinner animera ner till 0% innan vi kastar upp "Tiden är ute!"-skärmen.
       const delay = setTimeout(() => {
         addTimeToSession(totalTimeLimit + penaltySeconds);
         setStatus("time_out");
       }, 1250);
-
       return () => clearTimeout(delay);
     }
 
@@ -43,5 +48,12 @@ export function useGameTimer(
 
   const getTimeTaken = () => totalTimeLimit - secondsLeft + penaltySeconds;
 
-  return { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession };
+  return {
+    secondsLeft,
+    formattedSecondsLeft: formatTime(secondsLeft),
+    setSecondsLeft,
+    getTimeTaken,
+    formattedTimeTaken: formatTime(getTimeTaken()),
+    addTimeToSession,
+  };
 }

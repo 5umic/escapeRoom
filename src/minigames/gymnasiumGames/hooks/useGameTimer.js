@@ -33,7 +33,7 @@ export function useGameTimer(
       const delay = setTimeout(() => {
         addTimeToSession(totalTimeLimit + penaltySeconds);
         setStatus("time_out");
-      }, 1250);
+      }, 1000);
       return () => clearTimeout(delay);
     }
 

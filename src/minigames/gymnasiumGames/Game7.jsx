@@ -159,11 +159,7 @@ export default function Game7() {
         <div style={styles.wordContainer}>
           {word.split("").map((char, index) => (
             <span key={index} style={styles.letterSlot}>
-              {guessedLetters.includes(char) ||
-              status === "answered_wrong" ||
-              status === "time_out"
-                ? char
-                : ""}
+              {guessedLetters.includes(char) ? char : ""}
             </span>
           ))}
         </div>
@@ -215,7 +211,7 @@ export default function Game7() {
         {status === "time_out" && (
           <FeedbackError
             title="Tiden är ute! ⏱️"
-            message={`Du hann inte gissa klart. Ordet var: ${word}`}
+            message={""}
             onRetry={() => setupChallenge(challenge)}
           />
         )}

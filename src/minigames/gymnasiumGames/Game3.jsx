@@ -106,8 +106,8 @@ export default function Game3() {
 
   return (
     <>
+      <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
       <GameContainer>
-        <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
         <div style={styles.roundInfo}>
           Fråga {currentIndex + 1} av {challenges.length}
         </div>

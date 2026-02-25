@@ -82,7 +82,8 @@ export function FeedbackSuccess({
             <strong>{timeTaken}s</strong>
           </p>
           <p>
-            📊 Total tid i Escape Room: <strong>{totalTime}s</strong>
+            📊 Total tid i Escape Room:{" "}
+            <strong>{formatTime(totalTime)}s</strong>
           </p>
         </div>
       )}

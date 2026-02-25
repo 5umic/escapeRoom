@@ -56,7 +56,12 @@ export default function Game1() {
 
   // 3. Hantera val av svar
   const onPick = (index) => {
-    if (status === "answered_correctly" || status === "time_out") return;
+    if (
+      status === "answered_correctly" ||
+      status === "answered_wrong" ||
+      status === "time_out"
+    )
+      return;
     setSelectedOptionIndex(index);
 
     const spent = getTimeTaken(); // Hämtar spenderad tid via vår hook

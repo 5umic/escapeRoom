@@ -230,7 +230,7 @@ export default function Game4() {
         {/* DRY FEEDBACK */}
         {status === "answered_correctly" && (
           <FeedbackSuccess
-            title="Snyggt sett!"
+            title="Snyggt!"
             timeTaken={getTimeTaken()}
             totalTime={sessionStorage.getItem("totalGameTime")}
             penaltyTime={penaltySeconds}

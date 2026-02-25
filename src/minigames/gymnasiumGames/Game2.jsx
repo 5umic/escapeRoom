@@ -11,6 +11,7 @@ import {
   GameContainer,
   FeedbackSuccess,
   FeedbackError,
+  TimerBar,
 } from "../gymnasiumGames/components/GameUI";
 
 export default function Game2() {
@@ -107,97 +108,102 @@ export default function Game2() {
 
   return (
     // GameContainer sätter upp bakgrunden och timern
-    <GameContainer secondsLeft={secondsLeft}>
-      <h2>Risk & Säkerhet</h2>
-      <p style={{ marginBottom: 30 }}>Matcha rätt påstående med rätt plats.</p>
+    <>
+      <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
+      <GameContainer>
+        <h2>Risk & Säkerhet</h2>
+        <p style={{ marginBottom: 30 }}>
+          Matcha rätt påstående med rätt plats.
+        </p>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          checkAnswers();
-        }}
-      >
-        {challenges.map((c, index) => {
-          const selectId = `${selectIdBase}-${index}`;
-          let blockStyle = { ...styles.questionBlock };
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            checkAnswers();
+          }}
+        >
+          {challenges.map((c, index) => {
+            const selectId = `${selectIdBase}-${index}`;
+            let blockStyle = { ...styles.questionBlock };
 
-          const isValidated = validationResults.hasOwnProperty(c.id);
-          const isCorrect = validationResults[c.id];
+            const isValidated = validationResults.hasOwnProperty(c.id);
+            const isCorrect = validationResults[c.id];
 
-          // Färgmarkering
-          if (isValidated) {
-            blockStyle.borderLeft = isCorrect
-              ? "8px solid #2ea44f"
-              : "8px solid #c62828";
-            blockStyle.backgroundColor = isCorrect
-              ? "rgba(46, 164, 79, 0.1)"
-              : "rgba(198, 40, 40, 0.1)";
-          }
+            // Färgmarkering
+            if (isValidated) {
+              blockStyle.borderLeft = isCorrect
+                ? "8px solid #2ea44f"
+                : "8px solid #c62828";
+              blockStyle.backgroundColor = isCorrect
+                ? "rgba(46, 164, 79, 0.1)"
+                : "rgba(198, 40, 40, 0.1)";
+            }
 
-          return (
-            <div key={c.id} style={blockStyle}>
-              <label htmlFor={selectId} style={styles.labelPrompt}>
-                {c.prompt}
-              </label>
-              <select
-                id={selectId}
-                style={styles.select}
-                value={userAnswers[c.id] || ""}
-                onChange={(e) => handleSelectChange(c.id, e.target.value)}
-                disabled={status === "success" || status === "time_out"}
-              >
-                <option value="" disabled>
-                  -- Välj plats --
-                </option>
-                {c.options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
+            return (
+              <div key={c.id} style={blockStyle}>
+                <label htmlFor={selectId} style={styles.labelPrompt}>
+                  {c.prompt}
+                </label>
+                <select
+                  id={selectId}
+                  style={styles.select}
+                  value={userAnswers[c.id] || ""}
+                  onChange={(e) => handleSelectChange(c.id, e.target.value)}
+                  disabled={status === "success" || status === "time_out"}
+                >
+                  <option value="" disabled>
+                    -- Välj plats --
                   </option>
-                ))}
-              </select>
-            </div>
-          );
-        })}
+                  {c.options.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            );
+          })}
 
-        {/* --- DRY Feedback-komponenter --- */}
-        {status === "success" && (
-          <FeedbackSuccess
-            title="Bra jobbat!"
-            timeTaken={getTimeTaken()}
-            totalTime={sessionStorage.getItem("totalGameTime")}
-            onNext={() => navigate("/gymnasium/game3")}
-            nextText="Nästa Spel (Game 3)"
-          />
-        )}
+          {/* --- DRY Feedback-komponenter --- */}
+          {status === "success" && (
+            <FeedbackSuccess
+              title="Bra jobbat!"
+              timeTaken={getTimeTaken()}
+              totalTime={sessionStorage.getItem("totalGameTime")}
+              onNext={() => navigate("/gymnasium/game3")}
+              nextText="Nästa Spel (Game 3)"
+            />
+          )}
 
-        {status === "check_failed" && (
-          <FeedbackError
-            title="Inte helt rätt"
-            message="Ändra de röda fälten och försök igen. Klockan tickar!"
-            penalty={lastPenalty}
-          />
-        )}
+          {status === "check_failed" && (
+            <FeedbackError
+              title="Inte helt rätt"
+              message="Ändra de röda fälten och försök igen. Klockan tickar!"
+              penalty={lastPenalty}
+            />
+          )}
 
-        {status === "time_out" && (
-          <FeedbackError
-            title="Tiden är ute!"
-            message="Du hann inte matcha allt i tid."
-            onRetry={handleRetry}
-            retryText="Börja om"
-          />
-        )}
+          {status === "time_out" && (
+            <FeedbackError
+              title="Tiden är ute!"
+              message="Du hann inte matcha allt i tid."
+              onRetry={handleRetry}
+              retryText="Börja om"
+            />
+          )}
 
-        {status !== "success" && status !== "time_out" && (
-          <button
-            type="submit"
-            style={styles.submitBtn}
-            disabled={submissionLocked.current && status === "check_failed"}
-          >
-            Rätta svar
-          </button>
-        )}
-      </form>
-    </GameContainer>
+          {status !== "success" && status !== "time_out" && (
+            <button
+              type="submit"
+              style={styles.submitBtn}
+              disabled={submissionLocked.current && status === "check_failed"}
+            >
+              Rätta svar
+            </button>
+          )}
+        </form>
+      </GameContainer>
+    </>
   );
 }
 

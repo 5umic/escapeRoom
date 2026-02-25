@@ -11,6 +11,7 @@ import {
   GameContainer,
   FeedbackSuccess,
   FeedbackError,
+  TimerBar,
 } from "../gymnasiumGames/components/GameUI";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".split("");
@@ -135,88 +136,91 @@ export default function Game7() {
   const word = challenge.answer.toUpperCase();
 
   return (
-    <GameContainer secondsLeft={secondsLeft}>
-      <h2>Hänga Gubbe</h2>
-      <p style={{ marginBottom: "20px" }}>{challenge.prompt}</p>
+    <>
+      <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
+      <GameContainer>
+        <h2>Hänga Gubbe</h2>
+        <p style={{ marginBottom: "20px" }}>{challenge.prompt}</p>
 
-      {/* CANVAS (GUBBEN) */}
-      <div style={styles.canvasWrapper}>
-        <canvas
-          ref={canvasRef}
-          width="150"
-          height="150"
-          style={styles.canvas}
-        />
-        <p style={styles.livesText}>
-          Försök kvar: <strong>{maxMistakes - mistakes}</strong>
-        </p>
-      </div>
+        {/* CANVAS (GUBBEN) */}
+        <div style={styles.canvasWrapper}>
+          <canvas
+            ref={canvasRef}
+            width="150"
+            height="150"
+            style={styles.canvas}
+          />
+          <p style={styles.livesText}>
+            Försök kvar: <strong>{maxMistakes - mistakes}</strong>
+          </p>
+        </div>
 
-      {/* ORDET SOM SKA GISSAS */}
-      <div style={styles.wordContainer}>
-        {word.split("").map((char, index) => (
-          <span key={index} style={styles.letterSlot}>
-            {guessedLetters.includes(char) ||
-            status === "answered_wrong" ||
-            status === "time_out"
-              ? char
-              : ""}
-          </span>
-        ))}
-      </div>
+        {/* ORDET SOM SKA GISSAS */}
+        <div style={styles.wordContainer}>
+          {word.split("").map((char, index) => (
+            <span key={index} style={styles.letterSlot}>
+              {guessedLetters.includes(char) ||
+              status === "answered_wrong" ||
+              status === "time_out"
+                ? char
+                : ""}
+            </span>
+          ))}
+        </div>
 
-      {/* ALFABETET / TANGENTBORDET */}
-      <div style={styles.keyboard}>
-        {ALPHABET.map((letter) => {
-          const isGuessed = guessedLetters.includes(letter);
-          const isCorrect = isGuessed && word.includes(letter);
-          const isWrong = isGuessed && !word.includes(letter);
+        {/* ALFABETET / TANGENTBORDET */}
+        <div style={styles.keyboard}>
+          {ALPHABET.map((letter) => {
+            const isGuessed = guessedLetters.includes(letter);
+            const isCorrect = isGuessed && word.includes(letter);
+            const isWrong = isGuessed && !word.includes(letter);
 
-          let btnStyle = { ...styles.keyBtn };
-          if (isCorrect) btnStyle.backgroundColor = "#2ea44f";
-          if (isWrong) btnStyle.backgroundColor = "#c62828";
-          if (isGuessed) btnStyle.color = "white";
+            let btnStyle = { ...styles.keyBtn };
+            if (isCorrect) btnStyle.backgroundColor = "#2ea44f";
+            if (isWrong) btnStyle.backgroundColor = "#c62828";
+            if (isGuessed) btnStyle.color = "white";
 
-          return (
-            <button
-              key={letter}
-              onClick={() => handleGuess(letter)}
-              style={btnStyle}
-              disabled={isGuessed || status !== "playing"}
-            >
-              {letter}
-            </button>
-          );
-        })}
-      </div>
+            return (
+              <button
+                key={letter}
+                onClick={() => handleGuess(letter)}
+                style={btnStyle}
+                disabled={isGuessed || status !== "playing"}
+              >
+                {letter}
+              </button>
+            );
+          })}
+        </div>
 
-      {/* --- DRY FEEDBACK --- */}
-      {status === "answered_correctly" && (
-        <FeedbackSuccess
-          title="Grattis, du överlevde!"
-          timeTaken={getTimeTaken()}
-          totalTime={sessionStorage.getItem("totalGameTime")}
-          onNext={() => navigate("/gymnasium")}
-          nextText="Avsluta & Till Meny"
-        />
-      )}
+        {/* --- DRY FEEDBACK --- */}
+        {status === "answered_correctly" && (
+          <FeedbackSuccess
+            title="Grattis, du överlevde!"
+            timeTaken={getTimeTaken()}
+            totalTime={sessionStorage.getItem("totalGameTime")}
+            onNext={() => navigate("/gymnasium")}
+            nextText="Avsluta & Till Meny"
+          />
+        )}
 
-      {status === "answered_wrong" && (
-        <FeedbackError
-          title="Åh nej, gubben hängdes! 💀"
-          penalty={getTimeTaken()}
-          onRetry={() => setupChallenge(challenge)}
-        />
-      )}
+        {status === "answered_wrong" && (
+          <FeedbackError
+            title="Åh nej, gubben hängdes! 💀"
+            penalty={getTimeTaken()}
+            onRetry={() => setupChallenge(challenge)}
+          />
+        )}
 
-      {status === "time_out" && (
-        <FeedbackError
-          title="Tiden är ute! ⏱️"
-          message={`Du hann inte gissa klart. Ordet var: ${word}`}
-          onRetry={() => setupChallenge(challenge)}
-        />
-      )}
-    </GameContainer>
+        {status === "time_out" && (
+          <FeedbackError
+            title="Tiden är ute! ⏱️"
+            message={`Du hann inte gissa klart. Ordet var: ${word}`}
+            onRetry={() => setupChallenge(challenge)}
+          />
+        )}
+      </GameContainer>
+    </>
   );
 }
 

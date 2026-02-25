@@ -11,6 +11,7 @@ import {
   GameContainer,
   FeedbackSuccess,
   FeedbackError,
+  TimerBar,
 } from "../gymnasiumGames/components/GameUI";
 
 export default function Game1() {
@@ -100,89 +101,92 @@ export default function Game1() {
 
   return (
     // Vi använder vår nya GameContainer! Den hanterar den röda bakgrunden och timern i hörnet.
-    <GameContainer secondsLeft={secondsLeft}>
-      {/* Rund-information specifik för detta spel */}
-      <div style={styles.roundInfo}>
-        Fråga {currentIndex + 1} av {challenges.length}
-      </div>
+    <>
+      <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
+      <GameContainer>
+        {/* Rund-information specifik för detta spel */}
+        <div style={styles.roundInfo}>
+          Fråga {currentIndex + 1} av {challenges.length}
+        </div>
 
-      <h2>Trafikverket</h2>
+        <h2>Trafikverket</h2>
 
-      {challenge.imageUrl && (
-        <img
-          src={challenge.imageUrl}
-          alt="Clue"
-          style={styles.image}
-          onError={(e) => (e.target.style.display = "none")}
-        />
-      )}
+        {challenge.imageUrl && (
+          <img
+            src={challenge.imageUrl}
+            alt="Clue"
+            style={styles.image}
+            onError={(e) => (e.target.style.display = "none")}
+          />
+        )}
 
-      <p style={styles.question}>{challenge.prompt}</p>
+        <p style={styles.question}>{challenge.prompt}</p>
 
-      {/* Svarsknappar */}
-      <div style={styles.grid}>
-        {challenge.options.map((opt, index) => {
-          let btnStyle = { ...styles.optionBtn };
+        {/* Svarsknappar */}
+        <div style={styles.grid}>
+          {challenge.options.map((opt, index) => {
+            let btnStyle = { ...styles.optionBtn };
 
-          if (index === selectedOptionIndex) {
-            if (status === "answered_correctly") {
-              btnStyle.backgroundColor = "#2ea44f";
-              btnStyle.color = "white";
-              btnStyle.border = "2px solid #207a38";
-            } else if (status === "answered_wrong") {
-              btnStyle.backgroundColor = "#c62828";
-              btnStyle.color = "white";
-              btnStyle.border = "2px solid #8e1c1c";
-            }
-          }
-
-          return (
-            <button
-              key={index}
-              onClick={() => onPick(index)}
-              style={btnStyle}
-              disabled={
-                status === "answered_correctly" || status === "time_out"
+            if (index === selectedOptionIndex) {
+              if (status === "answered_correctly") {
+                btnStyle.backgroundColor = "#2ea44f";
+                btnStyle.color = "white";
+                btnStyle.border = "2px solid #207a38";
+              } else if (status === "answered_wrong") {
+                btnStyle.backgroundColor = "#c62828";
+                btnStyle.color = "white";
+                btnStyle.border = "2px solid #8e1c1c";
               }
-            >
-              {opt}
-            </button>
-          );
-        })}
-      </div>
+            }
 
-      {/* Våra nya snygga Feedback-komponenter istället för rörig HTML/CSS! */}
-      {status === "answered_correctly" && (
-        <FeedbackSuccess
-          title="Rätt svar!"
-          timeTaken={getTimeTaken()}
-          totalTime={sessionStorage.getItem("totalGameTime")}
-          onNext={handleNext}
-          nextText={
-            isLastQuestion
-              ? "Gå vidare till nästa spel (Game 2)"
-              : "Nästa fråga"
-          }
-        />
-      )}
+            return (
+              <button
+                key={index}
+                onClick={() => onPick(index)}
+                style={btnStyle}
+                disabled={
+                  status === "answered_correctly" || status === "time_out"
+                }
+              >
+                {opt}
+              </button>
+            );
+          })}
+        </div>
 
-      {status === "answered_wrong" && (
-        <FeedbackError
-          title="Fel svar"
-          message="Det där var inte riktigt rätt."
-          penalty={getTimeTaken()}
-          onRetry={handleRetry}
-        />
-      )}
+        {/* Våra nya snygga Feedback-komponenter istället för rörig HTML/CSS! */}
+        {status === "answered_correctly" && (
+          <FeedbackSuccess
+            title="Rätt svar!"
+            timeTaken={getTimeTaken()}
+            totalTime={sessionStorage.getItem("totalGameTime")}
+            onNext={handleNext}
+            nextText={
+              isLastQuestion
+                ? "Gå vidare till nästa spel (Game 2)"
+                : "Nästa fråga"
+            }
+          />
+        )}
 
-      {status === "time_out" && (
-        <FeedbackError
-          title="Tiden är ute!"
-          message="Du hann inte svara."
-          onRetry={() => startRound(challenge)}
-        />
-      )}
-    </GameContainer>
+        {status === "answered_wrong" && (
+          <FeedbackError
+            title="Fel svar"
+            message="Det där var inte riktigt rätt."
+            penalty={getTimeTaken()}
+            onRetry={handleRetry}
+          />
+        )}
+
+        {status === "time_out" && (
+          <FeedbackError
+            title="Tiden är ute!"
+            message="Du hann inte svara."
+            onRetry={() => startRound(challenge)}
+          />
+        )}
+      </GameContainer>
+    </>
   );
 }
 

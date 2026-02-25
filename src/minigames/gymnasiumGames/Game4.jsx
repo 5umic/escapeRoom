@@ -11,6 +11,7 @@ import {
   GameContainer,
   FeedbackSuccess,
   FeedbackError,
+  TimerBar,
 } from "../gymnasiumGames/components/GameUI";
 
 const PIXEL_LEVELS = [0.03, 0.06, 0.12, 0.25, 0.5, 1.0];
@@ -171,90 +172,95 @@ export default function Game4() {
   const isLastQuestion = currentIndex === challenges.length - 1;
 
   return (
-    <GameContainer secondsLeft={secondsLeft}>
-      <div style={styles.roundInfo}>
-        Bild {currentIndex + 1} av {challenges.length}
-      </div>
+    <>
+      <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
+      <GameContainer>
+        <div style={styles.roundInfo}>
+          Bild {currentIndex + 1} av {challenges.length}
+        </div>
 
-      {/* Visa klick-straffet synligt under spelets gång */}
-      {penaltySeconds > 0 && (
-        <div style={styles.penaltyTracker}>+{penaltySeconds}s straff</div>
-      )}
-
-      <h2>Pixeljakten</h2>
-      <p>
-        Klicka på bilden för att göra den tydligare (+5 sekunder per klick!)
-      </p>
-
-      {/* CANVAS (Klickbar) */}
-      <div style={styles.canvasContainer} onClick={handleImageClick}>
-        <canvas ref={canvasRef} style={styles.canvas} />
-        {pixelIndex < PIXEL_LEVELS.length - 1 && status === "playing" && (
-          <div style={styles.clickHint}>👆 Klicka för att skärpa</div>
+        {/* Visa klick-straffet synligt under spelets gång */}
+        {penaltySeconds > 0 && (
+          <div style={styles.penaltyTracker}>+{penaltySeconds}s straff</div>
         )}
-      </div>
 
-      <p style={styles.prompt}>{challenge.prompt}</p>
+        <h2>Pixeljakten</h2>
+        <p>
+          Klicka på bilden för att göra den tydligare (+5 sekunder per klick!)
+        </p>
 
-      {/* SVARSKNAPPAR */}
-      <div style={styles.buttonGroup}>
-        {challenge.options.map((opt, i) => {
-          let btnStyle = { ...styles.optionBtn };
-          if (selectedOption === opt) {
-            if (status === "answered_correctly") {
-              btnStyle.backgroundColor = "#2ea44f";
-              btnStyle.color = "white";
-              btnStyle.border = "2px solid #207a38";
-            } else if (status === "answered_wrong") {
-              btnStyle.backgroundColor = "#c62828";
-              btnStyle.color = "white";
-              btnStyle.border = "2px solid #8e1c1c";
+        {/* CANVAS (Klickbar) */}
+        <div style={styles.canvasContainer} onClick={handleImageClick}>
+          <canvas ref={canvasRef} style={styles.canvas} />
+          {pixelIndex < PIXEL_LEVELS.length - 1 && status === "playing" && (
+            <div style={styles.clickHint}>👆 Klicka för att skärpa</div>
+          )}
+        </div>
+
+        <p style={styles.prompt}>{challenge.prompt}</p>
+
+        {/* SVARSKNAPPAR */}
+        <div style={styles.buttonGroup}>
+          {challenge.options.map((opt, i) => {
+            let btnStyle = { ...styles.optionBtn };
+            if (selectedOption === opt) {
+              if (status === "answered_correctly") {
+                btnStyle.backgroundColor = "#2ea44f";
+                btnStyle.color = "white";
+                btnStyle.border = "2px solid #207a38";
+              } else if (status === "answered_wrong") {
+                btnStyle.backgroundColor = "#c62828";
+                btnStyle.color = "white";
+                btnStyle.border = "2px solid #8e1c1c";
+              }
             }
-          }
-          return (
-            <button
-              key={i}
-              onClick={() => onAnswer(opt, i)}
-              style={btnStyle}
-              disabled={status !== "playing"}
-            >
-              {opt}
-            </button>
-          );
-        })}
-      </div>
+            return (
+              <button
+                key={i}
+                onClick={() => onAnswer(opt, i)}
+                style={btnStyle}
+                disabled={status !== "playing"}
+              >
+                {opt}
+              </button>
+            );
+          })}
+        </div>
 
-      {/* DRY FEEDBACK */}
-      {status === "answered_correctly" && (
-        <FeedbackSuccess
-          title="Snyggt sett!"
-          timeTaken={getTimeTaken()}
-          totalTime={sessionStorage.getItem("totalGameTime")}
-          penaltyTime={penaltySeconds}
-          onNext={handleNext}
-          nextText={
-            isLastQuestion ? "Gå vidare till Sortering (Game 5)" : "Nästa Bild"
-          }
-        />
-      )}
+        {/* DRY FEEDBACK */}
+        {status === "answered_correctly" && (
+          <FeedbackSuccess
+            title="Snyggt sett!"
+            timeTaken={getTimeTaken()}
+            totalTime={sessionStorage.getItem("totalGameTime")}
+            penaltyTime={penaltySeconds}
+            onNext={handleNext}
+            nextText={
+              isLastQuestion
+                ? "Gå vidare till Sortering (Game 5)"
+                : "Nästa Bild"
+            }
+          />
+        )}
 
-      {status === "answered_wrong" && (
-        <FeedbackError
-          title="Fel svar"
-          message="Du gissade fel."
-          penalty={getTimeTaken()}
-          onRetry={handleRetry}
-        />
-      )}
+        {status === "answered_wrong" && (
+          <FeedbackError
+            title="Fel svar"
+            message="Du gissade fel."
+            penalty={getTimeTaken()}
+            onRetry={handleRetry}
+          />
+        )}
 
-      {status === "time_out" && (
-        <FeedbackError
-          title="Tiden är ute!"
-          message="Du hann inte gissa i tid."
-          onRetry={handleRetry}
-        />
-      )}
-    </GameContainer>
+        {status === "time_out" && (
+          <FeedbackError
+            title="Tiden är ute!"
+            message="Du hann inte gissa i tid."
+            onRetry={handleRetry}
+          />
+        )}
+      </GameContainer>
+    </>
   );
 }
 

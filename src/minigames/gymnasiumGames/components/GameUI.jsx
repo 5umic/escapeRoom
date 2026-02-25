@@ -1,5 +1,35 @@
 import React from "react";
 
+export function TimerBar({ secondsLeft, totalTimeLimit }) {
+  // Undvik division med noll om datan inte laddats
+  const maxTime = totalTimeLimit || 1;
+
+  // Räkna ut hur många procent av tiden som är kvar
+  const percentage = Math.max(0, Math.min(100, (secondsLeft / maxTime) * 100));
+
+  // Bestäm färg baserat på procenten
+  let barColor = "#2ea44f"; // Grön (Standard)
+  if (percentage <= 50 && percentage > 20) {
+    barColor = "#fbbc05"; // Gul/Orange (Mindre än hälften kvar)
+  } else if (percentage <= 20) {
+    barColor = "#c62828"; // Röd (Bråttom!)
+  }
+
+  return (
+    <div style={styles.timerBackground}>
+      <div
+        style={{
+          ...styles.timerFill,
+          width: `${percentage}%`,
+          backgroundColor: barColor,
+        }}
+      />
+      {/* Valfritt: Om du vill ha siffrorna inuti mätaren */}
+      <span style={styles.timerText}>{secondsLeft} s</span>
+    </div>
+  );
+}
+
 // --- HUVUDCONTAINER ---
 export function GameContainer({ children, secondsLeft }) {
   return (
@@ -14,7 +44,6 @@ export function GameContainer({ children, secondsLeft }) {
   );
 }
 
-// --- FEEDBACK BOX: SUCCESS ---
 // --- FEEDBACK BOX: SUCCESS ---
 export function FeedbackSuccess({
   title,
@@ -90,6 +119,32 @@ export function FeedbackError({ title, message, penalty, onRetry, retryText }) {
 }
 
 const styles = {
+  timerBackground: {
+    width: "95%",
+    height: "24px",
+    backgroundColor: "#333",
+    borderRadius: "12px",
+    marginBottom: "20px",
+    position: "relative",
+    overflow: "hidden",
+    boxShadow: "inset 0 2px 4px rgba(0,0,0,0.5)",
+    marginInline: "auto",
+  },
+  timerFill: {
+    height: "100%",
+    borderRadius: "12px",
+    transition: "width 1s linear, background-color 0.5s ease",
+  }, // "linear" gör att den krymper silkeslent utan att hacka!
+  timerText: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    color: "white",
+    fontSize: "14px",
+    fontWeight: "bold",
+    textShadow: "1px 1px 2px rgba(0,0,0,0.8)",
+  },
   container: {
     minHeight: "100vh",
     background: "#b10000",

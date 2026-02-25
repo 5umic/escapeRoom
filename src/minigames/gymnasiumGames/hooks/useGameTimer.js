@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 
-// LÄGG TILL: penaltySeconds = 0
 export function useGameTimer(
   totalTimeLimit,
   status,
@@ -23,10 +22,14 @@ export function useGameTimer(
       return;
 
     if (secondsLeft <= 0) {
-      // LÄGG TILL STRAFF VID TIMEOUT
-      addTimeToSession(totalTimeLimit + penaltySeconds);
-      setStatus("time_out");
-      return;
+      // FIXEN: Vi väntar 1000 millisekunder (1 sekund) så att den grafiska mätaren
+      // hinner animera ner till 0% innan vi kastar upp "Tiden är ute!"-skärmen.
+      const delay = setTimeout(() => {
+        addTimeToSession(totalTimeLimit + penaltySeconds);
+        setStatus("time_out");
+      }, 1250);
+
+      return () => clearTimeout(delay);
     }
 
     const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
@@ -38,7 +41,6 @@ export function useGameTimer(
     sessionStorage.setItem("totalGameTime", currentTotal + secondsToAdd);
   };
 
-  // RÄKNA UT TOTAL TID INKLUSIVE STRAFFKLICK
   const getTimeTaken = () => totalTimeLimit - secondsLeft + penaltySeconds;
 
   return { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession };

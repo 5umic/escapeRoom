@@ -12,6 +12,7 @@ import {
   GameContainer,
   FeedbackSuccess,
   FeedbackError,
+  TimerBar,
 } from "../gymnasiumGames/components/GameUI";
 
 const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
@@ -210,86 +211,89 @@ export default function Game5() {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <GameContainer secondsLeft={secondsLeft}>
-        <h2>Sortera Korten</h2>
-        <p>{challenge.prompt}</p>
+      <>
+        <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
+        <GameContainer>
+          <h2>Sortera Korten</h2>
+          <p>{challenge.prompt}</p>
 
-        {/* DYNAMISKA BOXAR */}
-        <div style={styles.boxContainer}>
-          {categories.map((cat) => (
-            <DroppableBox key={cat} id={cat} title={cat}>
-              {containers[cat].map((w) => (
-                <DraggableCard
-                  key={w}
-                  id={w}
-                  text={w}
-                  validationStatus={validation[w]}
-                  isDisabled={status === "success" || status === "time_out"}
-                />
-              ))}
+          {/* DYNAMISKA BOXAR */}
+          <div style={styles.boxContainer}>
+            {categories.map((cat) => (
+              <DroppableBox key={cat} id={cat} title={cat}>
+                {containers[cat].map((w) => (
+                  <DraggableCard
+                    key={w}
+                    id={w}
+                    text={w}
+                    validationStatus={validation[w]}
+                    isDisabled={status === "success" || status === "time_out"}
+                  />
+                ))}
+              </DroppableBox>
+            ))}
+          </div>
+
+          {/* STARTPOOL */}
+          <div style={styles.poolArea}>
+            <DroppableBox id="pool" title="Ord att sortera">
+              <div style={styles.poolGrid}>
+                {containers.pool.map((w) => (
+                  <DraggableCard
+                    key={w}
+                    id={w}
+                    text={w}
+                    validationStatus={validation[w]}
+                    isDisabled={status === "success" || status === "time_out"}
+                  />
+                ))}
+              </div>
             </DroppableBox>
-          ))}
-        </div>
+          </div>
 
-        {/* STARTPOOL */}
-        <div style={styles.poolArea}>
-          <DroppableBox id="pool" title="Ord att sortera">
-            <div style={styles.poolGrid}>
-              {containers.pool.map((w) => (
-                <DraggableCard
-                  key={w}
-                  id={w}
-                  text={w}
-                  validationStatus={validation[w]}
-                  isDisabled={status === "success" || status === "time_out"}
-                />
-              ))}
-            </div>
-          </DroppableBox>
-        </div>
+          {/* --- DRY FEEDBACK --- */}
+          {status === "success" && (
+            <FeedbackSuccess
+              title="Snyggt sorterat!"
+              timeTaken={getTimeTaken()}
+              totalTime={sessionStorage.getItem("totalGameTime")}
+              onNext={() => navigate("/gymnasium/game6")}
+              nextText="Gå vidare till Bilda Ordet (Game 6)"
+            />
+          )}
 
-        {/* --- DRY FEEDBACK --- */}
-        {status === "success" && (
-          <FeedbackSuccess
-            title="Snyggt sorterat!"
-            timeTaken={getTimeTaken()}
-            totalTime={sessionStorage.getItem("totalGameTime")}
-            onNext={() => navigate("/gymnasium/game6")}
-            nextText="Gå vidare till Bilda Ordet (Game 6)"
-          />
-        )}
+          {status === "check_failed" && (
+            <FeedbackError
+              title="Inte helt rätt"
+              message="Flytta de röda korten och försök igen. Klockan tickar!"
+              penalty={lastPenalty}
+              // Notera: Vi skickar inte in onRetry här, så det dyker inte upp någon knapp!
+            />
+          )}
 
-        {status === "check_failed" && (
-          <FeedbackError
-            title="Inte helt rätt"
-            message="Flytta de röda korten och försök igen. Klockan tickar!"
-            penalty={lastPenalty}
-            // Notera: Vi skickar inte in onRetry här, så det dyker inte upp någon knapp!
-          />
-        )}
+          {status === "time_out" && (
+            <FeedbackError
+              title="Tiden är ute!"
+              message="Du hann inte sortera alla kort i tid."
+              onRetry={handleRetry}
+            />
+          )}
 
-        {status === "time_out" && (
-          <FeedbackError
-            title="Tiden är ute!"
-            message="Du hann inte sortera alla kort i tid."
-            onRetry={handleRetry}
-          />
-        )}
-
-        {status !== "success" && status !== "time_out" && (
-          <button
-            onClick={checkAnswer}
-            style={{
-              ...styles.checkBtn,
-              opacity: status === "check_failed" ? 0.6 : 1,
-              cursor: status === "check_failed" ? "not-allowed" : "pointer",
-            }}
-            disabled={status === "check_failed"}
-          >
-            Kontrollera svar
-          </button>
-        )}
-      </GameContainer>
+          {status !== "success" && status !== "time_out" && (
+            <button
+              onClick={checkAnswer}
+              style={{
+                ...styles.checkBtn,
+                opacity: status === "check_failed" ? 0.6 : 1,
+                cursor: status === "check_failed" ? "not-allowed" : "pointer",
+              }}
+              disabled={status === "check_failed"}
+            >
+              Kontrollera svar
+            </button>
+          )}
+        </GameContainer>
+      </>
     </DndContext>
   );
 }

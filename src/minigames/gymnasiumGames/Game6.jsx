@@ -19,6 +19,7 @@ import {
   GameContainer,
   FeedbackSuccess,
   FeedbackError,
+  TimerBar,
 } from "../gymnasiumGames/components/GameUI";
 
 const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
@@ -177,7 +178,8 @@ export default function Game6() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <GameContainer secondsLeft={secondsLeft}>
+      <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
+      <GameContainer>
         {/* Visar runda */}
         <div style={styles.roundInfo}>
           Ord {currentIndex + 1} av {challenges.length}

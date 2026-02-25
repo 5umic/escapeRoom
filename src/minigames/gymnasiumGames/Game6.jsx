@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DndContext, closestCenter } from "@dnd-kit/core";
+import { getNextGamePath } from "../../utils/navigation";
+
 import {
   SortableContext,
   horizontalListSortingStrategy,
@@ -158,7 +160,7 @@ export default function Game6() {
       setCurrentIndex((prev) => prev + 1);
       loadRound(challenges[currentIndex + 1]);
     } else {
-      navigate("/gymnasium/game7");
+      navigate(getNextGamePath("Bilda Ordet (Game 6)"));
     }
   };
 
@@ -214,9 +216,7 @@ export default function Game6() {
             totalTime={sessionStorage.getItem("totalGameTime")}
             onNext={handleNext}
             nextText={
-              isLastQuestion
-                ? "Gå vidare till Hänga Gubbe (Game 7)"
-                : "Nästa Ord"
+              isLastQuestion ? "Gå vidare till nästa spel" : "Nästa Ord"
             }
           />
         )}

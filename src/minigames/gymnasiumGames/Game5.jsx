@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
+import { getNextGamePath } from "../../utils/navigation";
 
-// DRY-verktyg!
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
@@ -257,8 +257,8 @@ export default function Game5() {
               title="Snyggt sorterat!"
               timeTaken={getTimeTaken()}
               totalTime={sessionStorage.getItem("totalGameTime")}
-              onNext={() => navigate("/gymnasium/game6")}
-              nextText="Gå vidare till Bilda Ordet (Game 6)"
+              onNext={() => navigate(getNextGamePath("Sortera Rätt (Game 5)"))}
+              nextText="Gå vidare till nästa spel"
             />
           )}
 

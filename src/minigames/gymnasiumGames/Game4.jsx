@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { getNextGamePath } from "../../utils/navigation";
 
 // DRY-verktyg
 import {
@@ -164,9 +165,10 @@ export default function Game4() {
   // 6. Navigering - Mycket renare nu!
   const handleNext = () => {
     if (currentIndex < challenges.length - 1) {
-      setCurrentIndex((prev) => prev + 1); // Ändrar bara index, useEffect fixar resten
+      setCurrentIndex((prev) => prev + 1);
     } else {
-      navigate("/gymnasium/game5");
+      // Vi skickar med EXAKT den titel som står i din databas för detta spel
+      navigate(getNextGamePath("Pixeljakten (Game 4)"));
     }
   };
 
@@ -256,9 +258,7 @@ export default function Game4() {
             penaltyTime={penaltySeconds}
             onNext={handleNext}
             nextText={
-              isLastQuestion
-                ? "Gå vidare till Sortering (Game 5)"
-                : "Nästa Bild"
+              isLastQuestion ? "Gå vidare till nästa spel" : "Nästa Bild"
             }
           />
         )}

@@ -74,7 +74,7 @@ export default function Leaderboard() {
           </table>
         )}
 
-        <button onClick={() => navigate("/gymnasium")} style={styles.backBtn}>
+        <button onClick={() => navigate("/")} style={styles.backBtn}>
           Tillbaka till Startmenyn
         </button>
       </div>

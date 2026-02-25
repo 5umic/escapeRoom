@@ -80,3 +80,9 @@ export const savePlayerScore = async (playerName, totalTimeSeconds) => {
     return false;
   }
 };
+
+export const fetchGamesByMode = async (modeKey) => {
+  const response = await fetch(`${API_BASE}/api/modes/${modeKey}/games`);
+  if (!response.ok) throw new Error("Kunde inte hämta spel");
+  return await response.json();
+};

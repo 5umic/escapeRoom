@@ -11,4 +11,6 @@ public class Game
     public int MaxDurationSeconds { get; set; } = 600;
 
     public List<Challenge> Challenges { get; set; } = new();
+    public bool IsActive { get; set; } = true;
+    public int SortOrder { get; set; }
 }

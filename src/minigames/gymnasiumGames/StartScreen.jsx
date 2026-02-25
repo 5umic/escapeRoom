@@ -1,30 +1,50 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchGamesByMode } from "./api/gameApi";
 
 export default function StartScreen() {
   const navigate = useNavigate();
   const [playerName, setPlayerName] = useState("");
   const [error, setError] = useState("");
 
-  const handleStart = (e) => {
-    e.preventDefault(); // Förhindrar att sidan laddas om
+  const handleStart = async (e) => {
+    e.preventDefault();
 
-    // Enkel validering så de inte bara trycker "Starta" direkt
     if (playerName.trim().length < 2) {
       setError("Ditt namn måste vara minst 2 bokstäver långt!");
       return;
     }
 
-    // 1. Spara namnet i sessionen
     sessionStorage.setItem("playerName", playerName.trim());
-
-    // 2. NOLLSTÄLL tiden! (Jätteviktigt så de inte har kvar tid från tidigare försök)
     sessionStorage.setItem("totalGameTime", "0");
 
-    // 3. Skicka spelaren till första spelet
-    navigate("/gymnasium/game1");
-  };
+    try {
+      // 1. Hämta de spel som är "On" just nu
+      const activeGames = await fetchGamesByMode("gymnasium");
 
+      // 2. Spara ordningen i sessionen
+      sessionStorage.setItem("activeGameSequence", JSON.stringify(activeGames));
+
+      if (activeGames && activeGames.length > 0) {
+        // HÄR DEFINIERAR VI VARIABELN ORDENTLIGT
+        const firstGame = activeGames[0];
+        const firstGameTitle = firstGame.title;
+
+        // Tvätta titeln så den matchar dina Routes i App.jsx
+        const sanitizedPath = firstGameTitle.replace(/[^a-zA-Z0-9åäöÅÄÖ]/g, "");
+
+        console.log("Navigerar till första aktiva spel:", sanitizedPath);
+        navigate(`/gymnasium/${sanitizedPath}`);
+      } else {
+        setError("Inga aktiva spel hittades. Kontrollera Admin-panelen!");
+      }
+    } catch (err) {
+      console.error("Fel vid start:", err); // Detta loggar felet i konsolen
+      setError(
+        "Kunde inte starta spelet. Kontrollera anslutningen till servern.",
+      );
+    }
+  };
   return (
     <div style={styles.container}>
       <div style={styles.content}>

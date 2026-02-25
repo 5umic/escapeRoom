@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useId } from "react";
 import { useNavigate } from "react-router-dom";
+import { getNextGamePath } from "../../utils/navigation";
 
 // Importera DRY-verktygen!
 import {
@@ -32,7 +33,6 @@ export default function Game2() {
   const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
     useGameTimer(totalTimeLimit, status, setStatus);
 
-  // 1. Hämta all data vid start
   // 1. Hämta all data vid start
   useEffect(() => {
     const initGame = async () => {
@@ -170,8 +170,10 @@ export default function Game2() {
               title="Bra jobbat!"
               timeTaken={getTimeTaken()}
               totalTime={sessionStorage.getItem("totalGameTime")}
-              onNext={() => navigate("/gymnasium/game3")}
-              nextText="Nästa Spel (Game 3)"
+              onNext={() =>
+                navigate(getNextGamePath("Risk & Säkerhet (Game 2)"))
+              }
+              nextText="Gå vidare till nästa spel"
             />
           )}
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getNextGamePath } from "../../utils/navigation";
 
 // Importera våra nya DRY-verktyg!
 import {
@@ -79,11 +80,18 @@ export default function Game1() {
 
   // 4. Navigering
   const handleNext = () => {
+    // 1. Kolla om det finns fler FRÅGOR i detta spelet
     if (currentIndex < challenges.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      startRound(challenges[currentIndex + 1]);
-    } else {
-      navigate("/gymnasium/game2");
+      const nextIndex = currentIndex + 1;
+      setCurrentIndex(nextIndex);
+      // Viktigt: Uppdatera rundan med den nya frågan om du använder den logiken
+      if (typeof startRound === "function") {
+        startRound(challenges[nextIndex]);
+      }
+    }
+    // 2. Om frågorna är slut, byt till nästa SPEL
+    else {
+      navigate(getNextGamePath("Trafikverket (Gymnasium)")); // Se till att titeln matchar DB exakt!
     }
   };
 
@@ -167,9 +175,7 @@ export default function Game1() {
             totalTime={sessionStorage.getItem("totalGameTime")}
             onNext={handleNext}
             nextText={
-              isLastQuestion
-                ? "Gå vidare till nästa spel (Game 2)"
-                : "Nästa fråga"
+              isLastQuestion ? "Gå vidare till nästa spel" : "Nästa fråga"
             }
           />
         )}

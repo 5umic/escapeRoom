@@ -6,7 +6,6 @@ import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
-  savePlayerScore,
 } from "../gymnasiumGames/api/gameApi";
 import { useGameTimer } from "../gymnasiumGames/hooks/useGameTimer";
 import {
@@ -150,16 +149,6 @@ export default function Game7() {
       if (isWinner) {
         addTimeToSession(spent);
         setStatus("answered_correctly");
-
-        // Spara poäng endast om det är det sista spelet
-        if (isLast) {
-          const finalTime = Number(
-            sessionStorage.getItem("totalGameTime") || 0,
-          );
-          const playerName =
-            sessionStorage.getItem("playerName") || "Okänd Spelare";
-          savePlayerScore(playerName, finalTime);
-        }
       }
     }
   };
@@ -172,6 +161,8 @@ export default function Game7() {
     );
 
   const word = challenge.answer.toUpperCase();
+
+  const isLastQuestion = true;
 
   return (
     <>
@@ -239,6 +230,8 @@ export default function Game7() {
             totalTime={sessionStorage.getItem("totalGameTime")}
             onNext={() => navigate(nextPath)}
             nextText={isLast ? "Se Leaderboard 🏆" : "Nästa utmaning"}
+            currentGameTitle="Hänga Gubbe (Game 7)"
+            isLastQuestion={true}
           />
         )}
 

@@ -269,6 +269,8 @@ export default function Game4() {
                   : "Nästa utmaning"
                 : "Nästa bild"
             }
+            currentGameTitle="Pixeljakten (Game 4)"
+            isLastQuestion={isLastQuestion}
           />
         )}
 

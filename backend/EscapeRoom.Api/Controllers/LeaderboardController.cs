@@ -42,4 +42,25 @@ public class LeaderboardController : ControllerBase
 
         return Ok(newEntry);
     }
+
+    // Ta bort en specifik spelare
+    [HttpDelete("scores/{id:guid}")]
+    public async Task<IActionResult> DeleteScore([FromRoute] Guid id) 
+    {
+        var score = await _context.LeaderboardEntries.FindAsync(id);
+        if (score == null) return NotFound();
+        
+        _context.LeaderboardEntries.Remove(score);
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
+
+    // Töm hela leaderboarden
+    [HttpDelete("scores/all")]
+    public async Task<IActionResult> ClearLeaderboard() {
+        var allScores = await _context.LeaderboardEntries.ToListAsync();
+        _context.LeaderboardEntries.RemoveRange(allScores);
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
 }

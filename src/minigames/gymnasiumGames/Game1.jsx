@@ -80,23 +80,16 @@ export default function Game1() {
     }
   };
 
-  // 4. Navigering
   const handleNext = () => {
-    // 1. Kolla om det finns fler FRÅGOR i detta spelet
     if (currentIndex < challenges.length - 1) {
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
-      // Viktigt: Uppdatera rundan med den nya frågan om du använder den logiken
-      if (typeof startRound === "function") {
-        startRound(challenges[nextIndex]);
-      }
-    }
-    // 2. Om frågorna är slut, byt till nästa SPEL
-    else {
-      navigate(getNextGamePath("Trafikverket (Gymnasium)")); // Se till att titeln matchar DB exakt!
+      startRound(challenges[nextIndex]);
+    } else {
+      // Om frågorna är slut, då använder vi navigeringen
+      navigate(getNextGamePath("Trafikverket (Gymnasium)"));
     }
   };
-
   const handleRetry = () => {
     setSecondsLeft(totalTimeLimit);
     setStatus("playing");
@@ -169,18 +162,26 @@ export default function Game1() {
           })}
         </div>
 
-        {/* Våra nya snygga Feedback-komponenter istället för rörig HTML/CSS! */}
         {status === "answered_correctly" && (
           <FeedbackSuccess
             title={
-              lastGame
+              lastGame && isLastQuestion
                 ? "Grattis du klarade sista spelet!"
-                : "Rätt svar! Nästa fråga"
+                : "Rätt svar!"
             }
             timeTaken={getTimeTaken()}
             totalTime={sessionStorage.getItem("totalGameTime")}
-            onNext={() => navigate(nextPath)}
-            nextText={lastGame ? "Se Leaderboard 🏆" : "Nästa utmaning"}
+            // FIX: Anropa handleNext istället för navigate direkt!
+            onNext={handleNext}
+            nextText={
+              isLastQuestion
+                ? lastGame
+                  ? "Se Leaderboard 🏆"
+                  : "Nästa utmaning"
+                : "Nästa fråga"
+            }
+            currentGameTitle="Trafikverket (Gymnasium)"
+            isLastQuestion={isLastQuestion}
           />
         )}
 

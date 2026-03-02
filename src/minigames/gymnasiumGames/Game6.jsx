@@ -231,6 +231,8 @@ export default function Game6() {
                   : "Nästa utmaning"
                 : "Nästa ord"
             }
+            currentGameTitle="Bilda Ordet (Game 6)"
+            isLastQuestion={isLastQuestion}
           />
         )}
         {status === "check_failed" && (

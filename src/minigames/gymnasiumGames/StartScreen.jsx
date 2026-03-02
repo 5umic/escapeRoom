@@ -17,6 +17,7 @@ export default function StartScreen() {
 
     sessionStorage.setItem("playerName", playerName.trim());
     sessionStorage.setItem("totalGameTime", "0");
+    sessionStorage.setItem("isScoreSaved", "false");
 
     try {
       // 1. Hämta de spel som är "On" just nu

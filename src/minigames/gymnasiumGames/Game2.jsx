@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useId } from "react";
 import { useNavigate } from "react-router-dom";
 import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
 
-// Importera DRY-verktygen!
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
@@ -108,6 +107,8 @@ export default function Game2() {
     );
   }
 
+  const isLastQuestion = true;
+
   return (
     // GameContainer sätter upp bakgrunden och timern
     <>
@@ -180,6 +181,8 @@ export default function Game2() {
                 navigate(getNextGamePath("Risk & Säkerhet (Game 2)"))
               }
               nextText={lastGame ? "Se Leaderboard 🏆" : "Nästa utmaning"}
+              currentGameTitle="Risk & Säkerhet (Game 2)"
+              isLastQuestion={true}
             />
           )}
 

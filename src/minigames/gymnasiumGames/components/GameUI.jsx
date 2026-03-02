@@ -1,5 +1,7 @@
-import React from "react";
+import React, { use, useEffect, useRef } from "react";
 import { formatTime } from "../hooks/useGameTimer";
+import { isLastActiveGame } from "../../../utils/navigation";
+import { savePlayerScore } from "../api/gameApi";
 
 // --- NY KOMPONENT: KRYMPANDE TIMER-MÄTARE ---
 export function TimerBar({ secondsLeft, totalTimeLimit }) {
@@ -49,7 +51,30 @@ export function FeedbackSuccess({
   penaltyTime = 0, // NY: Standardvärde 0 så den inte kraschar andra spel
   onNext,
   nextText,
+  currentGameTitle,
+  isLastQuestion,
 }) {
+  const hasSaved = useRef(false);
+
+  useEffect(() => {
+    const isFinalEnding =
+      currentGameTitle &&
+      isLastActiveGame(currentGameTitle) &&
+      isLastQuestion === true;
+    const alreadySaved = sessionStorage.getItem("isScoreSaved") === "true";
+
+    if (isFinalEnding && !alreadySaved) {
+      const playerName =
+        sessionStorage.getItem("playerName") || "Anonym Spelare";
+      const finalTime = Number(totalTime || 0);
+
+      sessionStorage.setItem("isScoreSaved", "true");
+
+      console.log("Sparar slutgiltig tid...", { playerName, finalTime });
+
+      savePlayerScore(playerName, finalTime);
+    }
+  }, [currentGameTitle, totalTime, isLastQuestion]);
   return (
     <div style={styles.feedbackBoxSuccess}>
       <h3>{title} ✅</h3>

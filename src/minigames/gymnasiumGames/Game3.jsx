@@ -161,14 +161,22 @@ export default function Game3() {
         {status === "answered_correctly" && (
           <FeedbackSuccess
             title={
-              lastGame
-                ? "Grattis du klarade sista spelet!"
-                : "Rätt svar! Nästa fråga"
+              lastGame && isLastQuestion
+                ? "Grattis, du klarade alla frågor!"
+                : "Rätt svar!"
             }
             timeTaken={getTimeTaken()}
             totalTime={sessionStorage.getItem("totalGameTime")}
             onNext={handleNext}
-            nextText={lastGame ? "Se Leaderboard 🏆" : "Nästa utmaning"}
+            nextText={
+              isLastQuestion
+                ? lastGame
+                  ? "Se Leaderboard 🏆"
+                  : "Nästa utmaning"
+                : "Nästa fråga"
+            }
+            currentGameTitle="Digital Säkerhet (Game 3)"
+            isLastQuestion={isLastQuestion}
           />
         )}
 

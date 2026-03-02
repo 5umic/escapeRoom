@@ -44,6 +44,21 @@ public class GamesController : ControllerBase
         });
     }
 
+    // 1. Admin: Skapa spel och utmaningar
+    [HttpPost("challenges")]
+    public async Task<IActionResult> CreateChallenge([FromBody] Challenge challenge)
+    {
+        if (challenge == null) return BadRequest();
+
+        // Säkerställ att ID nollställs så databasen kan generera ett nytt GUID
+        challenge.Id = Guid.NewGuid();
+
+        _db.Challenges.Add(challenge);
+        await _db.SaveChangesAsync();
+
+        return Ok(challenge);
+    }
+
     // 2. Admin: Lista alla spel
     [HttpGet("list-all")]
     public async Task<IActionResult> GetAllGames()
@@ -92,5 +107,21 @@ public class GamesController : ControllerBase
         game.IsActive = isActive;
         await _db.SaveChangesAsync();
         return Ok(game);
+    }
+
+// 6. Ta bort en specifik utmaning
+    [HttpDelete("challenges/{id}")]
+    public async Task<IActionResult> DeleteChallenge(Guid id)
+    {
+        var challenge = await _db.Challenges.FindAsync(id);
+        if (challenge == null)
+        {
+            return NotFound();
+        }
+
+        _db.Challenges.Remove(challenge);
+        await _db.SaveChangesAsync();
+
+        return Ok();
     }
 }

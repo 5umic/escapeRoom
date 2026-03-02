@@ -212,6 +212,8 @@ export default function Game5() {
       </GameContainer>
     );
 
+  const isLastQuestion = true;
+
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <>
@@ -266,6 +268,8 @@ export default function Game5() {
               totalTime={sessionStorage.getItem("totalGameTime")}
               onNext={() => navigate(nextPath)}
               nextText={lastGame ? "Se Leaderboard 🏆" : "Nästa utmaning"}
+              currentGameTitle="Sortera Rätt (Game 5)"
+              isLastQuestion={true}
             />
           )}
 

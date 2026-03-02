@@ -13,6 +13,7 @@ import Game6 from "./minigames/gymnasiumGames/Game6.jsx";
 import Game7 from "./minigames/gymnasiumGames/Game7.jsx";
 import StartScreen from "./minigames/gymnasiumGames/StartScreen.jsx";
 import Leaderboard from "./minigames/gymnasiumGames/Leaderboard.jsx";
+import AdminLeaderboard from "./admin/AdminLeaderboard.jsx";
 
 // Admin imports
 import AdminDashboard from "./admin/AdminDashboard.jsx";
@@ -26,6 +27,7 @@ function App() {
 
       {/* Admin-rutter */}
       <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/admin/leaderboard" element={<AdminLeaderboard />} />
       <Route path="/admin/EditChallenge/:gameId" element={<EditChallenge />} />
 
       {/* 2. Gymnasium-flödet */}

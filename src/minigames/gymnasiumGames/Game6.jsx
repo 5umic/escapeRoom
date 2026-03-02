@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DndContext, closestCenter } from "@dnd-kit/core";
-import { getNextGamePath } from "../../utils/navigation";
+import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
 
 import {
   SortableContext,
@@ -74,6 +74,9 @@ export default function Game6() {
   const [validation, setValidation] = useState({});
   const [items, setItems] = useState([]);
   const [totalTimeLimit, setTotalTimeLimit] = useState(30);
+
+  const lastGame = isLastActiveGame("Bilda Ordet (Game 6)");
+  const nextPath = getNextGamePath("Bilda Ordet (Game 6)");
 
   // Hook för timern
   const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
@@ -157,9 +160,11 @@ export default function Game6() {
 
   const handleNext = () => {
     if (currentIndex < challenges.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      loadRound(challenges[currentIndex + 1]);
+      const nextIdx = currentIndex + 1;
+      setCurrentIndex(nextIdx);
+      loadRound(challenges[nextIdx]); // Laddar nästa ord från listan
     } else {
+      // Om inga fler ord finns, gå till nästa spel via GPS:en
       navigate(getNextGamePath("Bilda Ordet (Game 6)"));
     }
   };
@@ -208,19 +213,26 @@ export default function Game6() {
           </SortableContext>
         </div>
 
-        {/* --- DRY FEEDBACK --- */}
         {status === "success" && (
           <FeedbackSuccess
-            title="Snyggt pusslat!"
+            title={
+              lastGame && isLastQuestion
+                ? "Grattis, du klarade sista spelet!"
+                : "Snyggt pusslat!"
+            }
             timeTaken={getTimeTaken()}
             totalTime={sessionStorage.getItem("totalGameTime")}
+            // ÄNDRING: Kör handleNext istället för navigate direkt
             onNext={handleNext}
             nextText={
-              isLastQuestion ? "Gå vidare till nästa spel" : "Nästa Ord"
+              isLastQuestion
+                ? lastGame
+                  ? "Se Leaderboard 🏆"
+                  : "Nästa utmaning"
+                : "Nästa ord"
             }
           />
         )}
-
         {status === "check_failed" && (
           <FeedbackError
             title="Inte helt rätt"

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNextGamePath } from "../../utils/navigation";
+import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
 
 // Importera våra nya DRY-verktyg!
 import {
@@ -24,6 +24,8 @@ export default function Game1() {
   const [status, setStatus] = useState("loading"); // loading, playing, answered_correctly, answered_wrong, time_out
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
   const [totalTimeLimit, setTotalTimeLimit] = useState(60);
+  const lastGame = isLastActiveGame("Trafikverket (Gymnasium)");
+  const nextPath = getNextGamePath("Trafikverket (Gymnasium)");
 
   const challenge = challenges[currentIndex];
 
@@ -170,13 +172,15 @@ export default function Game1() {
         {/* Våra nya snygga Feedback-komponenter istället för rörig HTML/CSS! */}
         {status === "answered_correctly" && (
           <FeedbackSuccess
-            title="Rätt svar!"
+            title={
+              lastGame
+                ? "Grattis du klarade sista spelet!"
+                : "Rätt svar! Nästa fråga"
+            }
             timeTaken={getTimeTaken()}
             totalTime={sessionStorage.getItem("totalGameTime")}
-            onNext={handleNext}
-            nextText={
-              isLastQuestion ? "Gå vidare till nästa spel" : "Nästa fråga"
-            }
+            onNext={() => navigate(nextPath)}
+            nextText={lastGame ? "Se Leaderboard 🏆" : "Nästa utmaning"}
           />
         )}
 

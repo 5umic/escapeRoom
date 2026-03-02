@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNextGamePath } from "../../utils/navigation";
+import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
 
 // DRY-verktyg
 import {
@@ -34,6 +34,8 @@ export default function Game4() {
   const [pixelIndex, setPixelIndex] = useState(0);
   const [penaltySeconds, setPenaltySeconds] = useState(0);
   const [totalTimeLimit, setTotalTimeLimit] = useState(30);
+  const lastGame = isLastActiveGame("Pixeljakten (Game 4)");
+  const nextPath = getNextGamePath("Pixeljakten (Game 4)");
 
   // Hook för timern
   const {
@@ -162,12 +164,12 @@ export default function Game4() {
     }
   };
 
-  // 6. Navigering - Mycket renare nu!
   const handleNext = () => {
     if (currentIndex < challenges.length - 1) {
       setCurrentIndex((prev) => prev + 1);
+      setStatus("loading");
     } else {
-      // Vi skickar med EXAKT den titel som står i din databas för detta spel
+      // Om alla bilder i Pixeljakten är slut, gå till nästa spel i ordningen
       navigate(getNextGamePath("Pixeljakten (Game 4)"));
     }
   };
@@ -249,16 +251,23 @@ export default function Game4() {
           })}
         </div>
 
-        {/* DRY FEEDBACK */}
         {status === "answered_correctly" && (
           <FeedbackSuccess
-            title="Snyggt!"
+            title={
+              lastGame && isLastQuestion
+                ? "Grattis, du klarade hela pixeljakten!"
+                : "Rätt svar!"
+            }
             timeTaken={getTimeTaken()}
             totalTime={sessionStorage.getItem("totalGameTime")}
             penaltyTime={penaltySeconds}
             onNext={handleNext}
             nextText={
-              isLastQuestion ? "Gå vidare till nästa spel" : "Nästa Bild"
+              isLastQuestion
+                ? lastGame
+                  ? "Se Leaderboard 🏆"
+                  : "Nästa utmaning"
+                : "Nästa bild"
             }
           />
         )}

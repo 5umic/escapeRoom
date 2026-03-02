@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNextGamePath } from "../../utils/navigation";
+import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
 
 import {
   fetchGameIdByTitle,
@@ -23,6 +23,8 @@ export default function Game3() {
   const [status, setStatus] = useState("loading");
   const [selectedOption, setSelectedOption] = useState(null);
   const [totalTimeLimit, setTotalTimeLimit] = useState(15);
+  const lastGame = isLastActiveGame("Digital Säkerhet (Game 3)");
+  const nextPath = getNextGamePath("Digital Säkerhet (Game 3)");
 
   const challenge = challenges[currentIndex];
 
@@ -91,7 +93,7 @@ export default function Game3() {
     }
     // 2. Om frågorna är slut, byt till nästa SPEL
     else {
-      navigate(getNextGamePath("Pixeljakten (Game 4)")); // Se till att titeln matchar DB exakt!
+      navigate(getNextGamePath("Digital Säkerhet (Game 3)")); // Se till att titeln matchar DB exakt!
     }
   };
 
@@ -158,13 +160,15 @@ export default function Game3() {
         {/* --- DRY Feedback-komponenter --- */}
         {status === "answered_correctly" && (
           <FeedbackSuccess
-            title="Rätt svar!"
+            title={
+              lastGame
+                ? "Grattis du klarade sista spelet!"
+                : "Rätt svar! Nästa fråga"
+            }
             timeTaken={getTimeTaken()}
             totalTime={sessionStorage.getItem("totalGameTime")}
             onNext={handleNext}
-            nextText={
-              isLastQuestion ? "Gå vidare till nästa spel" : "Nästa fråga"
-            }
+            nextText={lastGame ? "Se Leaderboard 🏆" : "Nästa utmaning"}
           />
         )}
 

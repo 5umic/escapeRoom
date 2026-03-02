@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
-import { getNextGamePath } from "../../utils/navigation";
+import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
 
 import {
   fetchGameIdByTitle,
@@ -94,6 +94,9 @@ export default function Game5() {
   // Hook för timern
   const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
     useGameTimer(totalTimeLimit, status, setStatus);
+
+  const lastGame = isLastActiveGame("Sortera Rätt (Game 5)");
+  const nextPath = getNextGamePath("Sortera Rätt (Game 5)");
 
   // 1. Hämta Data vid start
   useEffect(() => {
@@ -254,11 +257,15 @@ export default function Game5() {
           {/* --- DRY FEEDBACK --- */}
           {status === "success" && (
             <FeedbackSuccess
-              title="Snyggt sorterat!"
+              title={
+                lastGame
+                  ? "Grattis, du klarade sista spelet!"
+                  : "Snyggt sorterat!"
+              }
               timeTaken={getTimeTaken()}
               totalTime={sessionStorage.getItem("totalGameTime")}
-              onNext={() => navigate(getNextGamePath("Sortera Rätt (Game 5)"))}
-              nextText="Gå vidare till nästa spel"
+              onNext={() => navigate(nextPath)}
+              nextText={lastGame ? "Se Leaderboard 🏆" : "Nästa utmaning"}
             />
           )}
 

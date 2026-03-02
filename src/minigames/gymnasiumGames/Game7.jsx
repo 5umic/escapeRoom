@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
 
 // DRY-verktyg!
 import {
@@ -15,7 +16,40 @@ import {
   TimerBar,
 } from "../gymnasiumGames/components/GameUI";
 
-const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ".split("");
+// QWERTY-style alfabetet
+const ALPHABET = [
+  "Q",
+  "W",
+  "E",
+  "R",
+  "T",
+  "Y",
+  "U",
+  "I",
+  "O",
+  "P",
+  "Å",
+  "A",
+  "S",
+  "D",
+  "F",
+  "G",
+  "H",
+  "J",
+  "K",
+  "L",
+  "Ö",
+  "Ä",
+  "Z",
+  "X",
+  "C",
+  "V",
+  "B",
+  "N",
+  "M",
+];
+
+const CURRENT_GAME_TITLE = "Hänga Gubbe (Game 7)";
 
 export default function Game7() {
   const navigate = useNavigate();
@@ -23,7 +57,7 @@ export default function Game7() {
 
   // State
   const [challenge, setChallenge] = useState(null);
-  const [status, setStatus] = useState("loading"); // loading, playing, answered_correctly, answered_wrong, time_out
+  const [status, setStatus] = useState("loading");
 
   // Hangman State
   const [guessedLetters, setGuessedLetters] = useState([]);
@@ -31,23 +65,25 @@ export default function Game7() {
   const maxMistakes = 10;
   const [totalTimeLimit, setTotalTimeLimit] = useState(60);
 
-  // Hook för timern
-  const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
-    useGameTimer(totalTimeLimit, status, setStatus);
+  // Dynamisk navigation
+  const isLast = isLastActiveGame(CURRENT_GAME_TITLE);
+  const nextPath = getNextGamePath(CURRENT_GAME_TITLE);
 
   // 1. Hämta Data vid start
   useEffect(() => {
     const initGame = async () => {
       setStatus("loading");
-      const id = await fetchGameIdByTitle("gymnasium", "Game 7");
+      const id = await fetchGameIdByTitle("gymnasium", CURRENT_GAME_TITLE);
       if (id) {
-        // Hämta en fråga (kan vara fler om du lägger till i databasen!)
         const data = await fetchUniqueChallenges(id, 1);
         if (data.length > 0) setupChallenge(data[0]);
       }
     };
     initGame();
   }, []);
+
+  const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
+    useGameTimer(totalTimeLimit, status, setStatus);
 
   const setupChallenge = (data) => {
     if (!data) return;
@@ -60,11 +96,10 @@ export default function Game7() {
     setStatus("playing");
   };
 
-  // 2. RITA GUBBEN PÅ CANVAS
+  // 2. RITA GUBBEN
   useEffect(() => {
     if (!canvasRef.current) return;
     const ctx = canvasRef.current.getContext("2d");
-
     ctx.clearRect(0, 0, 150, 150);
     ctx.beginPath();
     ctx.strokeStyle = "#333";
@@ -80,19 +115,17 @@ export default function Game7() {
     if (mistakes >= 2) drawLine(10, 0, 10, 140);
     if (mistakes >= 3) drawLine(0, 5, 70, 5);
     if (mistakes >= 4) drawLine(60, 5, 60, 15);
-
     if (mistakes >= 5) {
       ctx.beginPath();
       ctx.arc(60, 25, 10, 0, Math.PI * 2, true);
       ctx.stroke();
     }
-
     if (mistakes >= 6) drawLine(60, 35, 60, 70);
     if (mistakes >= 7) drawLine(60, 46, 20, 50);
     if (mistakes >= 8) drawLine(60, 46, 100, 50);
     if (mistakes >= 9) drawLine(60, 70, 20, 100);
     if (mistakes >= 10) drawLine(60, 70, 100, 100);
-  }, [mistakes, status]);
+  }, [mistakes]);
 
   // 3. HANTERA GISSNING
   const handleGuess = (letter) => {
@@ -100,39 +133,37 @@ export default function Game7() {
 
     const newGuessedLetters = [...guessedLetters, letter];
     setGuessedLetters(newGuessedLetters);
-
     const word = challenge.answer.toUpperCase();
     const spent = getTimeTaken();
 
-    // Fel bokstav
     if (!word.includes(letter)) {
       const newMistakes = mistakes + 1;
       setMistakes(newMistakes);
-
       if (newMistakes >= maxMistakes) {
         addTimeToSession(spent);
         setStatus("answered_wrong");
       }
-    }
-    // Rätt bokstav
-    else {
+    } else {
       const isWinner = word
         .split("")
-        .every((char) => newGuessedLetters.includes(char));
+        .every((char) => newGuessedLetters.includes(char) || char === " ");
       if (isWinner) {
         addTimeToSession(spent);
         setStatus("answered_correctly");
 
-        const finalTime = Number(sessionStorage.getItem("totalGameTime") || 0);
-        const playerName =
-          sessionStorage.getItem("playerName") || "Unknown Player";
-
-        savePlayerScore(playerName, finalTime);
+        // Spara poäng endast om det är det sista spelet
+        if (isLast) {
+          const finalTime = Number(
+            sessionStorage.getItem("totalGameTime") || 0,
+          );
+          const playerName =
+            sessionStorage.getItem("playerName") || "Okänd Spelare";
+          savePlayerScore(playerName, finalTime);
+        }
       }
     }
   };
 
-  // --- RENDER ---
   if (status === "loading" || !challenge)
     return (
       <GameContainer>
@@ -149,7 +180,6 @@ export default function Game7() {
         <h2>Hänga Gubbe</h2>
         <p style={{ marginBottom: "20px" }}>{challenge.prompt}</p>
 
-        {/* CANVAS (GUBBEN) */}
         <div style={styles.canvasWrapper}>
           <canvas
             ref={canvasRef}
@@ -162,16 +192,18 @@ export default function Game7() {
           </p>
         </div>
 
-        {/* ORDET SOM SKA GISSAS */}
         <div style={styles.wordContainer}>
           {word.split("").map((char, index) => (
             <span key={index} style={styles.letterSlot}>
-              {guessedLetters.includes(char) ? char : ""}
+              {char === " "
+                ? "\u00A0"
+                : guessedLetters.includes(char)
+                  ? char
+                  : ""}
             </span>
           ))}
         </div>
 
-        {/* ALFABETET / TANGENTBORDET */}
         <div style={styles.keyboard}>
           {ALPHABET.map((letter) => {
             const isGuessed = guessedLetters.includes(letter);
@@ -196,14 +228,17 @@ export default function Game7() {
           })}
         </div>
 
-        {/* --- DRY FEEDBACK --- */}
         {status === "answered_correctly" && (
           <FeedbackSuccess
-            title="Grattis, du överlevde!"
+            title={
+              isLast
+                ? "Grattis, du överlevde hela pixeljakten!"
+                : "Snyggt gissat!"
+            }
             timeTaken={getTimeTaken()}
             totalTime={sessionStorage.getItem("totalGameTime")}
-            onNext={() => navigate("/gymnasium/leaderboard")}
-            nextText="Se dina resultat på Leaderboarden 🏆"
+            onNext={() => navigate(nextPath)}
+            nextText={isLast ? "Se Leaderboard 🏆" : "Nästa utmaning"}
           />
         )}
 
@@ -218,7 +253,6 @@ export default function Game7() {
         {status === "time_out" && (
           <FeedbackError
             title="Tiden är ute! ⏱️"
-            message={""}
             onRetry={() => setupChallenge(challenge)}
           />
         )}
@@ -227,7 +261,6 @@ export default function Game7() {
   );
 }
 
-// Minimal styling för Hänga gubbe
 const styles = {
   canvasWrapper: { marginBottom: "20px" },
   canvas: {
@@ -245,34 +278,32 @@ const styles = {
     margin: "30px 0",
   },
   letterSlot: {
-    width: "40px",
-    height: "50px",
-    fontSize: "32px",
+    width: "35px",
+    height: "45px",
+    fontSize: "28px",
     fontWeight: "bold",
     borderBottom: "4px solid #333",
     display: "flex",
     justifyContent: "center",
     alignItems: "flex-end",
-    paddingBottom: "5px",
     textTransform: "uppercase",
   },
   keyboard: {
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "center",
-    gap: "8px",
-    maxWidth: "600px",
+    gap: "6px",
+    maxWidth: "650px",
     margin: "0 auto",
   },
   keyBtn: {
-    width: "45px",
+    width: "42px",
     height: "45px",
-    fontSize: "18px",
+    fontSize: "16px",
     fontWeight: "bold",
     backgroundColor: "#f3f3f3",
     border: "1px solid #ccc",
     borderRadius: "5px",
     cursor: "pointer",
-    transition: "background-color 0.2s, color 0.2s",
   },
 };

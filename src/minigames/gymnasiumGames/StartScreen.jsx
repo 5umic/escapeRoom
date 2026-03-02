@@ -50,7 +50,7 @@ export default function StartScreen() {
       <div style={styles.content}>
         <h1 style={styles.title}>Välkommen till Escape Room</h1>
         <p style={styles.description}>
-          Systemet är låst. För att ta dig vidare måste du klara av 7 stycken
+          Systemet är låst. För att ta dig vidare måste du klara flera
           utmaningar och pussel. Varje felsteg kommer ge dig straffsekunder, så
           tänk dig för innan du svarar!
         </p>

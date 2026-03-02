@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useId } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNextGamePath } from "../../utils/navigation";
+import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
 
 // Importera DRY-verktygen!
 import {
@@ -26,6 +26,8 @@ export default function Game2() {
   const [validationResults, setValidationResults] = useState({});
   const [status, setStatus] = useState("loading"); // loading, playing, success, check_failed, time_out
   const [lastPenalty, setLastPenalty] = useState(0);
+  const lastGame = isLastActiveGame("Risk & Säkerhet (Game 2)");
+  const nextPath = getNextGamePath("Risk & Säkerhet (Game 2)");
 
   const totalTimeLimit = 60; // Fast tid för detta spel
 
@@ -167,13 +169,17 @@ export default function Game2() {
           {/* --- DRY Feedback-komponenter --- */}
           {status === "success" && (
             <FeedbackSuccess
-              title="Bra jobbat!"
+              title={
+                lastGame
+                  ? "Grattis du klarade sista spelet!"
+                  : "Rätt svar! Nästa fråga"
+              }
               timeTaken={getTimeTaken()}
               totalTime={sessionStorage.getItem("totalGameTime")}
               onNext={() =>
                 navigate(getNextGamePath("Risk & Säkerhet (Game 2)"))
               }
-              nextText="Gå vidare till nästa spel"
+              nextText={lastGame ? "Se Leaderboard 🏆" : "Nästa utmaning"}
             />
           )}
 

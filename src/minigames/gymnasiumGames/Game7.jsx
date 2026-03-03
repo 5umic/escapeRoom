@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
+import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 
 // DRY-verktyg!
 import {
@@ -66,7 +66,7 @@ export default function Game7() {
 
   // Dynamisk navigation
   const isLast = isLastActiveGame(CURRENT_GAME_TITLE);
-  const nextPath = getNextGamePath(CURRENT_GAME_TITLE);
+  const nextPath = getNextGameInfo(CURRENT_GAME_TITLE);
 
   // 1. Hämta Data vid start
   useEffect(() => {

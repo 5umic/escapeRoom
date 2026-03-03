@@ -1,6 +1,7 @@
 import React, { use, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { formatTimeWithTenths } from "../hooks/useGameTimer";
-import { isLastActiveGame } from "../../../utils/navigation";
+import { getNextGameInfo } from "../../../utils/navigation";
 import { savePlayerScore } from "../api/gameApi";
 
 // --- NY KOMPONENT: KRYMPANDE TIMER-MÄTARE ---
@@ -48,47 +49,71 @@ export function FeedbackSuccess({
   title,
   timeTaken,
   totalTime,
-  penaltyTime = 0, // NY: Standardvärde 0 så den inte kraschar andra spel
-  onNext,
-  nextText,
+  penaltyTime = 0, // Default 0
+  onNext, // Används för nästa FRÅGA i samma spel
   currentGameTitle,
   isLastQuestion,
 }) {
+  const navigate = useNavigate();
   const hasSaved = useRef(false);
 
+  // Hämta dynamisk info om var vi är i hela spelserien
+  const { isLast, nextPath } = getNextGameInfo(currentGameTitle);
+
   useEffect(() => {
-    const isFinalEnding =
-      currentGameTitle &&
-      isLastActiveGame(currentGameTitle) &&
-      isLastQuestion === true;
+    // Spara endast om det är sista frågan i det absolut sista aktiva spelet
+    const isFinalEnding = isLast && isLastQuestion;
     const alreadySaved = sessionStorage.getItem("isScoreSaved") === "true";
 
-    if (isFinalEnding && !alreadySaved) {
+    if (isFinalEnding && !alreadySaved && !hasSaved.current) {
       const playerName =
         sessionStorage.getItem("playerName") || "Anonym Spelare";
-      const finalTime = Number(totalTime || 0);
+      const finalTime = parseFloat(totalTime || 0);
 
       sessionStorage.setItem("isScoreSaved", "true");
+      hasSaved.current = true;
 
-      console.log("Sparar slutgiltig tid...", { playerName, finalTime });
-
+      console.log("🏆 Mål! Sparar slutgiltig tid...", {
+        playerName,
+        finalTime,
+      });
       savePlayerScore(playerName, finalTime);
     }
-  }, [currentGameTitle, totalTime, isLastQuestion]);
+  }, [isLast, isLastQuestion, totalTime, currentGameTitle]);
+
+  const handleButtonClick = () => {
+    if (isLastQuestion) {
+      // Om sista frågan i spelet: Gå till nextPath (Leaderboard eller nästa spel)
+      navigate(nextPath);
+    } else {
+      // Annars: Kör spelets lokala onNext för att byta fråga
+      onNext();
+    }
+  };
+
+  // Dynamisk text på knappen
+  const getButtonText = () => {
+    if (isLast && isLastQuestion) return "Se Resultat 🏆";
+    if (isLastQuestion) return "Nästa Utmaning ➡️";
+    return "Nästa Fråga";
+  };
 
   return (
     <div style={styles.feedbackBoxSuccess}>
-      <h3>{title} ✅</h3>
+      <h3>
+        {isLast && isLastQuestion ? "Grattis, du klarade allt!" : title} ✅
+      </h3>
+
       {timeTaken !== undefined && (
         <div style={styles.timeInfoBox}>
-          {/* Om det finns strafftid, visa en snygg uppdelning */}
           {penaltyTime > 0 && (
             <>
               <p>
-                ⏳ Grundtid: <strong>{timeTaken - penaltyTime}s</strong>
+                ⏳ Grundtid:{" "}
+                <strong>{(timeTaken - penaltyTime).toFixed(1)}s</strong>
               </p>
               <p style={{ color: "#c62828" }}>
-                ⚠️ Strafftid (Klick): <strong>+{penaltyTime}s</strong>
+                ⚠️ Straff: <strong>+{penaltyTime}s</strong>
               </p>
               <hr
                 style={{
@@ -101,23 +126,19 @@ export function FeedbackSuccess({
           )}
 
           <p>
-            ⏱️{" "}
-            {penaltyTime > 0
-              ? "Total tid för frågan:"
-              : "Tid för detta moment:"}{" "}
+            ⏱️ {penaltyTime > 0 ? "Total tid för momentet:" : "Tid:"}{" "}
             <strong>{timeTaken}s</strong>
           </p>
           <p>
-            📊 Total tid i Escape Room:{" "}
-            <strong>{formatTimeWithTenths(totalTime)}s</strong>
+            📊 Din totala tid:{" "}
+            <strong>{formatTimeWithTenths(totalTime)}</strong>
           </p>
         </div>
       )}
-      {onNext && (
-        <button onClick={onNext} style={styles.btnSuccess}>
-          {nextText || "Nästa"}
-        </button>
-      )}
+
+      <button onClick={handleButtonClick} style={styles.btnSuccess}>
+        {getButtonText()}
+      </button>
     </div>
   );
 }

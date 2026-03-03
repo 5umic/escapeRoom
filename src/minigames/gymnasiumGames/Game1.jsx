@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
+import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 
 // Importera våra nya DRY-verktyg!
 import {
@@ -25,7 +25,7 @@ export default function Game1() {
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
   const [totalTimeLimit, setTotalTimeLimit] = useState(60);
   const lastGame = isLastActiveGame("Trafikverket (Gymnasium)");
-  const nextPath = getNextGamePath("Trafikverket (Gymnasium)");
+  const nextPath = getNextGameInfo("Trafikverket (Gymnasium)");
 
   const challenge = challenges[currentIndex];
 
@@ -87,7 +87,7 @@ export default function Game1() {
       startRound(challenges[nextIndex]);
     } else {
       // Om frågorna är slut, då använder vi navigeringen
-      navigate(getNextGamePath("Trafikverket (Gymnasium)"));
+      navigate(getNextGameInfo("Trafikverket (Gymnasium)"));
     }
   };
   const handleRetry = () => {

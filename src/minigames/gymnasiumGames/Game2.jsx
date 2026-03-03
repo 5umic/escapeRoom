@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useId } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
+import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 
 import {
   fetchGameIdByTitle,
@@ -26,7 +26,7 @@ export default function Game2() {
   const [status, setStatus] = useState("loading"); // loading, playing, success, check_failed, time_out
   const [lastPenalty, setLastPenalty] = useState(0);
   const lastGame = isLastActiveGame("Risk & Säkerhet (Game 2)");
-  const nextPath = getNextGamePath("Risk & Säkerhet (Game 2)");
+  const nextPath = getNextGameInfo("Risk & Säkerhet (Game 2)");
 
   const totalTimeLimit = 60; // Fast tid för detta spel
 
@@ -178,7 +178,7 @@ export default function Game2() {
               timeTaken={getTimeTaken()}
               totalTime={sessionStorage.getItem("totalGameTime")}
               onNext={() =>
-                navigate(getNextGamePath("Risk & Säkerhet (Game 2)"))
+                navigate(getNextGameInfo("Risk & Säkerhet (Game 2)"))
               }
               nextText={lastGame ? "Se Leaderboard 🏆" : "Nästa utmaning"}
               currentGameTitle="Risk & Säkerhet (Game 2)"

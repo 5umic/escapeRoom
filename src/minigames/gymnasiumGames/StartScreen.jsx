@@ -14,6 +14,9 @@ export default function StartScreen() {
       setError("Ditt namn måste vara minst 2 bokstäver långt!");
       return;
     }
+    sessionStorage.removeItem("totalGameTime");
+    sessionStorage.removeItem("isScoreSaved");
+    sessionStorage.removeItem("activeGameSequence");
 
     sessionStorage.setItem("playerName", playerName.trim());
     sessionStorage.setItem("totalGameTime", "0");

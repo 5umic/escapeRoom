@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
+import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 
 import {
   fetchGameIdByTitle,
@@ -24,7 +24,7 @@ export default function Game3() {
   const [selectedOption, setSelectedOption] = useState(null);
   const [totalTimeLimit, setTotalTimeLimit] = useState(15);
   const lastGame = isLastActiveGame("Digital Säkerhet (Game 3)");
-  const nextPath = getNextGamePath("Digital Säkerhet (Game 3)");
+  const nextPath = getNextGameInfo("Digital Säkerhet (Game 3)");
 
   const challenge = challenges[currentIndex];
 
@@ -93,7 +93,7 @@ export default function Game3() {
     }
     // 2. Om frågorna är slut, byt till nästa SPEL
     else {
-      navigate(getNextGamePath("Digital Säkerhet (Game 3)")); // Se till att titeln matchar DB exakt!
+      navigate(getNextGameInfo("Digital Säkerhet (Game 3)")); // Se till att titeln matchar DB exakt!
     }
   };
 

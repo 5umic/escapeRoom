@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
-import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
+import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 
 import {
   fetchGameIdByTitle,
@@ -96,7 +96,7 @@ export default function Game5() {
     useGameTimer(totalTimeLimit, status, setStatus);
 
   const lastGame = isLastActiveGame("Sortera Rätt (Game 5)");
-  const nextPath = getNextGamePath("Sortera Rätt (Game 5)");
+  const nextPath = getNextGameInfo("Sortera Rätt (Game 5)");
 
   // 1. Hämta Data vid start
   useEffect(() => {

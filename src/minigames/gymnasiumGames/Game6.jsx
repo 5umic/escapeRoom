@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DndContext, closestCenter } from "@dnd-kit/core";
-import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
+import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 
 import {
   SortableContext,
@@ -76,7 +76,7 @@ export default function Game6() {
   const [totalTimeLimit, setTotalTimeLimit] = useState(30);
 
   const lastGame = isLastActiveGame("Bilda Ordet (Game 6)");
-  const nextPath = getNextGamePath("Bilda Ordet (Game 6)");
+  const nextPath = getNextGameInfo("Bilda Ordet (Game 6)");
 
   // Hook för timern
   const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
@@ -165,7 +165,7 @@ export default function Game6() {
       loadRound(challenges[nextIdx]); // Laddar nästa ord från listan
     } else {
       // Om inga fler ord finns, gå till nästa spel via GPS:en
-      navigate(getNextGamePath("Bilda Ordet (Game 6)"));
+      navigate(getNextGameInfo("Bilda Ordet (Game 6)"));
     }
   };
 

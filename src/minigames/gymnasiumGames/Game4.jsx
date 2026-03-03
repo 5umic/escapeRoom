@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getNextGamePath, isLastActiveGame } from "../../utils/navigation";
+import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 
 // DRY-verktyg
 import {
@@ -35,7 +35,7 @@ export default function Game4() {
   const [penaltySeconds, setPenaltySeconds] = useState(0);
   const [totalTimeLimit, setTotalTimeLimit] = useState(30);
   const lastGame = isLastActiveGame("Pixeljakten (Game 4)");
-  const nextPath = getNextGamePath("Pixeljakten (Game 4)");
+  const nextPath = getNextGameInfo("Pixeljakten (Game 4)");
 
   // Hook för timern
   const {
@@ -170,7 +170,7 @@ export default function Game4() {
       setStatus("loading");
     } else {
       // Om alla bilder i Pixeljakten är slut, gå till nästa spel i ordningen
-      navigate(getNextGamePath("Pixeljakten (Game 4)"));
+      navigate(getNextGameInfo("Pixeljakten (Game 4)"));
     }
   };
 

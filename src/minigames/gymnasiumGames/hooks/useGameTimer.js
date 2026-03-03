@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 
-export const formatTime = (totalSeconds) => {
-  if (totalSeconds === undefined || isNaN(totalSeconds)) return "0:00";
+export const formatTimeWithTenths = (totalSeconds) => {
+  if (totalSeconds === undefined || isNaN(totalSeconds)) return "0:00.0";
   // Math.max ser till att vi aldrig får minus-minuter om något går fel
   const minutes = Math.floor(Math.max(0, totalSeconds) / 60);
   const seconds = Math.floor(Math.max(0, totalSeconds) % 60);
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  const tenths = Math.floor((totalSeconds % 1) * 10);
+  return `${minutes}:${seconds.toString().padStart(2, "0")}.${tenths}`;
 };
 
 export function useGameTimer(
@@ -17,27 +18,30 @@ export function useGameTimer(
   const [secondsLeft, setSecondsLeft] = useState(totalTimeLimit);
 
   useEffect(() => {
-    setSecondsLeft(totalTimeLimit);
-  }, [totalTimeLimit]);
-
-  useEffect(() => {
     if (
       status === "success" ||
       status === "answered_correctly" ||
       status === "time_out" ||
-      status === "answered_wrong"
+      status === "answered_wrong" ||
+      status === "loading"
     )
       return;
 
+    // Om tiden tar slut
     if (secondsLeft <= 0) {
-      const delay = setTimeout(() => {
-        addTimeToSession(totalTimeLimit + penaltySeconds);
-        setStatus("time_out");
-      }, 1000);
-      return () => clearTimeout(delay);
+      addTimeToSession(totalTimeLimit + penaltySeconds);
+      setStatus("time_out");
+      return;
     }
 
-    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    const t = setTimeout(() => {
+      setSecondsLeft((s) => {
+        const nextValue = s - 0.1;
+
+        return parseFloat(Math.max(0, nextValue).toFixed(1));
+      });
+    }, 100);
+
     return () => clearTimeout(t);
   }, [secondsLeft, status, totalTimeLimit, setStatus, penaltySeconds]);
 
@@ -46,14 +50,17 @@ export function useGameTimer(
     sessionStorage.setItem("totalGameTime", currentTotal + secondsToAdd);
   };
 
-  const getTimeTaken = () => totalTimeLimit - secondsLeft + penaltySeconds;
+  const getTimeTaken = () => {
+    const timeElapsed = totalTimeLimit - secondsLeft + penaltySeconds;
+    return parseFloat(timeElapsed.toFixed(1));
+  };
 
   return {
     secondsLeft,
-    formattedSecondsLeft: formatTime(secondsLeft),
+    formattedSecondsLeft: formatTimeWithTenths(secondsLeft),
     setSecondsLeft,
     getTimeTaken,
-    formattedTimeTaken: formatTime(getTimeTaken()),
+    formattedTimeTaken: formatTimeWithTenths(getTimeTaken()),
     addTimeToSession,
   };
 }

@@ -57,6 +57,9 @@ export const fetchSingleChallenge = async (gameId) => {
 // 4. Spara spelarens resultat till Leaderboarden
 export const savePlayerScore = async (playerName, totalTimeSeconds) => {
   try {
+    // Säkerställ att vi skickar siffran exakt som den är (med tiondelar)
+    const numericTime = parseFloat(totalTimeSeconds);
+
     const response = await fetch(`${API_BASE}/api/leaderboard`, {
       method: "POST",
       headers: {
@@ -64,12 +67,13 @@ export const savePlayerScore = async (playerName, totalTimeSeconds) => {
       },
       body: JSON.stringify({
         playerName: playerName,
-        totalTimeSeconds: totalTimeSeconds,
+        totalTimeSeconds: numericTime,
       }),
     });
 
     if (!response.ok) {
-      console.error("Något gick fel vid sparandet av poäng");
+      // Loggar statuskoden för lättare felsökning
+      console.error("Något gick fel vid sparandet av poäng:", response.status);
     }
     return response.ok;
   } catch (error) {

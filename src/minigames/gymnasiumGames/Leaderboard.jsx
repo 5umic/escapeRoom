@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { formatTime } from "../gymnasiumGames/hooks/useGameTimer";
+import { formatTimeWithTenths } from "../gymnasiumGames/hooks/useGameTimer";
 
 const API_BASE = "http://localhost:5261";
 
@@ -66,7 +66,7 @@ export default function Leaderboard() {
                   </td>
                   {/* HÄR formaterar vi de råa sekunderna till MM:SS för spelaren! */}
                   <td style={styles.td}>
-                    {formatTime(score.totalTimeSeconds)}
+                    {formatTimeWithTenths(score.totalTimeSeconds)}
                   </td>
                 </tr>
               ))}

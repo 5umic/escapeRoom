@@ -286,7 +286,7 @@ const styles = {
     flexWrap: "wrap",
     justifyContent: "center",
     gap: "6px",
-    maxWidth: "650px",
+    maxWidth: "560px",
     margin: "0 auto",
   },
   keyBtn: {

@@ -1,5 +1,5 @@
 import React, { use, useEffect, useRef } from "react";
-import { formatTime } from "../hooks/useGameTimer";
+import { formatTimeWithTenths } from "../hooks/useGameTimer";
 import { isLastActiveGame } from "../../../utils/navigation";
 import { savePlayerScore } from "../api/gameApi";
 
@@ -22,10 +22,10 @@ export function TimerBar({ secondsLeft, totalTimeLimit }) {
           ...styles.timerFill,
           width: `${percentage}%`,
           backgroundColor: barColor,
+          transition: "width 0.1s linear, background-color 0.5s ease",
         }}
       />
-      {/* Siffrorna visar nu MM:SS istället för bara sekunder! */}
-      <span style={styles.timerText}>{formatTime(secondsLeft)}</span>
+      <span style={styles.timerText}>{formatTimeWithTenths(secondsLeft)}</span>
     </div>
   );
 }
@@ -75,6 +75,7 @@ export function FeedbackSuccess({
       savePlayerScore(playerName, finalTime);
     }
   }, [currentGameTitle, totalTime, isLastQuestion]);
+
   return (
     <div style={styles.feedbackBoxSuccess}>
       <h3>{title} ✅</h3>
@@ -108,7 +109,7 @@ export function FeedbackSuccess({
           </p>
           <p>
             📊 Total tid i Escape Room:{" "}
-            <strong>{formatTime(totalTime)}s</strong>
+            <strong>{formatTimeWithTenths(totalTime)}s</strong>
           </p>
         </div>
       )}
@@ -157,9 +158,13 @@ const styles = {
     height: "100%",
     borderRadius: "12px",
     transition: "width 1s linear, background-color 0.5s ease",
-  }, // "linear" gör att den krymper silkeslent utan att hacka!
+  },
   timerText: {
+    fontFamily: "monospace",
     position: "absolute",
+    fontVariantNumeric: "tabular-nums",
+    minwidth: "60px",
+    textAlign: "center",
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",

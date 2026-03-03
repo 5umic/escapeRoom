@@ -7,6 +7,6 @@ public class LeaderboardEntry
     [DatabaseGenerated(DatabaseGeneratedOption.None)] 
     public Guid Id { get; set; } = Guid.NewGuid();    
     public string? PlayerName { get; set; }
-    public int TotalTimeSeconds { get; set; } 
+    public double TotalTimeSeconds { get; set; } 
     public DateTime PlayedAt { get; set; } = DateTime.UtcNow; // När de spelade
 }

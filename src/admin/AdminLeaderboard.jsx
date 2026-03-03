@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { formatTimeWithTenths } from "../minigames/gymnasiumGames/hooks/useGameTimer";
 
 const API_BASE = "http://localhost:5261";
 
@@ -83,7 +84,9 @@ export default function AdminLeaderboard() {
                 <td style={styles.td}>
                   <strong>{s.playerName}</strong>
                 </td>
-                <td style={styles.td}>{s.totalTimeSeconds}s</td>
+                <td style={styles.td}>
+                  {formatTimeWithTenths(s.totalTimeSeconds)}
+                </td>
                 <td style={styles.td}>
                   {new Date(s.playedAt).toLocaleDateString()}
                 </td>

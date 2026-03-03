@@ -109,7 +109,7 @@ public class GamesController : ControllerBase
         return Ok(game);
     }
 
-// 6. Ta bort en specifik utmaning
+    // 6. Ta bort en specifik utmaning
     [HttpDelete("challenges/{id}")]
     public async Task<IActionResult> DeleteChallenge(Guid id)
     {
@@ -123,5 +123,46 @@ public class GamesController : ControllerBase
         await _db.SaveChangesAsync();
 
         return Ok();
+    }
+
+    // 7. Admin: Hämta info om ett specifikt spel
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetGame(Guid id)
+    {
+        var game = await _db.Games
+            .Select(g => new { g.Id, g.Title, g.IsActive })
+            .FirstOrDefaultAsync(g => g.Id == id);
+
+        if (game == null) return NotFound();
+        return Ok(game);
+    }
+
+    // 8. Admin: Ladda upp en bild
+    [HttpPost("upload-image")]
+    public async Task<IActionResult> UploadImage([FromForm] IFormFile file, [FromForm] string folder)
+    {
+        if (file == null || file.Length == 0) return BadRequest("Ingen fil vald.");
+
+        // Dynamisk sökväg
+        var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "public", "images", folder);
+
+        // Skapa mappen om den inte finns (viktigt!)
+        if (!Directory.Exists(rootPath))
+        {
+            Directory.CreateDirectory(rootPath);
+        }
+
+        var fileName = Path.GetFileName(file.FileName);
+        var filePath = Path.Combine(rootPath, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        // URL:en som frontend använder (eftersom 'public' är root i webbläsaren)
+        var imageUrl = $"/images/{folder}/{fileName}";
+        
+        return Ok(new { url = imageUrl });
     }
 }

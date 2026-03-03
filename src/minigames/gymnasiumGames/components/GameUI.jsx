@@ -4,7 +4,7 @@ import { formatTimeWithTenths } from "../hooks/useGameTimer";
 import { getNextGameInfo } from "../../../utils/navigation";
 import { savePlayerScore } from "../api/gameApi";
 
-// --- NY KOMPONENT: KRYMPANDE TIMER-MÄTARE ---
+// --- KRYMPANDE TIMER-MÄTARE ---
 export function TimerBar({ secondsLeft, totalTimeLimit }) {
   const maxTime = totalTimeLimit || 1;
   const percentage = Math.max(0, Math.min(100, (secondsLeft / maxTime) * 100));

@@ -164,14 +164,26 @@ export default function Game5() {
     let allCorrect = true;
     const newValidation = {};
 
+    // Är startpoolen tom? Om inte, är det automatiskt fel.
+    if (containers.pool.length > 0) {
+      allCorrect = false;
+      // Markera de ord som ligger kvar i poolen som felaktiga
+      containers.pool.forEach((word) => {
+        newValidation[word] = "incorrect";
+      });
+    }
+
     categories.forEach((category) => {
       const userWords = containers[category] || [];
       const correctWords = correctMapping[category] || [];
+
+      // Kontrollera om antalet ord matchar
       if (userWords.length !== correctWords.length) allCorrect = false;
 
       userWords.forEach((word) => {
-        if (correctWords.includes(word)) newValidation[word] = "correct";
-        else {
+        if (correctWords.includes(word)) {
+          newValidation[word] = "correct";
+        } else {
           newValidation[word] = "incorrect";
           allCorrect = false;
         }
@@ -179,12 +191,13 @@ export default function Game5() {
     });
 
     setValidation(newValidation);
-    const spent = getTimeTaken(); // Hämta spenderad tid via hook
+    const spent = getTimeTaken();
 
     if (allCorrect) {
       addTimeToSession(spent);
       setStatus("success");
     } else {
+      // Vi lägger till strafftid men låter spelaren fortsätta efter att ha fått feedback på vilka kort som är felplacerade
       addTimeToSession(spent);
       setLastPenalty(spent);
       setStatus("check_failed");
@@ -266,7 +279,6 @@ export default function Game5() {
               }
               timeTaken={getTimeTaken()}
               totalTime={sessionStorage.getItem("totalGameTime")}
-              onNext={() => navigate(nextPath)}
               nextText={lastGame ? "Se Leaderboard 🏆" : "Nästa utmaning"}
               currentGameTitle="Sortera Rätt (Game 5)"
               isLastQuestion={true}
@@ -276,9 +288,14 @@ export default function Game5() {
           {status === "check_failed" && (
             <FeedbackError
               title="Inte helt rätt"
-              message="Flytta de röda korten och försök igen. Klockan tickar!"
+              message={
+                containers.pool.length > 0
+                  ? "Du måste sortera ALLA kort innan du kontrollerar! Klockan tickar!"
+                  : "Några kort ligger i fel box. Flytta de röda korten och försök igen! Klockan tickar!"
+              }
               penalty={lastPenalty}
-              // Notera: Vi skickar inte in onRetry här, så det dyker inte upp någon knapp!
+              // Lägg till onRetry här så att spelaren kan klicka bort rutan och fortsätta
+              onRetry={() => setStatus("playing")}
             />
           )}
 
@@ -309,7 +326,7 @@ export default function Game5() {
   );
 }
 
-// Styling (Betydligt kortare igen)
+// Styling
 const styles = {
   boxContainer: {
     display: "flex",

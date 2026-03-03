@@ -36,7 +36,9 @@ export default function Leaderboard() {
         {loading ? (
           <p>Laddar resultat...</p>
         ) : scores.length === 0 ? (
-          <p>Inga resultat ännu. Bli den första att klara spelet!</p>
+          <p style={styles.noScores}>
+            Inga resultat ännu. Bli den första att klara spelet!
+          </p>
         ) : (
           <table style={styles.table}>
             <thead>
@@ -104,6 +106,12 @@ const styles = {
   },
   title: { color: "#b10000", margin: "0 0 10px 0", fontSize: "36px" },
   subtitle: { fontSize: "18px", color: "#555", marginBottom: "30px" },
+  noScores: {
+    fontSize: "16px",
+    color: "#777",
+    fontStyle: "italic",
+    paddingBottom: "20px",
+  },
 
   table: { width: "100%", borderCollapse: "collapse", marginBottom: "30px" },
   tableHead: { backgroundColor: "#f3f3f3", borderBottom: "2px solid #ccc" },

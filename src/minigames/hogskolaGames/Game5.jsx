@@ -1,6 +1,7 @@
 // Jigsaw Puzzle Game - Trafikverket Logo
 import React, { useState, useEffect } from 'react';
 import './Game5.css';
+import Game6 from './Game6.jsx';
 
 export default function Game5() {
   const GRID_COLS = 4;
@@ -12,6 +13,7 @@ export default function Game5() {
   const [isComplete, setIsComplete] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showGame6, setShowGame6] = useState(false);
   const [draggedPiece, setDraggedPiece] = useState(null);
 
   useEffect(() => {
@@ -19,10 +21,20 @@ export default function Game5() {
   }, []);
 
   useEffect(() => {
-    if (board.length > 0 && checkComplete()) {
-      console.log('Puzzle complete!', board);
-      setIsComplete(true);
+    if (board.length === 0) return;
+    
+    let complete = true;
+    for (let i = 0; i < TOTAL_PIECES; i++) {
+      if (board[i] !== i) {
+        complete = false;
+        break;
+      }
     }
+    
+    if (complete) {
+      console.log('Puzzle complete!', board);
+    }
+    setIsComplete(complete);
   }, [board]);
 
   const initializePuzzle = () => {
@@ -33,13 +45,6 @@ export default function Game5() {
     setPieces(shuffled);
     setBoard(Array(TOTAL_PIECES).fill(null));
     setIsComplete(false);
-  };
-
-  const checkComplete = () => {
-    for (let i = 0; i < TOTAL_PIECES; i++) {
-      if (board[i] !== i) return false;
-    }
-    return true;
   };
 
   const getPieceStyle = (pieceId) => {
@@ -114,6 +119,10 @@ export default function Game5() {
     initializePuzzle();
   };
 
+  if (showGame6) {
+    return <Game6 />;
+  }
+
   if (showSuccess) {
     return (
       <div className="game5-success">
@@ -122,7 +131,7 @@ export default function Game5() {
           <p className="reward-word">
             <span className="reward-label">Du lade ihop pusslet!</span>
           </p>
-          <button className="continue-button">Fortsätt</button>
+          <button className="continue-button" onClick={() => setShowGame6(true)}>Fortsätt</button>
         </div>
       </div>
     );

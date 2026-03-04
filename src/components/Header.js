@@ -1,1 +1,0 @@
-// Trafikverket branding, progress bar

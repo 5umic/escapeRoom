@@ -67,7 +67,7 @@ export default function Game1() {
         <div className="success-content">
           <h2>Rätt svar!</h2>
           <p className="reward-word">
-            <span className="reward-label">Ditt ord:</span> <strong>ALLA</strong></p>
+            <span className="reward-label"></span> <strong>BRA JOBBAT!</strong></p>
           <button className="continue-button" onClick={() => setShowGame2(true)}>Fortsätt</button>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function Game1() {
       <div className="game1-container">
         <div className="game1-content">
           <div className="info-section">
-            <h2 className="info-title">Bra jobbat!</h2>
+            <h2 className="info-title">HÄRLIGT!</h2>
             
             <div className="info-text">
               <p>

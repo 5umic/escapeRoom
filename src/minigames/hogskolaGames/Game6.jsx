@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import './Game6.css';
 
 export default function Game6() {
-  // 12 olika emojis för trafikrelaterade saker (12 par = 24 kort)
-  const emojis = ['🚗', '🚌', '🚂', '🚦', '⛔', '🛑', '🚧', '🛤️', '🌉', '⚠️', '🚸', '🦌'];
+  // 9 olika emojis för trafikrelaterade saker (9 par = 18 kort)
+  const emojis = ['🚗', '🚌', '🚂', '🚦', '⛔', '🛑', '🚧', '🛤️', '⚠️'];
   
   const [cards, setCards] = useState([]);
   const [flippedCards, setFlippedCards] = useState([]);
@@ -19,7 +19,7 @@ export default function Game6() {
   }, []);
 
   useEffect(() => {
-    if (matchedCards.length === 24 && matchedCards.length > 0) {
+    if (matchedCards.length === 18 && matchedCards.length > 0) {
       setIsComplete(true);
     }
   }, [matchedCards]);
@@ -160,10 +160,6 @@ export default function Game6() {
             </button>
           </div>
         )}
-
-        <button className="reset-button" onClick={initializeGame}>
-          Nytt spel
-        </button>
       </div>
     </div>
   );

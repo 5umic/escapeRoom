@@ -25,10 +25,21 @@ export default function Game5() {
     
     let complete = true;
     for (let i = 0; i < TOTAL_PIECES; i++) {
+      if (i === 9 && (board[i] === 9 || board[i] === 10)) {
+        continue;
+      }
+      if (i === 10 && (board[i] === 9 || board[i] === 10)) {
+        continue;
+      }
+      
       if (board[i] !== i) {
         complete = false;
         break;
       }
+    }
+    
+    if (complete && (board[9] === null || board[10] === null)) {
+      complete = false;
     }
     
     if (complete) {
@@ -82,6 +93,8 @@ export default function Game5() {
       const newBoard = [...board];
       
       if (newBoard[targetIndex] !== null) {
+        setDraggedPiece(null);
+        return;
       }
       
       newBoard[targetIndex] = pieceId;

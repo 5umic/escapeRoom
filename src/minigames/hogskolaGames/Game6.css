@@ -37,7 +37,7 @@
 .memory-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  grid-template-rows: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
   gap: 15px;
   max-width: 900px;
   margin: 0 auto 30px auto;
@@ -113,7 +113,6 @@
 }
 
 .memory-card.matched .card-front {
-  background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
   animation: matchPulse 0.5s ease;
 }
 
@@ -136,11 +135,11 @@
 }
 
 .completion-message {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0);
   padding: 25px;
   border-radius: 12px;
   margin-bottom: 20px;
-  border: 3px solid #fff;
+  border: 3px solid #ffffff00;
   animation: fadeInScale 0.5s ease;
 }
 

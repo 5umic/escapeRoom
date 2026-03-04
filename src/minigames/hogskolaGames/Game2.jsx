@@ -1,12 +1,14 @@
 // Security Hunt Game - Find the Hidden Code
 import React, { useState } from 'react';
 import './Game2.css';
+import Game3 from './Game3.jsx';
 
 export default function Game2() {
   const [userInput, setUserInput] = useState('');
   const [isCorrect, setIsCorrect] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showGame3, setShowGame3] = useState(false);
   const [hint, setHint] = useState('');
   const [revealedHints, setRevealedHints] = useState([false, false, false, false]);
 
@@ -37,15 +39,19 @@ export default function Game2() {
     }
   };
 
+  if (showGame3) {
+    return <Game3 />;
+  }
+
   if (showSuccess) {
     return (
       <div className="game2-success">
         <div className="success-content">
           <h2>Rätt svar!</h2>
           <p className="reward-word">
-            <span className="reward-label">Ditt ord:</span> <strong>KOMMER</strong>
+            <span className="reward-label"></span> <strong>BRA JOBBAT!</strong>
           </p>
-          <button className="continue-button">Fortsätt</button>
+          <button className="continue-button" onClick={() => setShowGame3(true)}>Fortsätt</button>
         </div>
       </div>
     );
@@ -56,7 +62,7 @@ export default function Game2() {
       <div className="game2-container">
         <div className="game2-content">
           <div className="info-section">
-            <h2 className="info-title">Bra jobbat!</h2>
+            <h2 className="info-title">SUPER BRA!</h2>
             
             <div className="info-text">
               <p>

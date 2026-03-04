@@ -25,8 +25,8 @@ export default function HogskolaWelcomePage() {
           
           <p className="welcome-page-description">
             <TypewriterText 
-              text={`I detta digitala escape room kommer du att lösa 6-7 spännande mini-spel som representerar Trafikverkets värderingar och arbete. Varje spel du klarar belönar dig med ett ord som du kommer behöva mot slutet av spelet.
-                \nNär du har klarat alla spel kommer du använda orden som du har samlat för att bygga en mening som speglar Trafikverkets uppdrag. 
+              text={`I detta digitala escape room kommer du att lösa 6 spännande mini-spel som representerar Trafikverkets värderingar och arbete. Varje spel du klarar belönar dig med ett ord som du kommer behöva mot slutet av spelet.
+                \nNär du har klarat alla spel kommer du lärt dig våra värderingar, vad vi står för och hur vi arbetar på Trafikverket orden som du har samlat för att bygga en mening som speglar Trafikverkets uppdrag. 
                 \nUpplev hur planering, säkerhet och samarbete formar framtidens infrastruktur!`}
               speed={30}
             />

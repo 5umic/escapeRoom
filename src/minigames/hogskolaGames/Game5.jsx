@@ -235,12 +235,7 @@ export default function Game5() {
                       draggable={!isComplete && !LOCKED_PIECES.includes(board[index])}
                       onDragStart={(e) => handleDragStart(e, board[index], false)}
                     >
-                      {(board[index] === 0 || board[index] === 3) && (
-                        <span className="piece-number">{board[index] + 1}</span>
-                      )}
                     </div>
-                  )}
-                  {board[index] === null && (       <span className="slot-number">{index + 1}</span>
                   )}
                 </div>
               ))}
@@ -263,9 +258,6 @@ export default function Game5() {
                     draggable={!isComplete && !isPlaced}
                     onDragStart={(e) => handleDragStart(e, pieceId, true)}
                   >
-                    {(pieceId === 0 || pieceId === 3) && (
-                      <span className="piece-number">{pieceId + 1}</span>
-                    )}
                   </div>
                 );
               })}

@@ -74,10 +74,13 @@
 
 .feedback-message.correct {
   animation: bounceUp 0.6s ease-out;
+  background-color: #d70000;
+
 }
 
 .feedback-message.incorrect {
   animation: shake 0.5s;
+  background-color: #d70000;
 }
 
 .feedback-label {
@@ -260,7 +263,7 @@
 
 .continue-button {
   background-color: #fff;
-  color: #d32f2f;
+  color: #d70000;
   border: 3px solid #fff;
   padding: 15px 40px;
   font-size: 20px;
@@ -273,7 +276,7 @@
 }
 
 .continue-button:hover {
-  background-color: #d32f2f;
+  background-color: #d70000;
   color: #FFFFFF;
   transform: scale(1.05);
 }

@@ -18,11 +18,11 @@ export default function Game7() {
     { id: 0, x: 20, y: 20, label: 'Client' },
     { id: 1, x: 50, y: 15, label: 'Load Balancer' },
     { id: 2, x: 80, y: 20, label: 'API Gateway' },
-    { id: 3, x: 35, y: 50, label: 'Auth Server' },
-    { id: 4, x: 65, y: 50, label: 'App Server' },
+    { id: 3, x: 15, y: 50, label: 'Auth Server' },
+    { id: 4, x: 75, y: 50, label: 'App Server' },
     { id: 5, x: 25, y: 80, label: 'Database' },
-    { id: 6, x: 50, y: 85, label: 'Cache' },
-    { id: 7, x: 75, y: 80, label: 'File Storage' }
+    { id: 6, x: 50, y: 65, label: 'Cache' },
+    { id: 7, x: 75, y: 85, label: 'File Storage' }
   ];
 
   // Correct sequence: Client → Load Balancer → API Gateway → Auth Server → App Server → Cache → Database → File Storage

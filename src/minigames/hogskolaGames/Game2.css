@@ -1,4 +1,4 @@
-.game2-container {
+.game3-container {
   background: #d70000;
   min-height: 100vh;
   display: flex;
@@ -7,12 +7,12 @@
   padding: 20px;
 }
 
-.game2-content {
-  max-width: 800px;
+.game3-content {
+  max-width: 900px;
   width: 100%;
 }
 
-.game2-title {
+.game3-title {
   font-size: 36px;
   color: #fff;
   text-align: center;
@@ -21,196 +21,236 @@
   font-weight: bold;
 }
 
-.game2-instructions {
+.game3-instructions {
   font-size: 20px;
   color: #fff;
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   font-family: 'Pixelify Sans', sans-serif;
   line-height: 1.6;
 }
 
-.security-panel {
-  background-color: #d70000;
-  border-radius: 12px;
-  padding: 40px;
+.sentence-builder {
   margin-bottom: 30px;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
-.security-icon {
-  font-size: 64px;
+.selected-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  min-height: 100px;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.0);
+  border-radius: 8px;
   margin-bottom: 20px;
 }
 
-.panel-title {
-  font-size: 28px;
-  color: #FFFFFF;
-  margin-bottom: 15px;
-  font-family: 'Pixelify Sans', sans-serif;
-  font-weight: bold;
-}
-
-.panel-description {
+.word-slot {
+  padding: 12px 20px;
+  border-radius: 6px;
   font-size: 18px;
-  color: #FFFFFF;
-  margin-bottom: 30px;
-  line-height: 1.6;
+  font-weight: 600;
+  min-width: 100px;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-family: 'Pixelify Sans', sans-serif;
 }
 
-.test-button {
-  background-color: #f5f5f5;
-  border: 2px solid #fff;
+.word-slot.empty {
+  background-color: rgba(255, 255, 255, 0.0);
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 24px;
+}
 
+.word-slot.filled {
+  background-color: #fff;
+  border: 2px solid #fff;
   color: #d70000;
+  cursor: grab;
+}
+
+.word-slot.filled:hover {
+  background-color: #f5f5f5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.word-slot.filled:active {
+  cursor: grabbing;
+  opacity: 0.5;
+}
+
+.word-slot.correct {
+  background-color: #4caf50;
+  border: 2px solid #4caf50;
+  color: #fff;
+  animation: correctPulse 0.5s ease;
+}
+
+.word-slot.misplaced {
+  background-color: #ffc107;
+  border: 2px solid #ffc107;
+  color: #fff;
+  animation: misplacedPulse 0.5s ease;
+}
+
+.word-slot.wrong {
+  background-color: #9e9e9e;
+  border: 2px solid #9e9e9e;
+  color: #fff;
+  animation: wrongPulse 0.5s ease;
+}
+
+@keyframes correctPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes misplacedPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes wrongPulse {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.check-button,
+.clear-button {
   padding: 12px 30px;
   font-size: 16px;
   font-weight: bold;
+  border: none;
   border-radius: 8px;
   cursor: pointer;
-  margin-bottom: 25px;
   transition: all 0.3s ease;
   font-family: 'Pixelify Sans', sans-serif;
 }
 
-.test-button:hover {
-  background-color: #d70000;
-  color: #fff;
-  transform: scale(1.05);
-}
-
-.code-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.code-input {
-  padding: 15px;
-  font-size: 18px;
-  border: 3px solid #d70000;
-  border-radius: 8px;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.code-input:focus {
-  outline: none;
-  border-color: #b71c1c;
-  box-shadow: 0 0 0 3px rgba(215, 0, 0, 0.1);
-}
-
-.submit-button {
+.check-button {
   background-color: #fff;
   color: #d70000;
-  border: 3px solid #fff;
-  padding: 15px 40px;
-  font-size: 20px;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  min-width: 180px;
-  transition: all 0.3s ease;
-  font-family: 'Pixelify Sans', sans-serif;
+  border: 2px solid #fff;
 }
 
-.submit-button:hover {
-  background-color: #d70000;
-  color: #fff;
+.check-button:hover:not(:disabled) {
+  background-color: #f5f5f5;
   transform: scale(1.05);
 }
 
-.hint-message {
-  margin-top: 20px;
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: bold;
+.check-button:disabled {
+  background-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
-.success-message {
-  margin-top: 20px;
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: bold;
-  animation: popIn 0.3s ease;
+.clear-button {
+  background-color: rgba(0, 0, 0, 0.0);
+  color: #fff;
+  border: 2px solid #fff;
 }
 
-.hints-container {
-  background-color: #d70000;
-  padding: 25px;
-  border-radius: 12px;
+.clear-button:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+  transform: scale(1.05);
 }
 
-.hints-container h3 {
+.available-words {
+  margin-bottom: 25px;
+}
+
+.available-words h3 {
   color: #fff;
   font-size: 24px;
   margin-bottom: 15px;
   text-align: center;
   font-family: 'Pixelify Sans', sans-serif;
+}
+
+.word-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.0);
+  border-radius: 8px;
+}
+
+.word-button {
+  padding: 10px 20px;
+  background-color: #fff;
+  border: 2px solid #fff;
+  border-radius: 6px;
+  color: #d70000;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: grab;
+  transition: all 0.3s ease;
+  font-family: 'Pixelify Sans', sans-serif;
+}
+
+.word-button:hover {
+  background-color: #f5f5f5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.word-button:active {
+  cursor: grabbing;
+  opacity: 0.5;
+}
+
+
+
+
+
+
+
+
+/* Info Section Styles */
+.info-section {
+  text-align: center;
+  background-color: #d70000;
+  padding: 40px;
+  border-radius: 12px;
+}
+
+.info-title {
+  font-size: 36px;
+  color: #fff;
+  margin-bottom: 30px;
+  font-family: 'Pixelify Sans', sans-serif;
   font-weight: bold;
 }
 
-.hints-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.hints-list li {
+.info-text {
   color: #fff;
   font-size: 18px;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 8px;
+  line-height: 1.8;
+  margin-bottom: 30px;
+  text-align: left;
   font-family: 'Pixelify Sans', sans-serif;
-  line-height: 1.6;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
 }
 
-.hints-list li.obscured {
-  user-select: none;
-  background-color: rgba(255, 255, 255, 0.1);
+.info-text p {
+  margin-bottom: 20px;
 }
 
-.hints-list li.obscured:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.hints-list li.obscured .hint-text {
-  filter: blur(8px);
-  color: transparent;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-}
-
-.hints-list li.revealed .hint-text {
-  filter: none;
-  color: #fff;
-}
-
-.hint-label {
-  display: block;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 14px;
-  color: #ffcc00;
-  font-weight: bold;
-  pointer-events: none;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-}
-
-.hints-list li.revealed .hint-label {
-  display: none;
-}
-
-.game2-success {
+/* Success Screen Styles */
+.game3-success {
   background: #d70000;
   min-height: 100vh;
   display: flex;
@@ -221,38 +261,37 @@
 
 .success-content {
   background-color: #d70000;
-  padding: 60px;
   border-radius: 12px;
+  padding: 50px;
   text-align: center;
-  animation: popIn 0.5s ease;
-}
-
-@keyframes popIn {
-  0% { transform: scale(0.8); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  max-width: 500px;
+  width: 100%;
 }
 
 .success-content h2 {
-  font-size: 48px;
-  color: #ffffff;
-  margin-bottom: 20px;
+  font-size: 36px;
+  color: #fff;
+  margin-bottom: 30px;
   font-family: 'Pixelify Sans', sans-serif;
+  font-weight: bold;
 }
 
 .reward-word {
-  font-size: 24px;
-  color: #ffffff;
+  font-size: 20px;
+  color: #fff;
   margin-bottom: 30px;
-}
-
-.reward-word strong {
-  font-size: 40px;
-  color: #ffffff;
+  font-family: 'Pixelify Sans', sans-serif;
 }
 
 .reward-label {
-  font-size: 25px;
-  font-weight: bold;
+  display: block;
+  margin-bottom: 10px;
+  color: #e0e0e0;
+}
+
+.reward-word strong {
+  color: #fff;
+  font-size: 32px;
 }
 
 .continue-button {
@@ -267,57 +306,37 @@
   min-width: 180px;
   transition: all 0.3s ease;
   font-family: 'Pixelify Sans', sans-serif;
+
 }
 
 .continue-button:hover {
   background-color: #d32f2f;
-  color: #fff;
+  color: #FFFFFF;
   transform: scale(1.05);
 }
 
-.info-section {
-  background-color: #d70000;
-  padding: 40px;
-  border-radius: 12px;
-  animation: slideDown 0.5s ease;
-  text-align: center;
-}
+@media (max-width: 768px) {
+  .game3-title {
+    font-size: 28px;
+  }
 
-@keyframes slideDown {
-  0% { transform: translateY(-20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
+  .word-slot {
+    min-width: 80px;
+    padding: 10px 15px;
+    font-size: 16px;
+  }
 
-.info-title {
-  font-size: 32px;
-  color: #ffffff;
-  margin-bottom: 25px;
-  font-family: 'Pixelify Sans', sans-serif;
-  font-weight: bold;
-  text-align: center;
-}
+  .word-button {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
 
-.info-text {
-  color: #ffffff;
-  font-size: 19px;
-  line-height: 1.8;
-  margin-bottom: 30px;
-  font-family: 'Open Sans', sans-serif;
-}
+  .button-group {
+    flex-direction: column;
+  }
 
-.info-text p {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.info-text p:last-child {
-  margin-bottom: 0;
-}
-
-.SYSTEMKOD {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
+  .check-button,
+  .clear-button {
+    width: 100%;
+  }
 }

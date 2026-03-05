@@ -1,57 +1,152 @@
-  // Security Hunt Game - Find the Hidden Code
-import React, { useState } from 'react';
+// Game 2 - Sentence Building Game
+import React, { useState, useEffect } from 'react';
 import './Game2.css';
 import Game3 from './Game3.jsx';
 
 export default function Game2() {
-  const [userInput, setUserInput] = useState('');
-  const [isCorrect, setIsCorrect] = useState(false);
+  const targetSentence = ["Alla", "kommer", "fram", "smidigt,", "grönt", "och", "tryggt"];
+  
+  const [selectedWords, setSelectedWords] = useState(Array(targetSentence.length).fill(null));
+  const [availableWords, setAvailableWords] = useState([]);
+  const [feedback, setFeedback] = useState([]);
   const [showInfo, setShowInfo] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showGame3, setShowGame3] = useState(false);
-  const [hint, setHint] = useState('');
-  const [revealedHints, setRevealedHints] = useState([false, false, false, false]);
+  const [showGame4, setShowGame4] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [draggedItem, setDraggedItem] = useState(null); // { word, fromIndex } or { word, fromAvailable: true }
+  const [isDragging, setIsDragging] = useState(false);
+  
+  const allWords = [
+    "Alla", "kommer", "fram", "smidigt,", "grönt", "och", "tryggt",
+    "snabbt", "säkert", "vi", "måste", "kan", "vara", "bra"
+  ];
 
-  const correctCode = "SÄKERHET";
+  useEffect(() => {
+    const shuffled = [...allWords].sort(() => Math.random() - 0.5);
+    setAvailableWords(shuffled);
+  }, []);
 
-  const toggleHint = (index) => {
-    setRevealedHints(prev => {
-      const newRevealed = [...prev];
-      newRevealed[index] = !newRevealed[index];
-      return newRevealed;
-    });
-  };
-
-  const handleSecurityCheck = () => {
-    console.log('%cSäkerhetssystem aktiverat', 'color: #d70000; font-size: 16px; font-weight: bold;');
-    console.log('%cSystemkod: SÄK', 'color: #a65050; font-size: 14px;');
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (userInput.toUpperCase() === correctCode) {
-      setIsCorrect(true);
-      setTimeout(() => {
-        setShowInfo(true);
-      }, 500);
-    } else {
-      setHint('Fel kod. Försök igen! Tips: Tryck på knappen och kolla i konsolen.');
+  const handleWordClick = (word) => {
+    // When clicking a word from available words, add it to first empty slot
+    const emptyIndex = selectedWords.findIndex(w => w === null);
+    if (emptyIndex !== -1) {
+      const newSelected = [...selectedWords];
+      newSelected[emptyIndex] = word;
+      setSelectedWords(newSelected);
+      setAvailableWords(availableWords.filter(w => w !== word));
+      setFeedback([]);
     }
   };
 
-  if (showGame3) {
+  const handleSlotClick = (index) => {
+    // Click on a word slot to send it back to available words
+    const wordAtSlot = selectedWords[index];
+    if (wordAtSlot !== null && !isDragging) {
+      const newSelected = [...selectedWords];
+      newSelected[index] = null;
+      setSelectedWords(newSelected);
+      setAvailableWords([...availableWords, wordAtSlot]);
+      setFeedback([]);
+    }
+  };
+
+  // Drag handlers for word slots
+  const handleDragStartSlot = (e, index) => {
+    const word = selectedWords[index];
+    if (word !== null) {
+      setDraggedItem({ word, fromIndex: index });
+      setIsDragging(true);
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  };
+
+  const handleDragOverSlot = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDropSlot = (e, targetIndex) => {
+    e.preventDefault();
+    if (!draggedItem) return;
+
+    if (draggedItem.fromAvailable) {
+      // Dropping from available words
+      const newSelected = [...selectedWords];
+      if (newSelected[targetIndex] === null) {
+        newSelected[targetIndex] = draggedItem.word;
+        setSelectedWords(newSelected);
+        setAvailableWords(availableWords.filter(w => w !== draggedItem.word));
+        setFeedback([]);
+      }
+    } else {
+      // Dropping from another slot - swap positions
+      const newSelected = [...selectedWords];
+      [newSelected[draggedItem.fromIndex], newSelected[targetIndex]] = 
+        [newSelected[targetIndex], newSelected[draggedItem.fromIndex]];
+      setSelectedWords(newSelected);
+      setFeedback([]);
+    }
+
+    setDraggedItem(null);
+    setIsDragging(false);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+    setIsDragging(false);
+  };
+
+  // Drag handlers for available words
+  const handleDragStartAvailable = (e, word) => {
+    setDraggedItem({ word, fromAvailable: true });
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleClear = () => {
+    setAvailableWords([...allWords].sort(() => Math.random() - 0.5));
+    setSelectedWords(Array(targetSentence.length).fill(null));
+    setFeedback([]);
+  };
+
+  const checkSentence = () => {
+    if (selectedWords.some(w => w === null)) {
+      return;
+    }
+
+    const newFeedback = selectedWords.map((word, index) => {
+      if (word === targetSentence[index]) {
+        return 'correct';
+      } else if (targetSentence.includes(word)) {
+        return 'misplaced';
+      } else {
+        return 'wrong';
+      }
+    });
+
+    setFeedback(newFeedback);
+    setAttempts(attempts + 1);
+
+    if (newFeedback.every(f => f === 'correct')) {
+      setTimeout(() => {
+        setShowInfo(true);
+      }, 1000);
+    }
+  };
+
+  if (showGame4) {
     return <Game3 />;
   }
 
   if (showSuccess) {
     return (
-      <div className="game2-success">
+      <div className="game3-success">
         <div className="success-content">
           <h2>Rätt svar!</h2>
           <p className="reward-word">
             <span className="reward-label"></span> <strong>BRA JOBBAT!</strong>
           </p>
-          <button className="continue-button" onClick={() => setShowGame3(true)}>Fortsätt</button>
+          <button className="continue-button" onClick={() => setShowGame4(true)}>Fortsätt</button>
         </div>
       </div>
     );
@@ -59,20 +154,20 @@ export default function Game2() {
 
   if (showInfo) {
     return (
-      <div className="game2-container">
-        <div className="game2-content">
+      <div className="game3-container">
+        <div className="game3-content">
           <div className="info-section">
-            <h2 className="info-title">SUPER BRA!</h2>
+            <h2 className="info-title">Du är helt grym!</h2>
             
             <div className="info-text">
               <p>
-                Säkerhet är en central del av Trafikverkets IT-verksamhet. Varje dag arbetar vi med att skydda känslig information och säkerställa att våra system är robusta mot hot.
+                "Alla kommer fram smidigt, grönt och tryggt" - detta är en av Trafikverkets kärnvärden när det gäller trafikplanering och infrastruktur.
               </p>
               <p>
-                Genom att använda webbläsarens utvecklarverktyg kan du inspektera hur webbsidor fungerar "bakom kulisserna". Detta är viktiga verktyg för utvecklare, men också för att förstå säkerhetsaspekter. Att kunna granska nätverkstrafik, läsa konsolmeddelanden och inspektera källkod är grundläggande färdigheter inom säker webbutveckling.
+                Smidighet i trafikflöden, gröna hållbara lösningar och trygghet för alla trafikanter är grundläggande principer i vårt arbete. Som IT-utvecklare på Trafikverket bidrar du till att skapa system som hjälper till att uppnå dessa mål.
               </p>
               <p>
-                På Trafikverket använder vi dessa verktyg dagligen för att säkerställa att vår kod är säker och att inga känsliga uppgifter exponeras oavsiktligt.
+                Genom att utveckla intelligenta trafikstyrningssystem, realtidsövervakning och dataanalys hjälper vi till att göra Sveriges vägar och järnvägar säkrare och mer effektiva.
               </p>
             </div>
 
@@ -86,82 +181,63 @@ export default function Game2() {
   }
 
   return (
-    <div className="game2-container">
-      <div className="game2-content">
-        <h1 className="game2-title">Säkerhetsjakt</h1>
-        <p className="game2-instructions">
-          Vi på Trafikverket satsar mycket på säkerhet, det är viktigt för oss att man ska vara medveten om säkerhetsfrågor, samt utveckla säker kod.
+    <div className="game3-container">
+      <div className="game3-content">
+        <h1 className="game3-title">Bygg Rätt Mening</h1>
+        <p className="game3-instructions">
+          Dra och släpp ord från listan nedan för att bygga Trafikverkets viktiga budskap. 
+          Klicka på ord i meningen för att ta bort dem.
+          <br />
+          Grön = rätt ord på rätt plats, Gul = rätt ord men fel plats, Grå = fel ord.
         </p>
 
-        <div className="security-panel">
-            <h2 className="panel-title">Säkerhetskontroll</h2>
-          <p className="panel-description">
-            Hitta den dolda säkerhetskoden genom att använda webbläsarens inspektör.
-          </p>
-                    <p className="panel-description">
-            Tips: du kan använda ledtrådarna där nere!
-          </p>
+        <div className="sentence-builder">
+          <div className="selected-words">
+            {selectedWords.map((word, index) => (
+              <div 
+                key={index} 
+                className={`word-slot ${word !== null ? 'filled' : 'empty'} ${feedback[index] || ''}`}
+                onClick={() => handleSlotClick(index)}
+                onDragOver={handleDragOverSlot}
+                onDrop={(e) => handleDropSlot(e, index)}
+                draggable={word !== null}
+                onDragStart={(e) => handleDragStartSlot(e, index)}
+                onDragEnd={handleDragEnd}
+              >
+                {word !== null ? word : '_'}
+              </div>
+            ))}
+          </div>
 
-          <button onClick={handleSecurityCheck} className="test-button">
-            Inled säkerhetskontroll
-          </button>
-
-          <form onSubmit={handleSubmit} className="code-form">
-            <input
-              type="text"
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              placeholder="_ _ _ _ _ _ _ _"
-              className="code-input"
-            />
-            <button type="submit" className="submit-button">
-              Verifiera
+          <div className="button-group">
+            <button 
+              className="check-button" 
+              onClick={checkSentence}
+              disabled={selectedWords.some(w => w === null)}
+            >
+              Kontrollera Mening
             </button>
-          </form>
+          </div>
 
-          {hint && <p className="hint-message">{hint}</p>}
-
-          {isCorrect && (
-            <div className="success-message">
-              Säkerhetskoden verifierad!
-            </div>
-          )}
         </div>
 
-        <div className="hints-container">
-          <h3>Ledtrådar:</h3>
-          <ul className="hints-list">
-            <li 
-              className={revealedHints[0] ? 'revealed' : 'obscured'}
-              onClick={() => toggleHint(0)}
-            >
-              <span className="hint-text">Tryck på "Kör säkerhetskontroll" knappen</span>
-              {!revealedHints[0] && <span className="hint-label">1.</span>}
-            </li>
-            <li 
-              className={revealedHints[1] ? 'revealed' : 'obscured'}
-              onClick={() => toggleHint(1)}
-            >
-              <span className="hint-text">När du har gjort det, högerklicka sidan och tryck "inspect"</span>
-              {!revealedHints[1] && <span className="hint-label">2.</span>}
-            </li>
-            <li 
-              className={revealedHints[2] ? 'revealed' : 'obscured'}
-              onClick={() => toggleHint(2)}
-            >
-              <span className="hint-text">Kolla i Console-fliken efter meddelanden samt granska HTML koden, öppna DIV:arna</span>
-              {!revealedHints[2] && <span className="hint-label">3.</span>}
-            </li>
-            <li 
-              className={revealedHints[3] ? 'revealed' : 'obscured'}
-              onClick={() => toggleHint(3)}
-            >
-              <span className="hint-text">Kombinera de delar du hittar</span>
-              {!revealedHints[3] && <span className="hint-label">4.</span>}
-            </li>
-          </ul>
+        <div className="available-words">
+          <h3>Tillgängliga Ord:</h3>
+          <div className="word-bank">
+            {availableWords.map((word, index) => (
+              <button 
+                key={index} 
+                className="word-button"
+                onClick={() => handleWordClick(word)}
+                draggable={true}
+                onDragStart={(e) => handleDragStartAvailable(e, word)}
+                onDragEnd={handleDragEnd}
+              >
+                {word}
+              </button>
+            ))}
+          </div>
         </div>
-        <span className="SYSTEMKOD">ERHET</span>
       </div>
     </div>
   );

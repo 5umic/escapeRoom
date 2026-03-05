@@ -1,173 +1,90 @@
-// Jigsaw Puzzle Game - Trafikverket Logo
+// Memory Game - Trafikverket tema
 import React, { useState, useEffect } from 'react';
 import './Game5.css';
-import Game6 from './Game6.jsx';
+import Game6 from './Game6';
 
 export default function Game5() {
-  const GRID_COLS = 4;
-  const GRID_ROWS = 6;
-  const TOTAL_PIECES = GRID_COLS * GRID_ROWS;
+  // 9 olika emojis för trafikrelaterade saker (9 par = 18 kort)
+  const emojis = ['🚗', '🚌', '🚂', '🚦', '⛔', '🛑', '🚧', '🛤️', '⚠️'];
   
-  // Pieces that are locked in place from the start (0-indexed)
-  const LOCKED_PIECES = [0, 2, 5, 8, 10, 13, 19, 20, 22];
-
-  const [pieces, setPieces] = useState([]);
-  const [board, setBoard] = useState([]);
+  const [cards, setCards] = useState([]);
+  const [flippedCards, setFlippedCards] = useState([]);
+  const [matchedCards, setMatchedCards] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showGame6, setShowGame6] = useState(false);
-  const [draggedPiece, setDraggedPiece] = useState(null);
+  const [showNextGame, setShowNextGame] = useState(false);
+  const [canFlip, setCanFlip] = useState(true);
 
   useEffect(() => {
-    initializePuzzle();
+    initializeGame();
   }, []);
 
   useEffect(() => {
-    if (board.length === 0) return;
-    
-    let complete = true;
-    for (let i = 0; i < TOTAL_PIECES; i++) {
-      if (i === 9 && (board[i] === 9 || board[i] === 10)) {
-        continue;
-      }
-      if (i === 10 && (board[i] === 9 || board[i] === 10)) {
-        continue;
-      }
-      
-      if (board[i] !== i) {
-        complete = false;
-        break;
-      }
+    if (matchedCards.length === 18 && matchedCards.length > 0) {
+      setIsComplete(true);
     }
-    
-    if (complete && (board[9] === null || board[10] === null)) {
-      complete = false;
-    }
-    
-    if (complete) {
-      console.log('Puzzle complete!', board);
-    }
-    setIsComplete(complete);
-  }, [board]);
+  }, [matchedCards]);
 
-  const initializePuzzle = () => {
-    const allPieces = Array.from({ length: TOTAL_PIECES }, (_, i) => i);
-    
-    // Remove locked pieces from available pieces
-    const availablePieces = allPieces.filter(piece => !LOCKED_PIECES.includes(piece));
-    const shuffled = [...availablePieces].sort(() => Math.random() - 0.5);
-    
-    // Initialize board with locked pieces in their correct positions
-    const initialBoard = Array(TOTAL_PIECES).fill(null);
-    LOCKED_PIECES.forEach(pieceId => {
-      initialBoard[pieceId] = pieceId;
-    });
-    
-    setPieces(shuffled);
-    setBoard(initialBoard);
+  useEffect(() => {
+    if (flippedCards.length === 2) {
+      setCanFlip(false);
+      const [first, second] = flippedCards;
+      
+      if (cards[first] === cards[second]) {
+        // kollar om match
+        setMatchedCards([...matchedCards, first, second]);
+        setFlippedCards([]);
+        setCanFlip(true);
+      } else {
+        // ingen match
+        setTimeout(() => {
+          setFlippedCards([]);
+          setCanFlip(true);
+        }, 1000);
+      }
+    }
+  }, [flippedCards]);
+
+  const initializeGame = () => {
+    const cardPairs = [...emojis, ...emojis];
+    const shuffled = cardPairs.sort(() => Math.random() - 0.5);
+    setCards(shuffled);
+    setFlippedCards([]);
+    setMatchedCards([]);
     setIsComplete(false);
   };
 
-  const getPieceStyle = (pieceId) => {
-    const row = Math.floor(pieceId / GRID_COLS);
-    const col = pieceId % GRID_COLS;
-
-    return {
-      backgroundImage: 'url(/assets/images/backgrounds/TV_logo_symbol_rgb_neg.png)',
-      backgroundSize: `${GRID_COLS * 100}% ${GRID_ROWS * 100}%`,
-      backgroundPosition: `${(col * 100) / (GRID_COLS - 1)}% ${(row * 100) / (GRID_ROWS - 1)}%`,
-    };
-  };
-
-  const handleDragStart = (e, pieceId, fromPieces) => {
-    // Prevent dragging locked pieces
-    if (LOCKED_PIECES.includes(pieceId)) {
-      e.preventDefault();
-      return;
-    }
+  const handleCardClick = (index) => {
+    if (!canFlip) return;
+    if (flippedCards.includes(index)) return;
+    if (matchedCards.includes(index)) return;
+    if (isComplete) return;
     
-    if (fromPieces && board.includes(pieceId)) {
-      e.preventDefault();
-      return;
-    }
-    setDraggedPiece({ pieceId, fromPieces });
-    e.dataTransfer.effectAllowed = 'move';
+    setFlippedCards([...flippedCards, index]);
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+  const isCardFlipped = (index) => {
+    return flippedCards.includes(index) || matchedCards.includes(index);
   };
 
-  const handleDropOnBoard = (e, targetIndex) => {
-    e.preventDefault();
-    if (!draggedPiece || isComplete) return;
-
-    const { pieceId, fromPieces } = draggedPiece;
-    
-    // Prevent dropping on locked slots
-    if (LOCKED_PIECES.includes(targetIndex)) {
-      setDraggedPiece(null);
-      return;
-    }
-
-    if (fromPieces) {
-      const newBoard = [...board];
-      
-      if (newBoard[targetIndex] !== null) {
-        setDraggedPiece(null);
-        return;
-      }
-      
-      newBoard[targetIndex] = pieceId;
-      setBoard(newBoard);
-    } else {
-      const fromIndex = board.indexOf(pieceId);
-      const newBoard = [...board];
-      
-      [newBoard[fromIndex], newBoard[targetIndex]] = [newBoard[targetIndex], newBoard[fromIndex]];
-      setBoard(newBoard);
-    }
-
-    setDraggedPiece(null);
-  };
-
-  const handleDropOnPieces = (e) => {
-    e.preventDefault();
-    if (!draggedPiece || isComplete) return;
-
-    const { pieceId, fromPieces } = draggedPiece;
-
-    if (!fromPieces) {
-      // Moving from board back to pieces
-      const newBoard = [...board];
-      const pieceIndex = newBoard.indexOf(pieceId);
-      newBoard[pieceIndex] = null;
-      
-      setBoard(newBoard);
-    }
-
-    setDraggedPiece(null);
-  };
-
-  const handleReset = () => {
-    initializePuzzle();
-  };
-
-  if (showGame6) {
+  if (showNextGame) {
     return <Game6 />;
   }
 
   if (showSuccess) {
     return (
-      <div className="game5-success">
+      <div className="game6-success">
         <div className="success-content">
-          <h2>SNYGGT!</h2>
+          <h2>FANTASTISKT!</h2>
           <p className="reward-word">
-            <span className="reward-label">Du lade ihop pusslet!</span>
-          </p>
-          <button className="continue-button" onClick={() => setShowGame6(true)}>Fortsätt</button>
+            <span className="reward-label"></span> <strong>BRA JOBBAT!</strong>          </p>
+          <button 
+            className="continue-button" 
+            onClick={() => setShowNextGame(true)}
+          >
+            Fortsätt
+          </button>
         </div>
       </div>
     );
@@ -175,23 +92,26 @@ export default function Game5() {
 
   if (showInfo) {
     return (
-      <div className="game5-container">
-        <div className="game5-content">
+      <div className="game6-container">
+        <div className="game6-content">
           <div className="info-section">
             <h2 className="info-title">UTMÄRKT!</h2>
             
             <div className="info-text">
               <p>
-                Vår logotyp symboliserar det ansvar vi bär och den service vi levererar till svenska folket varje dag. Vi är stolta över att representera Trafikverket och att vara en del av Sveriges infrastruktur. Genom vårt arbete bidrar vi till ett samhälle där människor kan resa säkert, hållbart och effektivt - det är ett uppdrag vi tar på största allvar och utför med stolthet.
+                Varje symbol i detta memory-spel representerar en viktig del av vårt transportsystem. 
+                Från bilar och bussar till tåg och järnvägar - allt är sammankopplat i ett komplext nätverk 
+                som Trafikverket ansvarar för att planera, bygga och underhålla.
               </p>
               <p>
-                Trafikverket är en myndighet under Infrastrukturdepartementet med ansvar för långsiktig planering av transportsystemet för vägtrafik, järnvägstrafik, sjöfart och luftfart. Vi ansvarar för byggande, drift och underhåll av statliga vägar och järnvägar.
+                Trafikmärken och vägskyltar är centrala för trafiksäkerheten. De kommunicerar snabbt och 
+                tydligt med alla trafikanter, oavsett språk. Att förstå och respektera dessa symboler är 
+                avgörande för ett säkert transportsystem.
               </p>
               <p>
-                Vårt uppdrag är att svara för den samlade sektorsuppföljningen och för samordning, planering och samverkan för att nå målen i transportpolitiken. Vi arbetar för ett tillgängligt Sverige med en hållbar och jämlik transportförsörjning där hänsyn tas till människors säkerhet och miljön.
-              </p>
-              <p>
-                Genom innovation och digitalisering utvecklar vi smarta lösningar för framtidens transporter. IKT och cybersäkerhet är centrala delar i denna utveckling där vi kontinuerligt arbetar med att skydda våra system samtidigt som vi gör dem mer effektiva och tillgängliga.
+                Som IT-specialist på Trafikverket kan du arbeta med digitala lösningar för allt från 
+                trafikstyrning och vägväder till reseinformation och järnvägssignaler. Våra system hanterar 
+                miljontals datapunkter varje dag för att hålla Sverige i rörelse.
               </p>
             </div>
 
@@ -205,79 +125,45 @@ export default function Game5() {
   }
 
   return (
-    <div className="game5-container">
-      <div className="game5-content">
-        <h1 className="game5-title">Pusslet</h1>
-        <p className="game5-instructions">
-          Dra och släpp pusselbitarna till rätt plats för att bygga ihop Trafikverkets logotyp!
+    <div className="game6-container">
+      <div className="game6-content">
+        <h1 className="game6-title">Memory - Trafiktema</h1>
+        <p className="game6-instructions">
+          Hitta alla matchande par! Klicka på korten för att vända dem.
         </p>
 
-        <div className="game5-header">
-        </div>
-
-        <div className="puzzle-area">
-          {/* Board */}
-          <div className="board-wrapper">
-            <div className="puzzle-board">
-              {Array.from({ length: TOTAL_PIECES }, (_, index) => (
-                <div
-                  key={index}
-                  className={`board-slot ${board[index] !== null ? 'filled' : 'empty'} ${
-                    isComplete ? 'complete' : ''
-                  } ${LOCKED_PIECES.includes(index) ? 'locked' : ''}`}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDropOnBoard(e, index)}
-                >
-                  {board[index] !== null && (
-                    <div
-                      className={`puzzle-piece placed ${LOCKED_PIECES.includes(board[index]) ? 'locked' : ''}`}
-                      style={getPieceStyle(board[index])}
-                      draggable={!isComplete && !LOCKED_PIECES.includes(board[index])}
-                      onDragStart={(e) => handleDragStart(e, board[index], false)}
-                    >
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div
-            className="pieces-container"
-            onDragOver={handleDragOver}
-            onDrop={handleDropOnPieces}
-          >
-            <h3>Tillgängliga bitar:</h3>
-            <div className="pieces-grid">
-              {pieces.map((pieceId, idx) => {
-                const isPlaced = board.includes(pieceId);
-                return (
-                  <div
-                    key={idx}
-                    className={`puzzle-piece ${isPlaced ? 'used' : ''}`}
-                    style={getPieceStyle(pieceId)}
-                    draggable={!isComplete && !isPlaced}
-                    onDragStart={(e) => handleDragStart(e, pieceId, true)}
-                  >
+        <div className="memory-grid">
+          {cards.map((emoji, index) => {
+            const flipped = isCardFlipped(index);
+            const matched = matchedCards.includes(index);
+            
+            return (
+              <div
+                key={index}
+                className={`memory-card ${flipped ? 'flipped' : ''} ${matched ? 'matched' : ''}`}
+                onClick={() => handleCardClick(index)}
+              >
+                <div className="card-inner">
+                  {/* Baksida - Trafikverkets logga */}
+                  <div className="card-back">
+                    <div className="logo-small"></div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                  {/* Framsida - Emoji */}
+                  <div className="card-front">
+                    <span className="emoji">{emoji}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {isComplete && (
           <div className="completion-message">
-            <p>🎉 Pusslet är klart! Bra jobbat!</p>
+            <p>🎉 Grattis! Du hittade alla par!</p>
             <button className="continue-button" onClick={() => setShowInfo(true)}>
               Gå vidare
             </button>
-          </div>
-        )}
-        
-        {/* debug info remove later */}
-        {!isComplete && board.filter(b => b !== null).length === TOTAL_PIECES && (
-          <div style={{color: 'white', marginTop: '20px', textAlign: 'center'}}>
-            <p>Alla bitar placerade men inte i rätt ordning. Kontrollera placeringen!</p>
           </div>
         )}
       </div>

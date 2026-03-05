@@ -1,109 +1,173 @@
-
-
-import React, { useState } from 'react';
+// Jigsaw Puzzle Game - Trafikverket Logo
+import React, { useState, useEffect } from 'react';
 import './Game4.css';
 import Game5 from './Game5.jsx';
 
 export default function Game4() {
-  const [stage, setStage] = useState(0);
+  const GRID_COLS = 4;
+  const GRID_ROWS = 6;
+  const TOTAL_PIECES = GRID_COLS * GRID_ROWS;
+  
+  // Pieces that are locked in place from the start (0-indexed)
+  const LOCKED_PIECES = [0, 2, 5, 8, 10, 13, 19, 20, 22];
+
+  const [pieces, setPieces] = useState([]);
+  const [board, setBoard] = useState([]);
+  const [isComplete, setIsComplete] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showGame5, setShowGame5] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [showNextButton, setShowNextButton] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
+  const [showGame6, setShowGame6] = useState(false);
+  const [draggedPiece, setDraggedPiece] = useState(null);
 
-  const stages = [
-    {
-      title: "Vid bilen",
-      description: "Det är en regnig, mörk hösteftermiddag. Du lämnar kontoret efter en lång dag på Trafikverket. Regnet öser ner och sikten är dålig. Du närmar dig din bil på parkeringen. Vad gör du?",
-      options: [
-        { text: "Ser runt bilen och kontrollerar att inga föremål eller personer/djur är i vägen", correct: true, feedback: "Rätt! Även om det regnar ska du alltid kontrollera runt fordonet. I mörker och dåligt väder kan det finnas hinder, barn eller djur som du inte ser." },
-        { text: "Går direkt in i bilen, det regnar ju", correct: false, feedback: "Nja, vi uppskattar din motivation att hålla dig torr... men tänk om det står en katt bakom bilen som också försöker hålla sig torr? Kolla runt bilen först, även när det öser ner." },
-        { text: "Kollar mobilen medan du går till bilen", correct: false, feedback: "Okej, vi förstår - TikTok är viktigt. Men säg det till den bil som nästan kör på dig på parkeringen... Ögonen på omgivningen tack!" }
-      ]
-    },
-    {
-      title: "I bilen",
-      description: "Du sitter nu i förarsätet. Bilen är kall och rutorna är immiga. Vad är det allra första du gör?",
-      options: [
-        { text: "Startar motorn så att det blir varmt", correct: false, feedback: "Ahhh, mysigt och varmt... tills du flyger genom vindrutan! Bältet FÖRST, även om fingrarna fryser. Det är inte lika mysigt som uppvärmda säten, men betydligt säkrare." },
-        { text: "Sätter på säkerhetsbältet", correct: true, feedback: "Rätt! Säkerhetsbältet ska ALLTID vara det första. Gör det till en vana att sätta på bältet direkt när du sätter dig - innan du startar, innan du kollar mobilen, innan allt annat." },
-        { text: "Kollar mobilen för att se navigationsinstruktioner", correct: false, feedback: "GPS:en kan vänta 5 sekunder, ditt liv kan inte! Bältet på FÖRST, sedan kan du ta reda på var du ska. Förresten, visste du att airbagen kan skada dig allvarligt om du inte har bälte?" }
-      ]
-    },
-    {
-      title: "Starta färden",
-      description: "Motorn är igång och rutorna börjar klarna. Du ser att det regnar kraftigt. Vad gör du innan du backar ut?",
-      options: [
-        { text: "Backar ut försiktigt med backspegeln", correct: false, feedback: "'Försiktigt' är ett fint ord, men döda vinklar heter inte döda utan anledning... I regn och mörker är särskilt små barn och djur betydligt svårare att se. Kolla ALLT innan du backar!" },
-        { text: "Kontrollerar alla speglar, döda vinklar, och väntar tills rutorna är helt klara", correct: true, feedback: "Rätt! I dåliga väderförhållanden är det extra viktigt med god sikt och att dubbelkolla döda vinklar." },
-        { text: "Sätter på musiken och backar ut", correct: false, feedback: "Party time! Förutom att... jo, det där lilla ljudet du inte hörde över musiken? Det var en cyklist som försökte varna dig. Musik efter säkerheten är klar, tack!" }
-      ]
-    },
-    {
-      title: "På vägen",
-      description: "Du är nu ute på vägen. Regnet öser ner, sikten är dålig och vägbanan är våt och hal. Det är mörklagt och du kör bakom en annan bil. Hur kör du?",
-      options: [
-        { text: "Kör i normal hastighet, vill komma hem fort", correct: false, feedback: "Snabbt hem låter najs... sjukhuset är också en destination tekniskt sett. Våt asfalt + normal hastighet = längre bromssträcka än du tror. Sakta ner lite, soffolocket väntar." },
-        { text: "Sänker hastigheten, ökar avståndet till bilen framför, tänder helljus för bättre sikt", correct: false, feedback: "Nästan perfekt! Förutom helljus-grejen... Föraren framför dig ser nu ingenting i backspegeln utom dina strålkastare. Halvljus är din vän här!" },
-        { text: "Sänker hastigheten, ökar avståndet till framförvarande, använder halvljus", correct: true, feedback: "Rätt! Anpassad hastighet, ökat avstånd och halvljus är avgörande. Använd ALDRIG helljus bakom andra fordon - det bländar dem i backspegeln." },
-        { text: "Kör tätt bakom bilen framför för bättre sikt", correct: false, feedback: "Ah, klassisk taktik! Problemet är att när föraren framför bromsar så... PANG! Våt väg = längre bromssträcka. Du vill inte pussas med bakljuset på bilen framför, eller?" }
-      ]
-    },
-    {
-      title: "Nästan hemma",
-      description: "Du kör på sista biten hem. Plötsligt piper telefonen - du får en notifikation. Samtidigt känner du att den vibrerar i fickan. Vad gör du?",
-      options: [
-        { text: "Tar snabbt upp telefonen och kollar meddelandet", correct: false, feedback: "'Snabbt' är relativ tid... På den sekunden du kollar telefonen hinner du köra 14 meter blint. Det är längre än en buss! Om det är så viktigt kan de ringa ambulansen åt dig efter olyckan." },
-        { text: "Tittar snabbt på skärmen utan att röra telefonen", correct: false, feedback: "Smart tänkt! Ingen hands-free brott här... men dina ögon är fortfarande inte på vägen. 14 meter blind-körning är ganska mycket. Spoiler alert: meddelandet är en reklam för pizzeria." },
-        { text: "Ignorerar telefonen helt tills du har stannat och parkerat", correct: true, feedback: "Rätt! Inget meddelande är viktigare än din säkerhet. Vänta alltid tills du har stannat säkert innan du använder telefonen. Du har klarat resan säkert!" },
-        { text: "Svarar med röstkommando", correct: false, feedback: "Ahh, teknologi! Men din hjärna är fortfarande upptagen med samtalet istället för trafiken. Det är som att försöka rubiks kub samtidigt som du spelar schack. Kan det vänta 2 minuter?" }
-      ]
+  useEffect(() => {
+    initializePuzzle();
+  }, []);
+
+  useEffect(() => {
+    if (board.length === 0) return;
+    
+    let complete = true;
+    for (let i = 0; i < TOTAL_PIECES; i++) {
+      if (i === 9 && (board[i] === 9 || board[i] === 10)) {
+        continue;
+      }
+      if (i === 10 && (board[i] === 9 || board[i] === 10)) {
+        continue;
+      }
+      
+      if (board[i] !== i) {
+        complete = false;
+        break;
+      }
     }
-  ];
+    
+    if (complete && (board[9] === null || board[10] === null)) {
+      complete = false;
+    }
+    
+    if (complete) {
+      console.log('Puzzle complete!', board);
+    }
+    setIsComplete(complete);
+  }, [board]);
 
-  const handleChoice = (option) => {
-    if (option.correct) {
-      setErrorMessage(option.feedback);
-      setShowNextButton(true);
-      setIsCorrect(true);
+  const initializePuzzle = () => {
+    const allPieces = Array.from({ length: TOTAL_PIECES }, (_, i) => i);
+    
+    // Remove locked pieces from available pieces
+    const availablePieces = allPieces.filter(piece => !LOCKED_PIECES.includes(piece));
+    const shuffled = [...availablePieces].sort(() => Math.random() - 0.5);
+    
+    // Initialize board with locked pieces in their correct positions
+    const initialBoard = Array(TOTAL_PIECES).fill(null);
+    LOCKED_PIECES.forEach(pieceId => {
+      initialBoard[pieceId] = pieceId;
+    });
+    
+    setPieces(shuffled);
+    setBoard(initialBoard);
+    setIsComplete(false);
+  };
+
+  const getPieceStyle = (pieceId) => {
+    const row = Math.floor(pieceId / GRID_COLS);
+    const col = pieceId % GRID_COLS;
+
+    return {
+      backgroundImage: 'url(/assets/images/backgrounds/TV_logo_symbol_rgb_neg.png)',
+      backgroundSize: `${GRID_COLS * 100}% ${GRID_ROWS * 100}%`,
+      backgroundPosition: `${(col * 100) / (GRID_COLS - 1)}% ${(row * 100) / (GRID_ROWS - 1)}%`,
+    };
+  };
+
+  const handleDragStart = (e, pieceId, fromPieces) => {
+    // Prevent dragging locked pieces
+    if (LOCKED_PIECES.includes(pieceId)) {
+      e.preventDefault();
+      return;
+    }
+    
+    if (fromPieces && board.includes(pieceId)) {
+      e.preventDefault();
+      return;
+    }
+    setDraggedPiece({ pieceId, fromPieces });
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDropOnBoard = (e, targetIndex) => {
+    e.preventDefault();
+    if (!draggedPiece || isComplete) return;
+
+    const { pieceId, fromPieces } = draggedPiece;
+    
+    // Prevent dropping on locked slots
+    if (LOCKED_PIECES.includes(targetIndex)) {
+      setDraggedPiece(null);
+      return;
+    }
+
+    if (fromPieces) {
+      const newBoard = [...board];
+      
+      if (newBoard[targetIndex] !== null) {
+        setDraggedPiece(null);
+        return;
+      }
+      
+      newBoard[targetIndex] = pieceId;
+      setBoard(newBoard);
     } else {
-      setErrorMessage(option.feedback);
-      setShowNextButton(false);
-      setIsCorrect(false);
+      const fromIndex = board.indexOf(pieceId);
+      const newBoard = [...board];
+      
+      [newBoard[fromIndex], newBoard[targetIndex]] = [newBoard[targetIndex], newBoard[fromIndex]];
+      setBoard(newBoard);
     }
+
+    setDraggedPiece(null);
   };
 
-  const handleNext = () => {
-    setErrorMessage('');
-    setShowNextButton(false);
-    setIsCorrect(false);
-    if (stage < stages.length - 1) {
-      setStage(stage + 1);
-    } else {
-      setShowInfo(true);
+  const handleDropOnPieces = (e) => {
+    e.preventDefault();
+    if (!draggedPiece || isComplete) return;
+
+    const { pieceId, fromPieces } = draggedPiece;
+
+    if (!fromPieces) {
+      // Moving from board back to pieces
+      const newBoard = [...board];
+      const pieceIndex = newBoard.indexOf(pieceId);
+      newBoard[pieceIndex] = null;
+      
+      setBoard(newBoard);
     }
+
+    setDraggedPiece(null);
   };
 
-  const handleRetry = () => {
-    setErrorMessage('');
-    setIsCorrect(false);
+  const handleReset = () => {
+    initializePuzzle();
   };
 
-  if (showGame5) {
+  if (showGame6) {
     return <Game5 />;
   }
 
   if (showSuccess) {
     return (
-      <div className="game4-success">
+      <div className="game5-success">
         <div className="success-content">
-          <h2>Rätt svar!</h2>
+          <h2>SNYGGT!</h2>
           <p className="reward-word">
-            <span className="reward-label"></span> <strong>BRA JOBBAT!</strong>
+            <span className="reward-label">Du lade ihop pusslet!</span>
           </p>
-          <button className="continue-button" onClick={() => setShowGame5(true)}>Fortsätt</button>
+          <button className="continue-button" onClick={() => setShowGame6(true)}>Fortsätt</button>
         </div>
       </div>
     );
@@ -111,21 +175,26 @@ export default function Game4() {
 
   if (showInfo) {
     return (
-      <div className="game4-container">
-        <div className="game4-content">
+      <div className="game5-container">
+        <div className="game5-content">
           <div className="info-section">
-            <h2 className="info-title">Fantastiskt!</h2>
+            <h2 className="info-title">UTMÄRKT!</h2>
             
             <div className="info-text">
               <p>
-                Du har visat god kunskap om trafiksäkerhet. Varje år skadas och dör människor i trafiken på grund av misstag som kunde undvikas. 
-                Genom att följa säkerhetsrutiner, anpassa hastigheten och vara uppmärksam räddar du liv - både ditt eget och andras.
+                Vår logotyp symboliserar det ansvar vi bär och den service vi levererar till svenska folket varje dag. Vi är stolta över att representera Trafikverket och att vara en del av Sveriges infrastruktur. Genom vårt arbete bidrar vi till ett samhälle där människor kan resa säkert, hållbart och effektivt - det är ett uppdrag vi tar på största allvar och utför med stolthet.
               </p>
               <p>
-                På Trafikverket arbetar vi kontinuerligt med att förbättra trafiksäkerheten genom utbildning, infrastruktur och smarta IT-lösningar. 
-                Varje decision vi tar i vårt arbete kan bidra till att göra Sveriges vägar och järnvägar säkrare för alla.
+                Trafikverket är en myndighet under Infrastrukturdepartementet med ansvar för långsiktig planering av transportsystemet för vägtrafik, järnvägstrafik, sjöfart och luftfart. Vi ansvarar för byggande, drift och underhåll av statliga vägar och järnvägar.
+              </p>
+              <p>
+                Vårt uppdrag är att svara för den samlade sektorsuppföljningen och för samordning, planering och samverkan för att nå målen i transportpolitiken. Vi arbetar för ett tillgängligt Sverige med en hållbar och jämlik transportförsörjning där hänsyn tas till människors säkerhet och miljön.
+              </p>
+              <p>
+                Genom innovation och digitalisering utvecklar vi smarta lösningar för framtidens transporter. IKT och cybersäkerhet är centrala delar i denna utveckling där vi kontinuerligt arbetar med att skydda våra system samtidigt som vi gör dem mer effektiva och tillgängliga.
               </p>
             </div>
+
             <button className="continue-button" onClick={() => setShowSuccess(true)}>
               Fortsätt
             </button>
@@ -135,53 +204,80 @@ export default function Game4() {
     );
   }
 
-  const currentStage = stages[stage];
-
   return (
-    <div className="game4-container">
-      <div className="game4-content">
-        <div className="progress-bar">
-          {stages.map((_, index) => (
-            <div 
-              key={index} 
-              className={`progress-dot ${index <= stage ? 'completed' : ''}`}
-            >
-              {index + 1}
+    <div className="game5-container">
+      <div className="game5-content">
+        <h1 className="game5-title">Pusslet</h1>
+        <p className="game5-instructions">
+          Dra och släpp pusselbitarna till rätt plats för att bygga ihop Trafikverkets logotyp!
+        </p>
+
+        <div className="game5-header">
+        </div>
+
+        <div className="puzzle-area">
+          {/* Board */}
+          <div className="board-wrapper">
+            <div className="puzzle-board">
+              {Array.from({ length: TOTAL_PIECES }, (_, index) => (
+                <div
+                  key={index}
+                  className={`board-slot ${board[index] !== null ? 'filled' : 'empty'} ${
+                    isComplete ? 'complete' : ''
+                  } ${LOCKED_PIECES.includes(index) ? 'locked' : ''}`}
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDropOnBoard(e, index)}
+                >
+                  {board[index] !== null && (
+                    <div
+                      className={`puzzle-piece placed ${LOCKED_PIECES.includes(board[index]) ? 'locked' : ''}`}
+                      style={getPieceStyle(board[index])}
+                      draggable={!isComplete && !LOCKED_PIECES.includes(board[index])}
+                      onDragStart={(e) => handleDragStart(e, board[index], false)}
+                    >
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+          <div
+            className="pieces-container"
+            onDragOver={handleDragOver}
+            onDrop={handleDropOnPieces}
+          >
+            <h3>Tillgängliga bitar:</h3>
+            <div className="pieces-grid">
+              {pieces.map((pieceId, idx) => {
+                const isPlaced = board.includes(pieceId);
+                return (
+                  <div
+                    key={idx}
+                    className={`puzzle-piece ${isPlaced ? 'used' : ''}`}
+                    style={getPieceStyle(pieceId)}
+                    draggable={!isComplete && !isPlaced}
+                    onDragStart={(e) => handleDragStart(e, pieceId, true)}
+                  >
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        <h1 className="game4-title">{currentStage.title}</h1>
-        <div className="story-text">
-          <p>{currentStage.description}</p>
-        </div>
-
-        {errorMessage && (
-          <div className={`feedback-message ${isCorrect ? 'correct' : 'incorrect'}`}>
-            <p className="feedback-text">{errorMessage}</p>
-            {showNextButton ? (
-              <button className="retry-button" onClick={handleNext}>
-                Nästa scenario
-              </button>
-            ) : (
-              <button className="retry-button" onClick={handleRetry}>
-                Försök igen
-              </button>
-            )}
+        {isComplete && (
+          <div className="completion-message">
+            <p>🎉 Pusslet är klart! Bra jobbat!</p>
+            <button className="continue-button" onClick={() => setShowInfo(true)}>
+              Gå vidare
+            </button>
           </div>
         )}
-
-        {!errorMessage && (
-          <div className="choices">
-            {currentStage.options.map((option, index) => (
-              <button
-                key={index}
-                className="choice-button"
-                onClick={() => handleChoice(option)}
-              >
-                {option.text}
-              </button>
-            ))}
+        
+        {/* debug info remove later */}
+        {!isComplete && board.filter(b => b !== null).length === TOTAL_PIECES && (
+          <div style={{color: 'white', marginTop: '20px', textAlign: 'center'}}>
+            <p>Alla bitar placerade men inte i rätt ordning. Kontrollera placeringen!</p>
           </div>
         )}
       </div>

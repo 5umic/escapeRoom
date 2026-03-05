@@ -11,13 +11,13 @@ export default function Game1() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showGame2, setShowGame2] = useState(false);
 
-  const correctAnswer = "Distance / Speed";
+  const correctAnswer = "DistanceKM / SpeedkmH";
   
   const codeOptions = [
-    "Distance / Speed",
-    "Distance * Speed",
-    "Speed - (Distance * 2)",
-    "Distance * 2 - Speed"
+    "DistanceKM / SpeedkmH",
+    "DistanceKM * SpeedkmH",
+    "SpeedkmH - DistanceKM",
+    "DistanceKM + SpeedkmH"
   ];
 
   const handleDragStart = (e, option) => {

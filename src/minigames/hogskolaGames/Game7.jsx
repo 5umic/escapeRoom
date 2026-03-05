@@ -262,7 +262,7 @@ export default function Game7() {
                 <circle
                   cx={`${node.x}%`}
                   cy={`${node.y}%`}
-                  r="4"
+                  r="3"
                   className={`network-node ${isSelected ? 'selected' : ''} ${isLocked ? 'locked' : ''} ${validationResult === 'correct' ? 'correct-node' : ''} ${validationResult === 'incorrect' && !isLocked ? 'incorrect-node' : ''}`}
                   onClick={() => handleNodeClick(node.id)}
                 />
@@ -341,7 +341,7 @@ export default function Game7() {
             💔 Alla liv förlorade! Du måste börja om från början.
           </p>
           <button onClick={handleFullReset} className="reset-button">
-            Börja om från början
+            Börja om
           </button>
         </div>
       )}

@@ -19,6 +19,8 @@
   margin-bottom: 10px;
   font-family: 'Pixelify Sans', sans-serif;
   font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
 }
 
 .game3-instructions {
@@ -28,6 +30,8 @@
   margin-bottom: 30px;
   font-family: 'Pixelify Sans', sans-serif;
   line-height: 1.6;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
+
 }
 
 .sentence-builder {

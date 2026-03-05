@@ -46,6 +46,8 @@
   margin-bottom: 20px;
   font-family: 'Pixelify Sans', sans-serif;
   font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
 }
 
 .story-text {
@@ -61,6 +63,8 @@
   line-height: 1.8;
   margin: 0;
   font-family: 'Pixelify Sans', sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
 }
 
 .feedback-message {
@@ -160,6 +164,7 @@
   font-family: 'Pixelify Sans', sans-serif;
   text-align: left;
   line-height: 1.4;
+
 }
 
 .choice-button:hover {

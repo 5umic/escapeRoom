@@ -24,14 +24,18 @@
   margin-bottom: 10px;
   font-family: 'Pixelify Sans', sans-serif;
   font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
 }
 
 .game6-instructions {
   font-size: 20px;
-  color: #e0e0e0;
+  color: #ffffff;
   text-align: center;
   margin-bottom: 20px;
   font-family: 'Pixelify Sans', sans-serif;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
 }
 
 .memory-grid {

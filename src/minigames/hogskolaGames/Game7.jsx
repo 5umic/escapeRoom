@@ -217,14 +217,19 @@ export default function Game7() {
   }
 
   // Main game screen
+  // error-message
   return (
     <div className="game7-container">
       <div className="game7-header">
         <h2>Spel 7: Nätverkskoppling</h2>
         <p className="game7-instructions">
-          Klicka på noderna i rätt ordning för att upprätta nätverksanslutningen.
+          Hjälp oss!
           <br />
-          Följ det logiska flödet från klient till lagring.
+          Det är någon som har strulat till vår nätverksanslutning
+          </p>
+          <p className='game7-instructions'>
+          Klicka på noderna i rätt ordning för att upprätta nätverksanslutningen.
+
         </p>
       </div>
 

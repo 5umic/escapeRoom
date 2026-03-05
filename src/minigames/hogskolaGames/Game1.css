@@ -17,6 +17,10 @@
   color: #fff;
   text-align: center;
   margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  font-family: 'Pixelify Sans', sans-serif;
+
+
 }
 
 .game1-instructions {
@@ -25,6 +29,8 @@
   text-align: center;
   margin-bottom: 30px;
   font-family: 'Pixelify Sans', sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
 
 }
 
@@ -177,12 +183,15 @@
   font-size: 48px;
   color: #ffffff;
   margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
 }
 
 .reward-word {
   font-size: 24px;
   color: #ffffff;
   margin-bottom: 30px;
+  
 }
 
 .reward-word strong {
@@ -233,6 +242,8 @@
   font-family: 'Pixelify Sans', sans-serif;
   font-weight: bold;
   text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
 }
 
 .info-text {
@@ -252,3 +263,4 @@
 .info-text p:last-child {
   margin-bottom: 0;
 }
+

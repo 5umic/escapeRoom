@@ -1,4 +1,3 @@
-// Code Quiz Game - Train System (C#)
 import React, { useState } from 'react';
 import './Game1.css';
 import Game2 from './Game2.jsx';

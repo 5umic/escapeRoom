@@ -68,13 +68,18 @@
   background-color: #fff;
   border: 2px solid #fff;
   color: #d70000;
-  cursor: pointer;
+  cursor: grab;
 }
 
 .word-slot.filled:hover {
   background-color: #f5f5f5;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.word-slot.filled:active {
+  cursor: grabbing;
+  opacity: 0.5;
 }
 
 .word-slot.correct {
@@ -192,7 +197,7 @@
   color: #d70000;
   font-size: 16px;
   font-weight: 600;
-  cursor: pointer;
+  cursor: grab;
   transition: all 0.3s ease;
   font-family: 'Pixelify Sans', sans-serif;
 }
@@ -201,6 +206,11 @@
   background-color: #f5f5f5;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.word-button:active {
+  cursor: grabbing;
+  opacity: 0.5;
 }
 
 

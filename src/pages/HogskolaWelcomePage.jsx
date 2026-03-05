@@ -3,13 +3,15 @@ import React, { useState } from 'react';
 import './SharedWelcomePage.css';
 import TypewriterText from '../components/TypewriterText.jsx';
 import Game1 from '../minigames/hogskolaGames/Game1.jsx';
+// import Game7 from '../minigames/hogskolaGames/Game7.jsx';
+
 
 
 export default function HogskolaWelcomePage() {
   const [startGame, setStartGame] = useState(false);
 
   if (startGame) {
-    return <Game1 />;
+    return <Game1/>;
   }
   return (
     <div className="welcome-page-container">

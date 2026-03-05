@@ -152,6 +152,14 @@
   cursor: grab;
 }
 
+.puzzle-piece.locked {
+  cursor: not-allowed;
+}
+
+.puzzle-piece.locked:hover {
+  transform: none;
+}
+
 .puzzle-piece.used {
   opacity: 0.3;
   cursor: not-allowed !important;

@@ -1,4 +1,4 @@
-// Security Hunt Game - Find the Hidden Code
+  // Security Hunt Game - Find the Hidden Code
 import React, { useState } from 'react';
 import './Game2.css';
 import Game3 from './Game3.jsx';
@@ -98,6 +98,9 @@ export default function Game2() {
           <p className="panel-description">
             Hitta den dolda säkerhetskoden genom att använda webbläsarens inspektör.
           </p>
+                    <p className="panel-description">
+            Tips: du kan använda ledtrådarna där nere!
+          </p>
 
           <button onClick={handleSecurityCheck} className="test-button">
             Inled säkerhetskontroll
@@ -146,7 +149,7 @@ export default function Game2() {
               className={revealedHints[2] ? 'revealed' : 'obscured'}
               onClick={() => toggleHint(2)}
             >
-              <span className="hint-text">Kolla i Console-fliken efter meddelanden samt granska HTML koden</span>
+              <span className="hint-text">Kolla i Console-fliken efter meddelanden samt granska HTML koden, öppna DIV:arna</span>
               {!revealedHints[2] && <span className="hint-label">3.</span>}
             </li>
             <li 

@@ -13,6 +13,8 @@ export default function Game3() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showGame4, setShowGame4] = useState(false);
   const [attempts, setAttempts] = useState(0);
+  const [draggedItem, setDraggedItem] = useState(null); // { word, fromIndex } or { word, fromAvailable: true }
+  const [isDragging, setIsDragging] = useState(false);
   
   const allWords = [
     "Alla", "kommer", "fram", "smidigt,", "grönt", "och", "tryggt",
@@ -25,6 +27,7 @@ export default function Game3() {
   }, []);
 
   const handleWordClick = (word) => {
+    // When clicking a word from available words, add it to first empty slot
     const emptyIndex = selectedWords.findIndex(w => w === null);
     if (emptyIndex !== -1) {
       const newSelected = [...selectedWords];
@@ -35,15 +38,69 @@ export default function Game3() {
     }
   };
 
-  const handleRemoveWord = (index) => {
-    const wordToRemove = selectedWords[index];
-    if (wordToRemove !== null) {
+  const handleSlotClick = (index) => {
+    // Click on a word slot to send it back to available words
+    const wordAtSlot = selectedWords[index];
+    if (wordAtSlot !== null && !isDragging) {
       const newSelected = [...selectedWords];
       newSelected[index] = null;
       setSelectedWords(newSelected);
-      setAvailableWords([...availableWords, wordToRemove]);
+      setAvailableWords([...availableWords, wordAtSlot]);
       setFeedback([]);
     }
+  };
+
+  // Drag handlers for word slots
+  const handleDragStartSlot = (e, index) => {
+    const word = selectedWords[index];
+    if (word !== null) {
+      setDraggedItem({ word, fromIndex: index });
+      setIsDragging(true);
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  };
+
+  const handleDragOverSlot = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDropSlot = (e, targetIndex) => {
+    e.preventDefault();
+    if (!draggedItem) return;
+
+    if (draggedItem.fromAvailable) {
+      // Dropping from available words
+      const newSelected = [...selectedWords];
+      if (newSelected[targetIndex] === null) {
+        newSelected[targetIndex] = draggedItem.word;
+        setSelectedWords(newSelected);
+        setAvailableWords(availableWords.filter(w => w !== draggedItem.word));
+        setFeedback([]);
+      }
+    } else {
+      // Dropping from another slot - swap positions
+      const newSelected = [...selectedWords];
+      [newSelected[draggedItem.fromIndex], newSelected[targetIndex]] = 
+        [newSelected[targetIndex], newSelected[draggedItem.fromIndex]];
+      setSelectedWords(newSelected);
+      setFeedback([]);
+    }
+
+    setDraggedItem(null);
+    setIsDragging(false);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+    setIsDragging(false);
+  };
+
+  // Drag handlers for available words
+  const handleDragStartAvailable = (e, word) => {
+    setDraggedItem({ word, fromAvailable: true });
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = 'move';
   };
 
   const handleClear = () => {
@@ -128,7 +185,9 @@ export default function Game3() {
       <div className="game3-content">
         <h1 className="game3-title">Bygg Rätt Mening</h1>
         <p className="game3-instructions">
-          Välj ord från listan nedan för att bygga Trafikverkets viktiga budskap. 
+          Dra och släpp ord från listan nedan för att bygga Trafikverkets viktiga budskap. 
+          Klicka på ord i meningen för att ta bort dem.
+          <br />
           Grön = rätt ord på rätt plats, Gul = rätt ord men fel plats, Grå = fel ord.
         </p>
 
@@ -138,7 +197,12 @@ export default function Game3() {
               <div 
                 key={index} 
                 className={`word-slot ${word !== null ? 'filled' : 'empty'} ${feedback[index] || ''}`}
-                onClick={() => word !== null && handleRemoveWord(index)}
+                onClick={() => handleSlotClick(index)}
+                onDragOver={handleDragOverSlot}
+                onDrop={(e) => handleDropSlot(e, index)}
+                draggable={word !== null}
+                onDragStart={(e) => handleDragStartSlot(e, index)}
+                onDragEnd={handleDragEnd}
               >
                 {word !== null ? word : '_'}
               </div>
@@ -165,6 +229,9 @@ export default function Game3() {
                 key={index} 
                 className="word-button"
                 onClick={() => handleWordClick(word)}
+                draggable={true}
+                onDragStart={(e) => handleDragStartAvailable(e, word)}
+                onDragEnd={handleDragEnd}
               >
                 {word}
               </button>

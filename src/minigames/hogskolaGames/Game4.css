@@ -63,17 +63,34 @@
   font-family: 'Pixelify Sans', sans-serif;
 }
 
-.error-message {
-  background-color: rgba(255, 255, 255, 0);
+.feedback-message {
+  background-color: rgba(255, 255, 255, 0.1);
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 20px;
   border: 3px solid #fff;
-  animation: shake 0.5s;
   text-align: center;
 }
 
-.error-message p {
+.feedback-message.correct {
+  animation: bounceUp 0.6s ease-out;
+}
+
+.feedback-message.incorrect {
+  animation: shake 0.5s;
+}
+
+.feedback-label {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+  font-family: 'Pixelify Sans', sans-serif;
+}
+
+
+
+
+.feedback-text {
   color: #ffffff;
   font-size: 18px;
   margin: 0 0 20px 0;
@@ -106,6 +123,20 @@
   75% { transform: translateX(10px); }
 }
 
+@keyframes bounceUp {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .choices {
   display: flex;
   flex-direction: column;
@@ -129,18 +160,12 @@
 }
 
 .choice-button:hover {
-  background-color: rgba(255, 255, 255, 0.9);
-  transform: translateX(10px);
+  background-color: #d70000;
+  color: #FFFFFF;
+  transform: scale(1.05);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-.stage-indicator {
-  text-align: center;
-  color: #fff;
-  font-size: 16px;
-  font-family: 'Pixelify Sans', sans-serif;
-  opacity: 0.8;
-}
 
 .info-section {
   background-color: #d70000;
@@ -248,7 +273,8 @@
 }
 
 .continue-button:hover {
-  background-color: #d70000;
+  background-color: #d32f2f;
+  color: #FFFFFF;
   transform: scale(1.05);
 }
 

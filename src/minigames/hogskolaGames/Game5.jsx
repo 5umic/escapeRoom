@@ -7,6 +7,9 @@ export default function Game5() {
   const GRID_COLS = 4;
   const GRID_ROWS = 6;
   const TOTAL_PIECES = GRID_COLS * GRID_ROWS;
+  
+  // Pieces that are locked in place from the start (0-indexed)
+  const LOCKED_PIECES = [0, 2, 5, 8, 10, 13, 19, 20, 22];
 
   const [pieces, setPieces] = useState([]);
   const [board, setBoard] = useState([]);
@@ -51,10 +54,18 @@ export default function Game5() {
   const initializePuzzle = () => {
     const allPieces = Array.from({ length: TOTAL_PIECES }, (_, i) => i);
     
-    const shuffled = [...allPieces].sort(() => Math.random() - 0.5);
+    // Remove locked pieces from available pieces
+    const availablePieces = allPieces.filter(piece => !LOCKED_PIECES.includes(piece));
+    const shuffled = [...availablePieces].sort(() => Math.random() - 0.5);
+    
+    // Initialize board with locked pieces in their correct positions
+    const initialBoard = Array(TOTAL_PIECES).fill(null);
+    LOCKED_PIECES.forEach(pieceId => {
+      initialBoard[pieceId] = pieceId;
+    });
     
     setPieces(shuffled);
-    setBoard(Array(TOTAL_PIECES).fill(null));
+    setBoard(initialBoard);
     setIsComplete(false);
   };
 
@@ -70,6 +81,12 @@ export default function Game5() {
   };
 
   const handleDragStart = (e, pieceId, fromPieces) => {
+    // Prevent dragging locked pieces
+    if (LOCKED_PIECES.includes(pieceId)) {
+      e.preventDefault();
+      return;
+    }
+    
     if (fromPieces && board.includes(pieceId)) {
       e.preventDefault();
       return;
@@ -88,6 +105,12 @@ export default function Game5() {
     if (!draggedPiece || isComplete) return;
 
     const { pieceId, fromPieces } = draggedPiece;
+    
+    // Prevent dropping on locked slots
+    if (LOCKED_PIECES.includes(targetIndex)) {
+      setDraggedPiece(null);
+      return;
+    }
 
     if (fromPieces) {
       const newBoard = [...board];
@@ -201,15 +224,15 @@ export default function Game5() {
                   key={index}
                   className={`board-slot ${board[index] !== null ? 'filled' : 'empty'} ${
                     isComplete ? 'complete' : ''
-                  }`}
+                  } ${LOCKED_PIECES.includes(index) ? 'locked' : ''}`}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDropOnBoard(e, index)}
                 >
                   {board[index] !== null && (
                     <div
-                      className="puzzle-piece placed"
+                      className={`puzzle-piece placed ${LOCKED_PIECES.includes(board[index]) ? 'locked' : ''}`}
                       style={getPieceStyle(board[index])}
-                      draggable={!isComplete}
+                      draggable={!isComplete && !LOCKED_PIECES.includes(board[index])}
                       onDragStart={(e) => handleDragStart(e, board[index], false)}
                     >
                       {(board[index] === 0 || board[index] === 3) && (

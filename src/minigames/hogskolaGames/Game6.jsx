@@ -1,6 +1,7 @@
 // Memory Game - Trafikverket tema
 import React, { useState, useEffect } from 'react';
 import './Game6.css';
+import Game7 from './Game7';
 
 export default function Game6() {
   // 9 olika emojis för trafikrelaterade saker (9 par = 18 kort)
@@ -12,6 +13,7 @@ export default function Game6() {
   const [isComplete, setIsComplete] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showNextGame, setShowNextGame] = useState(false);
   const [canFlip, setCanFlip] = useState(true);
 
   useEffect(() => {
@@ -30,12 +32,12 @@ export default function Game6() {
       const [first, second] = flippedCards;
       
       if (cards[first] === cards[second]) {
-        // Match!
+        // kollar om match
         setMatchedCards([...matchedCards, first, second]);
         setFlippedCards([]);
         setCanFlip(true);
       } else {
-        // No match
+        // ingen match
         setTimeout(() => {
           setFlippedCards([]);
           setCanFlip(true);
@@ -45,9 +47,7 @@ export default function Game6() {
   }, [flippedCards]);
 
   const initializeGame = () => {
-    // Skapa par av varje emoji
     const cardPairs = [...emojis, ...emojis];
-    // Shuffla korten
     const shuffled = cardPairs.sort(() => Math.random() - 0.5);
     setCards(shuffled);
     setFlippedCards([]);
@@ -68,6 +68,10 @@ export default function Game6() {
     return flippedCards.includes(index) || matchedCards.includes(index);
   };
 
+  if (showNextGame) {
+    return <Game7 />;
+  }
+
   if (showSuccess) {
     return (
       <div className="game6-success">
@@ -77,8 +81,15 @@ export default function Game6() {
             <span className="reward-label">Du klarade memory-spelet!</span>
           </p>
           <p style={{ fontSize: '20px', color: '#fff', marginTop: '20px', fontFamily: 'Pixelify Sans, sans-serif' }}>
-            🎉 Du har klarat alla högskole-spelen! 🎉
+            Ett sista spel väntar...
           </p>
+          <button 
+            className="continue-button" 
+            onClick={() => setShowNextGame(true)}
+            style={{ marginTop: '30px' }}
+          >
+            Fortsätt till nästa spel
+          </button>
         </div>
       </div>
     );

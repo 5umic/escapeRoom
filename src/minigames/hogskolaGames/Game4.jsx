@@ -11,6 +11,7 @@ export default function Game4() {
   const [showGame5, setShowGame5] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [showNextButton, setShowNextButton] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
 
   const stages = [
     {
@@ -66,15 +67,18 @@ export default function Game4() {
     if (option.correct) {
       setErrorMessage(option.feedback);
       setShowNextButton(true);
+      setIsCorrect(true);
     } else {
       setErrorMessage(option.feedback);
       setShowNextButton(false);
+      setIsCorrect(false);
     }
   };
 
   const handleNext = () => {
     setErrorMessage('');
     setShowNextButton(false);
+    setIsCorrect(false);
     if (stage < stages.length - 1) {
       setStage(stage + 1);
     } else {
@@ -84,6 +88,7 @@ export default function Game4() {
 
   const handleRetry = () => {
     setErrorMessage('');
+    setIsCorrect(false);
   };
 
   if (showGame5) {
@@ -152,8 +157,8 @@ export default function Game4() {
         </div>
 
         {errorMessage && (
-          <div className="error-message">
-            <p>{showNextButton ? '' : ''} {errorMessage}</p>
+          <div className={`feedback-message ${isCorrect ? 'correct' : 'incorrect'}`}>
+            <p className="feedback-text">{errorMessage}</p>
             {showNextButton ? (
               <button className="retry-button" onClick={handleNext}>
                 Nästa scenario
@@ -179,10 +184,6 @@ export default function Game4() {
             ))}
           </div>
         )}
-
-        <div className="stage-indicator">
-          Stadie {stage + 1} av {stages.length}
-        </div>
       </div>
     </div>
   );

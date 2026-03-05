@@ -15,15 +15,7 @@ export default function Game1() {
   
   const codeOptions = [
     "Distance / Speed",
-    "Speed / Distance",
     "Distance * Speed",
-    "Distance + Speed",
-    "Distance - Speed",
-    "Speed * 2",
-    "Distance % Speed",
-    "Math.Sqrt(Distance)",
-    "Speed + Distance / 2",
-    "Distance / (Speed * 2)",
     "Speed - (Distance * 2)",
     "Distance * 2 - Speed"
   ];
@@ -115,8 +107,8 @@ export default function Game1() {
           <pre className="code-block">
 {`public class Train 
 {
-    public int Speed { get; set; }
-    public int Distance { get; set; }
+    public int SpeedkmH = 120
+    public int DistanceKM = 240
     
     public int CalculateArrivalTime() 
     {

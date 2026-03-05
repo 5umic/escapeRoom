@@ -18,6 +18,14 @@ export default function SelectPage() {
   return (
     <div className="select-container">
       <div className="select-content">
+        <img 
+          src="/assets/images/backgrounds/TV_logo_Master_Horisontal_RGB.png" 
+          alt="Trafikverket Logo" 
+          className="select-logo"
+        />
+        
+        <div className="escape-room-text">Escape Room</div>
+        
         <h1 className="select-title">Välj</h1>
         
         <div className="select-button-container">

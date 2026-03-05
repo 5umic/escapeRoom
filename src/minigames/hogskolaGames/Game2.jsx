@@ -18,7 +18,7 @@ export default function Game2() {
   
   const allWords = [
     "Alla", "kommer", "fram", "smidigt,", "grönt", "och", "tryggt",
-    "snabbt", "säkert", "vi", "måste", "kan", "vara", "bra"
+    "aldrig", "äppelmos", "vi", "måste", "imorgon", "kanske", "bra"
   ];
 
   useEffect(() => {

@@ -13,6 +13,7 @@ import {
   FeedbackSuccess,
   FeedbackError,
   TimerBar,
+  GameNavbar,
 } from "../gymnasiumGames/components/GameUI";
 
 export default function Game1() {
@@ -110,6 +111,7 @@ export default function Game1() {
   return (
     // Vi använder vår nya GameContainer! Den hanterar den röda bakgrunden och timern i hörnet.
     <>
+      <GameNavbar gameTitle="Frågespelet" />
       <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
       <GameContainer>
         {/* Rund-information specifik för detta spel */}

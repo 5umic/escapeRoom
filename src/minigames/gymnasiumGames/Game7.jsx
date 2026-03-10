@@ -12,6 +12,7 @@ import {
   FeedbackSuccess,
   FeedbackError,
   TimerBar,
+  GameNavbar,
 } from "../gymnasiumGames/components/GameUI";
 
 // QWERTY-style alfabetet
@@ -259,6 +260,7 @@ export default function Game7() {
 
   return (
     <>
+      <GameNavbar gameTitle="Gissa Ordet" />
       <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
       <GameContainer>
         <h2>Trafikljuset</h2> {/* Uppdaterat rubrik */}

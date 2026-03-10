@@ -22,6 +22,7 @@ import {
   FeedbackSuccess,
   FeedbackError,
   TimerBar,
+  GameNavbar,
 } from "../gymnasiumGames/components/GameUI";
 
 const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
@@ -185,6 +186,7 @@ export default function Game6() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
+      <GameNavbar gameTitle="Bilda Rätta Ordet" />
       <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
       <GameContainer>
         {/* Visar runda */}

@@ -13,6 +13,7 @@ import {
   FeedbackSuccess,
   FeedbackError,
   TimerBar,
+  GameNavbar,
 } from "../gymnasiumGames/components/GameUI";
 
 const shuffleArray = (array) => [...array].sort(() => Math.random() - 0.5);
@@ -235,6 +236,7 @@ export default function Game5() {
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <>
+        <GameNavbar gameTitle="Sortera Rätt" />
         <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
         <GameContainer>
           <h2>Sortera Rätt</h2>

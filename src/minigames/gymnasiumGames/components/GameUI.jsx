@@ -4,6 +4,39 @@ import { formatTimeWithTenths } from "../hooks/useGameTimer";
 import { getNextGameInfo } from "../../../utils/navigation";
 import { savePlayerScore } from "../api/gameApi";
 
+export const GameNavbar = ({ gameTitle }) => {
+  // Hämta den totala tiden från sessionStorage annars 00:00
+
+  const totalTime = sessionStorage.getItem("totalGameTime") || "00:00";
+
+  return (
+    <nav style={navStyles.navbar}>
+      {/* VÄNSTER: Kan vara plats för en "Avbryt"-knapp i framtiden? Men tom för tillfället */}
+      <div style={navStyles.navSide}></div>
+
+      {/* MITTEN: Logga och Speltitel */}
+      <div style={navStyles.navCenter}>
+        <img
+          src="/images/trafikverket_horisontal_logo_RGB.png"
+          alt="Trafikverket"
+          style={navStyles.logo}
+        />
+        <h1 style={navStyles.gameTitle}>{gameTitle}</h1>
+      </div>
+
+      {/* HÖGER: Total tid */}
+      <div style={navStyles.navSide}>
+        <div style={navStyles.timeWrapper}>
+          <span style={navStyles.timeDigits}>
+            {formatTimeWithTenths(totalTime)}
+          </span>
+          <span style={navStyles.timeLabel}>TOTAL TID</span>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
 // --- KRYMPANDE TIMER-MÄTARE ---
 export function TimerBar({ secondsLeft, totalTimeLimit }) {
   const maxTime = totalTimeLimit || 1;
@@ -163,6 +196,62 @@ export function FeedbackError({ title, message, penalty, onRetry, retryText }) {
   );
 }
 
+const navStyles = {
+  navbar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "10px 40px",
+    borderBottom: "3px solid #b10000", // Trafikverkets röda linje
+    width: "100%",
+    boxSizing: "border-box",
+    marginBottom: "20px",
+  },
+  navSide: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "flex-end",
+  },
+  navCenter: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "5px",
+  },
+  logo: {
+    height: "80px",
+    width: "auto",
+  },
+  gameTitle: {
+    margin: 0,
+    fontSize: "14px",
+    color: "#f4f4f4",
+    textTransform: "uppercase",
+    letterSpacing: "1px",
+    fontWeight: "bold",
+  },
+  timeWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    backgroundColor: "#f4f4f4",
+    padding: "5px 15px",
+    borderRadius: "8px",
+    minWidth: "100px",
+  },
+  timeDigits: {
+    fontSize: "20px",
+    fontWeight: "bold",
+    color: "#333",
+    fontFamily: "monospace",
+  },
+  timeLabel: {
+    fontSize: "10px",
+    color: "#888",
+    fontWeight: "bold",
+  },
+};
+
 const styles = {
   timerBackground: {
     width: "95%",
@@ -195,7 +284,7 @@ const styles = {
     textShadow: "1px 1px 2px rgba(0,0,0,0.8)",
   },
   container: {
-    minHeight: "100vh",
+    minHeight: "85vh",
     background: "#b10000",
     display: "flex",
     justifyContent: "center",

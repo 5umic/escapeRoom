@@ -12,6 +12,7 @@ import {
   FeedbackSuccess,
   FeedbackError,
   TimerBar,
+  GameNavbar,
 } from "../gymnasiumGames/components/GameUI";
 
 export default function Game2() {
@@ -112,6 +113,7 @@ export default function Game2() {
   return (
     // GameContainer sätter upp bakgrunden och timern
     <>
+      <GameNavbar gameTitle="Risk & Säkerhet" />
       <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
       <GameContainer>
         <h2>Risk & Säkerhet</h2>

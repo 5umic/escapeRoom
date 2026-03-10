@@ -15,6 +15,15 @@ import StartScreen from "./minigames/gymnasiumGames/StartScreen.jsx";
 import Leaderboard from "./minigames/gymnasiumGames/Leaderboard.jsx";
 import AdminLeaderboard from "./admin/AdminLeaderboard.jsx";
 
+// Högskola games import
+import HogskolaGame1 from "./minigames/hogskolaGames/Game1.jsx";
+import HogskolaGame2 from "./minigames/hogskolaGames/Game2.jsx";
+import HogskolaGame3 from "./minigames/hogskolaGames/Game3.jsx";
+import HogskolaGame4 from "./minigames/hogskolaGames/Game4.jsx";
+import HogskolaGame5 from "./minigames/hogskolaGames/Game5.jsx";
+import HogskolaGame6 from "./minigames/hogskolaGames/Game6.jsx";
+import HogskolaGame7 from "./minigames/hogskolaGames/Game7.jsx";
+
 // Admin imports
 import AdminDashboard from "./admin/AdminDashboard.jsx";
 import EditChallenge from "./admin/EditChallenge.jsx";
@@ -62,6 +71,15 @@ function App() {
           />
         }
       />
+
+      {/* Högskola games routes */}
+      <Route path="/hogskolaGames/Game1" element={<HogskolaGame1 />} />
+      <Route path="/hogskolaGames/Game2" element={<HogskolaGame2 />} />
+      <Route path="/hogskolaGames/Game3" element={<HogskolaGame3 />} />
+      <Route path="/hogskolaGames/Game4" element={<HogskolaGame4 />} />
+      <Route path="/hogskolaGames/Game5" element={<HogskolaGame5 />} />
+      <Route path="/hogskolaGames/Game6" element={<HogskolaGame6 />} />
+      <Route path="/hogskolaGames/Game7" element={<HogskolaGame7 />} />
 
       {/* Fallback om någon skriver fel länk */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -9,9 +9,16 @@ export default function SelectPage() {
   return (
     <div className="select-container">
       <div className="select-content">
-        {/* Valfritt: Lägg in loggan här om du vill, annars bara titeln */}
-        <h1 className="select-title">Välj din nivå</h1>
-
+        <img 
+          src="/assets/images/backgrounds/TV_logo_Master_Horisontal_RGB.png" 
+          alt="Trafikverket Logo" 
+          className="select-logo"
+        />
+        
+        <div className="escape-room-text">Escape Room</div>
+        
+        <h1 className="select-title">Välj</h1>
+        
         <div className="select-button-container">
           {/* Knapp för Gymnasium -> Går till /gymnasium */}
           <button

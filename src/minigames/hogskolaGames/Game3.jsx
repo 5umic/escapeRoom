@@ -1,95 +1,109 @@
-// Game 3 - Sentence Building Game
-import React, { useState, useEffect } from 'react';
+
+
+import React, { useState } from 'react';
 import './Game3.css';
 import Game4 from './Game4.jsx';
 
 export default function Game3() {
-  const targetSentence = ["Alla", "kommer", "fram", "smidigt,", "grönt", "och", "tryggt"];
-  
-  const [selectedWords, setSelectedWords] = useState(Array(targetSentence.length).fill(null));
-  const [availableWords, setAvailableWords] = useState([]);
-  const [feedback, setFeedback] = useState([]);
+  const [stage, setStage] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showGame4, setShowGame4] = useState(false);
-  const [attempts, setAttempts] = useState(0);
-  
-  const allWords = [
-    "Alla", "kommer", "fram", "smidigt,", "grönt", "och", "tryggt",
-    "snabbt", "säkert", "vi", "måste", "kan", "vara", "bra"
+  const [showGame5, setShowGame5] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showNextButton, setShowNextButton] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+
+  const stages = [
+    {
+      title: "Vid bilen",
+      description: "Det är en regnig, mörk hösteftermiddag. Du lämnar kontoret efter en lång dag på Trafikverket. Regnet öser ner och sikten är dålig. Du närmar dig din bil på parkeringen. Vad gör du?",
+      options: [
+        { text: "Ser runt bilen och kontrollerar att inga föremål eller personer/djur är i vägen", correct: true, feedback: "Rätt! Även om det regnar ska du alltid kontrollera runt fordonet. I mörker och dåligt väder kan det finnas hinder, barn eller djur som du inte ser." },
+        { text: "Går direkt in i bilen, det regnar ju", correct: false, feedback: "Nja, vi uppskattar din motivation att hålla dig torr... men tänk om det står en katt bakom bilen som också försöker hålla sig torr? Kolla runt bilen först, även när det öser ner." },
+        { text: "Kollar mobilen medan du går till bilen", correct: false, feedback: "Okej, vi förstår - TikTok är viktigt. Men säg det till den bil som nästan kör på dig på parkeringen... Ögonen på omgivningen tack!" }
+      ]
+    },
+    {
+      title: "I bilen",
+      description: "Du sitter nu i förarsätet. Bilen är kall och rutorna är immiga. Vad är det allra första du gör?",
+      options: [
+        { text: "Startar motorn så att det blir varmt", correct: false, feedback: "Ahhh, mysigt och varmt... tills du flyger genom vindrutan! Bältet FÖRST, även om fingrarna fryser. Det är inte lika mysigt som uppvärmda säten, men betydligt säkrare." },
+        { text: "Sätter på säkerhetsbältet", correct: true, feedback: "Rätt! Säkerhetsbältet ska ALLTID vara det första. Gör det till en vana att sätta på bältet direkt när du sätter dig - innan du startar, innan du kollar mobilen, innan allt annat." },
+        { text: "Kollar mobilen för att se navigationsinstruktioner", correct: false, feedback: "GPS:en kan vänta 5 sekunder, ditt liv kan inte! Bältet på FÖRST, sedan kan du ta reda på var du ska. Förresten, visste du att airbagen kan skada dig allvarligt om du inte har bälte?" }
+      ]
+    },
+    {
+      title: "Starta färden",
+      description: "Motorn är igång och rutorna börjar klarna. Du ser att det regnar kraftigt. Vad gör du innan du backar ut?",
+      options: [
+        { text: "Backar ut försiktigt med backspegeln", correct: false, feedback: "'Försiktigt' är ett fint ord, men döda vinklar heter inte döda utan anledning... I regn och mörker är särskilt små barn och djur betydligt svårare att se. Kolla ALLT innan du backar!" },
+        { text: "Kontrollerar alla speglar, döda vinklar, och väntar tills rutorna är helt klara", correct: true, feedback: "Rätt! I dåliga väderförhållanden är det extra viktigt med god sikt och att dubbelkolla döda vinklar." },
+        { text: "Sätter på musiken och backar ut", correct: false, feedback: "Party time! Förutom att... jo, det där lilla ljudet du inte hörde över musiken? Det var en cyklist som försökte varna dig. Musik efter säkerheten är klar, tack!" }
+      ]
+    },
+    {
+      title: "På vägen",
+      description: "Du är nu ute på vägen. Regnet öser ner, sikten är dålig och vägbanan är våt och hal. Det är mörklagt och du kör bakom en annan bil. Hur kör du?",
+      options: [
+        { text: "Kör i normal hastighet, vill komma hem fort", correct: false, feedback: "Snabbt hem låter najs... sjukhuset är också en destination tekniskt sett. Våt asfalt + normal hastighet = längre bromssträcka än du tror. Sakta ner lite, soffolocket väntar." },
+        { text: "Sänker hastigheten, ökar avståndet till bilen framför, tänder helljus för bättre sikt", correct: false, feedback: "Nästan perfekt! Förutom helljus-grejen... Föraren framför dig ser nu ingenting i backspegeln utom dina strålkastare. Halvljus är din vän här!" },
+        { text: "Sänker hastigheten, ökar avståndet till framförvarande, använder halvljus", correct: true, feedback: "Rätt! Anpassad hastighet, ökat avstånd och halvljus är avgörande. Använd ALDRIG helljus bakom andra fordon - det bländar dem i backspegeln." },
+        { text: "Kör tätt bakom bilen framför för bättre sikt", correct: false, feedback: "Ah, klassisk taktik! Problemet är att när föraren framför bromsar så... PANG! Våt väg = längre bromssträcka. Du vill inte pussas med bakljuset på bilen framför, eller?" }
+      ]
+    },
+    {
+      title: "Nästan hemma",
+      description: "Du kör på sista biten hem. Plötsligt piper telefonen - du får en notifikation. Samtidigt känner du att den vibrerar i fickan. Vad gör du?",
+      options: [
+        { text: "Tar snabbt upp telefonen och kollar meddelandet", correct: false, feedback: "'Snabbt' är relativ tid... På den sekunden du kollar telefonen hinner du köra 14 meter blint. Det är längre än en buss! Om det är så viktigt kan de ringa ambulansen åt dig efter olyckan." },
+        { text: "Tittar snabbt på skärmen utan att röra telefonen", correct: false, feedback: "Smart tänkt! Ingen hands-free brott här... men dina ögon är fortfarande inte på vägen. 14 meter blind-körning är ganska mycket. Spoiler alert: meddelandet är en reklam för pizzeria." },
+        { text: "Ignorerar telefonen helt tills du har stannat och parkerat", correct: true, feedback: "Rätt! Inget meddelande är viktigare än din säkerhet. Vänta alltid tills du har stannat säkert innan du använder telefonen. Du har klarat resan säkert!" },
+        { text: "Svarar med röstkommando", correct: false, feedback: "Ahh, teknologi! Men din hjärna är fortfarande upptagen med samtalet istället för trafiken. Det är som att försöka rubiks kub samtidigt som du spelar schack. Kan det vänta 2 minuter?" }
+      ]
+    }
   ];
 
-  useEffect(() => {
-    const shuffled = [...allWords].sort(() => Math.random() - 0.5);
-    setAvailableWords(shuffled);
-  }, []);
-
-  const handleWordClick = (word) => {
-    const emptyIndex = selectedWords.findIndex(w => w === null);
-    if (emptyIndex !== -1) {
-      const newSelected = [...selectedWords];
-      newSelected[emptyIndex] = word;
-      setSelectedWords(newSelected);
-      setAvailableWords(availableWords.filter(w => w !== word));
-      setFeedback([]);
+  const handleChoice = (option) => {
+    if (option.correct) {
+      setErrorMessage(option.feedback);
+      setShowNextButton(true);
+      setIsCorrect(true);
+    } else {
+      setErrorMessage(option.feedback);
+      setShowNextButton(false);
+      setIsCorrect(false);
     }
   };
 
-  const handleRemoveWord = (index) => {
-    const wordToRemove = selectedWords[index];
-    if (wordToRemove !== null) {
-      const newSelected = [...selectedWords];
-      newSelected[index] = null;
-      setSelectedWords(newSelected);
-      setAvailableWords([...availableWords, wordToRemove]);
-      setFeedback([]);
+  const handleNext = () => {
+    setErrorMessage('');
+    setShowNextButton(false);
+    setIsCorrect(false);
+    if (stage < stages.length - 1) {
+      setStage(stage + 1);
+    } else {
+      setShowInfo(true);
     }
   };
 
-  const handleClear = () => {
-    setAvailableWords([...allWords].sort(() => Math.random() - 0.5));
-    setSelectedWords(Array(targetSentence.length).fill(null));
-    setFeedback([]);
+  const handleRetry = () => {
+    setErrorMessage('');
+    setIsCorrect(false);
   };
 
-  const checkSentence = () => {
-    if (selectedWords.some(w => w === null)) {
-      return;
-    }
-
-    const newFeedback = selectedWords.map((word, index) => {
-      if (word === targetSentence[index]) {
-        return 'correct';
-      } else if (targetSentence.includes(word)) {
-        return 'misplaced';
-      } else {
-        return 'wrong';
-      }
-    });
-
-    setFeedback(newFeedback);
-    setAttempts(attempts + 1);
-
-    if (newFeedback.every(f => f === 'correct')) {
-      setTimeout(() => {
-        setShowInfo(true);
-      }, 1000);
-    }
-  };
-
-  if (showGame4) {
+  if (showGame5) {
     return <Game4 />;
   }
 
   if (showSuccess) {
     return (
-      <div className="game3-success">
+      <div className="game4-success">
         <div className="success-content">
           <h2>Rätt svar!</h2>
           <p className="reward-word">
             <span className="reward-label"></span> <strong>BRA JOBBAT!</strong>
           </p>
-          <button className="continue-button" onClick={() => setShowGame4(true)}>Fortsätt</button>
+          <button className="continue-button" onClick={() => setShowGame5(true)}>Fortsätt</button>
         </div>
       </div>
     );
@@ -97,23 +111,21 @@ export default function Game3() {
 
   if (showInfo) {
     return (
-      <div className="game3-container">
-        <div className="game3-content">
+      <div className="game4-container">
+        <div className="game4-content">
           <div className="info-section">
-            <h2 className="info-title">Du är helt grym!</h2>
+            <h2 className="info-title">Fantastiskt!</h2>
             
             <div className="info-text">
               <p>
-                "Alla kommer fram smidigt, grönt och tryggt" - detta är en av Trafikverkets kärnvärden när det gäller trafikplanering och infrastruktur.
+                Du har visat god kunskap om trafiksäkerhet. Varje år skadas och dör människor i trafiken på grund av misstag som kunde undvikas. 
+                Genom att följa säkerhetsrutiner, anpassa hastigheten och vara uppmärksam räddar du liv - både ditt eget och andras.
               </p>
               <p>
-                Smidighet i trafikflöden, gröna hållbara lösningar och trygghet för alla trafikanter är grundläggande principer i vårt arbete. Som IT-utvecklare på Trafikverket bidrar du till att skapa system som hjälper till att uppnå dessa mål.
-              </p>
-              <p>
-                Genom att utveckla intelligenta trafikstyrningssystem, realtidsövervakning och dataanalys hjälper vi till att göra Sveriges vägar och järnvägar säkrare och mer effektiva.
+                På Trafikverket arbetar vi kontinuerligt med att förbättra trafiksäkerheten genom utbildning, infrastruktur och smarta IT-lösningar. 
+                Varje decision vi tar i vårt arbete kan bidra till att göra Sveriges vägar och järnvägar säkrare för alla.
               </p>
             </div>
-
             <button className="continue-button" onClick={() => setShowSuccess(true)}>
               Fortsätt
             </button>
@@ -123,54 +135,55 @@ export default function Game3() {
     );
   }
 
+  const currentStage = stages[stage];
+
   return (
-    <div className="game3-container">
-      <div className="game3-content">
-        <h1 className="game3-title">Bygg Rätt Mening</h1>
-        <p className="game3-instructions">
-          Välj ord från listan nedan för att bygga Trafikverkets viktiga budskap. 
-          Grön = rätt ord på rätt plats, Gul = rätt ord men fel plats, Grå = fel ord.
-        </p>
-
-        <div className="sentence-builder">
-          <div className="selected-words">
-            {selectedWords.map((word, index) => (
-              <div 
-                key={index} 
-                className={`word-slot ${word !== null ? 'filled' : 'empty'} ${feedback[index] || ''}`}
-                onClick={() => word !== null && handleRemoveWord(index)}
-              >
-                {word !== null ? word : '_'}
-              </div>
-            ))}
-          </div>
-
-          <div className="button-group">
-            <button 
-              className="check-button" 
-              onClick={checkSentence}
-              disabled={selectedWords.some(w => w === null)}
+    <div className="game4-container">
+      <div className="game4-content">
+        <div className="progress-bar">
+          {stages.map((_, index) => (
+            <div 
+              key={index} 
+              className={`progress-dot ${index <= stage ? 'completed' : ''}`}
             >
-              Kontrollera Mening
-            </button>
-          </div>
-
+              {index + 1}
+            </div>
+          ))}
         </div>
 
-        <div className="available-words">
-          <h3>Tillgängliga Ord:</h3>
-          <div className="word-bank">
-            {availableWords.map((word, index) => (
-              <button 
-                key={index} 
-                className="word-button"
-                onClick={() => handleWordClick(word)}
+        <h1 className="game4-title">{currentStage.title}</h1>
+        <div className="story-text">
+          <p>{currentStage.description}</p>
+        </div>
+
+        {errorMessage && (
+          <div className={`feedback-message ${isCorrect ? 'correct' : 'incorrect'}`}>
+            <p className="feedback-text">{errorMessage}</p>
+            {showNextButton ? (
+              <button className="retry-button" onClick={handleNext}>
+                Nästa scenario
+              </button>
+            ) : (
+              <button className="retry-button" onClick={handleRetry}>
+                Försök igen
+              </button>
+            )}
+          </div>
+        )}
+
+        {!errorMessage && (
+          <div className="choices">
+            {currentStage.options.map((option, index) => (
+              <button
+                key={index}
+                className="choice-button"
+                onClick={() => handleChoice(option)}
               >
-                {word}
+                {option.text}
               </button>
             ))}
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

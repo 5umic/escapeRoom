@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 
-// DRY-verktyg!
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
@@ -48,7 +47,7 @@ const ALPHABET = [
   "M",
 ];
 
-const CURRENT_GAME_TITLE = "Hänga Gubbe (Game 7)";
+const CURRENT_GAME_TITLE = "Trafikljuset (Game 7)"; // Uppdaterat titel
 
 export default function Game7() {
   const navigate = useNavigate();
@@ -58,21 +57,22 @@ export default function Game7() {
   const [challenge, setChallenge] = useState(null);
   const [status, setStatus] = useState("loading");
 
-  // Hangman State
+  // Game State
   const [guessedLetters, setGuessedLetters] = useState([]);
   const [mistakes, setMistakes] = useState(0);
-  const maxMistakes = 10;
+  const maxMistakes = 9; // Ändrat från 10 till 9 försök
   const [totalTimeLimit, setTotalTimeLimit] = useState(60);
 
   // Dynamisk navigation
-  const isLast = isLastActiveGame(CURRENT_GAME_TITLE);
-  const nextPath = getNextGameInfo(CURRENT_GAME_TITLE);
+  const isLast = isLastActiveGame("Hänga Gubbe (Game 7)");
+  const nextPath = getNextGameInfo("Hänga Gubbe (Game 7)");
 
   // 1. Hämta Data vid start
   useEffect(() => {
     const initGame = async () => {
       setStatus("loading");
-      const id = await fetchGameIdByTitle("gymnasium", CURRENT_GAME_TITLE);
+      // Vi letar efter det ID som är kopplat till originalnamnet
+      const id = await fetchGameIdByTitle("gymnasium", "Hänga Gubbe (Game 7)");
       if (id) {
         const data = await fetchUniqueChallenges(id, 1);
         if (data.length > 0) setupChallenge(data[0]);
@@ -95,38 +95,133 @@ export default function Game7() {
     setStatus("playing");
   };
 
-  // 2. RITA GUBBEN
+  // --- 2. RITA TRAFIKLJUSET (ERSÄTTER GUBBEN) ---
   useEffect(() => {
     if (!canvasRef.current) return;
     const ctx = canvasRef.current.getContext("2d");
+
+    // Rensa canvasen
     ctx.clearRect(0, 0, 150, 150);
-    ctx.beginPath();
     ctx.strokeStyle = "#333";
     ctx.lineWidth = 2;
+    ctx.lineCap = "round";
 
-    const drawLine = (fromX, fromY, toX, toY) => {
-      ctx.moveTo(fromX, fromY);
-      ctx.lineTo(toX, toY);
-      ctx.stroke();
-    };
+    // --- STEG 0: ALLTID RITA MILJÖN (TRÄD OCH TROTTOAR) ---
+    // Trottoar och kant (Längst ner)
+    ctx.beginPath();
+    ctx.fillStyle = "#999"; // Grå trottoar
+    ctx.fillRect(0, 130, 150, 20);
+    ctx.fillStyle = "#666"; // Mörkare kant
+    ctx.fillRect(0, 130, 150, 4);
 
-    if (mistakes >= 1) drawLine(0, 140, 150, 140);
-    if (mistakes >= 2) drawLine(10, 0, 10, 140);
-    if (mistakes >= 3) drawLine(0, 5, 70, 5);
-    if (mistakes >= 4) drawLine(60, 5, 60, 15);
-    if (mistakes >= 5) {
+    // Träd (Till vänster)
+    // Stam
+    ctx.beginPath();
+    ctx.fillStyle = "#8B4513"; // Brun stam
+    ctx.fillRect(20, 70, 15, 60);
+    // Krona
+    ctx.beginPath();
+    ctx.fillStyle = "#228B22"; // Grön krona
+    ctx.arc(27.5, 60, 25, 0, Math.PI * 2);
+    ctx.arc(45, 75, 20, 0, Math.PI * 2);
+    ctx.arc(10, 75, 20, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Markera vart ljuset ska stå (En liten platta)
+    ctx.beginPath();
+    ctx.fillStyle = "#555";
+    ctx.fillRect(80, 125, 40, 5);
+
+    // --- STEG 1-9: RITA PÅBYGGNAD BASERAT PÅ MISSTAG ---
+
+    // 1: Stolpen ritas (Ett vertikalt streck)
+    if (mistakes >= 1) {
       ctx.beginPath();
-      ctx.arc(60, 25, 10, 0, Math.PI * 2, true);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#444";
+      ctx.moveTo(100, 125);
+      ctx.lineTo(100, 30);
+      ctx.stroke();
+      ctx.lineWidth = 2; // Nollställ width
+    }
+
+    // 2: Armaturen/Lådan (Ramen för ljusen) ritas
+    if (mistakes >= 2) {
+      ctx.beginPath();
+      ctx.fillStyle = "#333"; // Mörkgrå låda
+      ctx.fillRect(85, 30, 30, 70);
+      ctx.strokeRect(85, 30, 30, 70); // Kant
+    }
+
+    // 3: Topp-cirkeln (Där röda ska sitta) ritas (tom)
+    if (mistakes >= 3) {
+      ctx.beginPath();
+      ctx.fillStyle = "white";
+      ctx.arc(100, 45, 8, 0, Math.PI * 2);
+      ctx.fill();
       ctx.stroke();
     }
-    if (mistakes >= 6) drawLine(60, 35, 60, 70);
-    if (mistakes >= 7) drawLine(60, 46, 20, 50);
-    if (mistakes >= 8) drawLine(60, 46, 100, 50);
-    if (mistakes >= 9) drawLine(60, 70, 20, 100);
-    if (mistakes >= 10) drawLine(60, 70, 100, 100);
+
+    // 4: Mitten-cirkeln (Där gula ska sitta) ritas (tom)
+    if (mistakes >= 4) {
+      ctx.beginPath();
+      ctx.fillStyle = "white";
+      ctx.arc(100, 65, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // 5: Botten-cirkeln (Där gröna ska sitta) ritas (tom)
+    if (mistakes >= 5) {
+      ctx.beginPath();
+      ctx.fillStyle = "white";
+      ctx.arc(100, 85, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // 6: Det RÖDA ljuset tänds (Topp)
+    if (mistakes >= 6) {
+      ctx.beginPath();
+      ctx.fillStyle = "#ff1744"; // Klar röd
+      ctx.arc(100, 45, 7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 7: Det GULA ljuset tänds (Mitten)
+    if (mistakes >= 7) {
+      ctx.beginPath();
+      ctx.fillStyle = "#ffeb3b"; // Klar gul
+      ctx.arc(100, 65, 7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 8: Det GRÖNA ljuset tänds (Botten)
+    if (mistakes >= 8) {
+      ctx.beginPath();
+      ctx.fillStyle = "#00e676"; // Klar grön
+      ctx.arc(100, 85, 7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 9: Sol-skydden/Skärmarna läggs till (Allt klart, men fullt ljus)
+    if (mistakes >= 9) {
+      const drawVisor = (y) => {
+        ctx.beginPath();
+        ctx.strokeStyle = "#222";
+        ctx.lineWidth = 3;
+        ctx.moveTo(90, y - 5);
+        ctx.lineTo(110, y - 5);
+        ctx.stroke();
+      };
+      drawVisor(45);
+      drawVisor(65);
+      drawVisor(85);
+      ctx.lineWidth = 2; // Nollställ
+    }
   }, [mistakes]);
 
-  // 3. HANTERA GISSNING
+  // --- 3. HANTERA GISSNING ---
   const handleGuess = (letter) => {
     if (status !== "playing" || guessedLetters.includes(letter)) return;
 
@@ -156,21 +251,18 @@ export default function Game7() {
   if (status === "loading" || !challenge)
     return (
       <GameContainer>
-        <h2>Laddar Hänga Gubbe...</h2>
+        <h2>Laddar Trafikljuset...</h2>
       </GameContainer>
     );
 
   const word = challenge.answer.toUpperCase();
 
-  const isLastQuestion = true;
-
   return (
     <>
       <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
       <GameContainer>
-        <h2>Hänga Gubbe</h2>
+        <h2>Trafikljuset</h2> {/* Uppdaterat rubrik */}
         <p style={{ marginBottom: "20px" }}>{challenge.prompt}</p>
-
         <div style={styles.canvasWrapper}>
           <canvas
             ref={canvasRef}
@@ -182,7 +274,6 @@ export default function Game7() {
             Försök kvar: <strong>{maxMistakes - mistakes}</strong>
           </p>
         </div>
-
         <div style={styles.wordContainer}>
           {word.split("").map((char, index) => (
             <span key={index} style={styles.letterSlot}>
@@ -194,7 +285,6 @@ export default function Game7() {
             </span>
           ))}
         </div>
-
         <div style={styles.keyboard}>
           {ALPHABET.map((letter) => {
             const isGuessed = guessedLetters.includes(letter);
@@ -218,31 +308,28 @@ export default function Game7() {
             );
           })}
         </div>
-
         {status === "answered_correctly" && (
           <FeedbackSuccess
             title={
               isLast
-                ? "Grattis, du överlevde hela pixeljakten!"
+                ? "Grattis, du tog dig genom pixel-trafiken!"
                 : "Snyggt gissat!"
             }
             timeTaken={getTimeTaken()}
             totalTime={sessionStorage.getItem("totalGameTime")}
             onNext={() => navigate(nextPath)}
             nextText={isLast ? "Se Leaderboard 🏆" : "Nästa utmaning"}
-            currentGameTitle="Hänga Gubbe (Game 7)"
+            currentGameTitle="Hänga Gubbe (Game 7)" // Behåller originaltiteln för att feedback ska stämma
             isLastQuestion={true}
           />
         )}
-
         {status === "answered_wrong" && (
           <FeedbackError
-            title="Åh nej, gubben hängdes! 💀"
+            title="Tiden gick ut! Trafikljuset slog om till rött. 🛑"
             penalty={getTimeTaken()}
             onRetry={() => setupChallenge(challenge)}
           />
         )}
-
         {status === "time_out" && (
           <FeedbackError
             title="Tiden är ute! ⏱️"

@@ -1,87 +1,50 @@
-.game4-container {
+.game5-container {
   background: #d70000;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 0px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
-.game4-content {
+.game5-content {
   max-width: 900px;
   width: 100%;
+  text-align: center;
 }
 
-.progress-bar {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.progress-dot {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: bold;
-  font-family: 'Pixelify Sans', sans-serif;
-  transition: all 0.3s ease;
-}
-
-.progress-dot.completed {
-  background-color: #fff;
-  color: #d70000;
-  transform: scale(1.1);
-}
-
-.game4-title {
+.game5-title {
   font-size: 36px;
   color: #fff;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   font-family: 'Pixelify Sans', sans-serif;
   font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
 }
 
-.story-text {
-  background-color: rgba(0, 0, 0, 0.0);
-  padding: 30px;
-  border-radius: 12px;
+.game5-instructions {
+  font-size: 20px;
+  color: #e0e0e0;
+  text-align: center;
+  margin-bottom: 10px;
+  font-family: 'Pixelify Sans', sans-serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+
+}
+
+.game5-header {
+  display: flex;
+  justify-content: center;
   margin-bottom: 30px;
 }
 
-.story-text p {
-  color: #fff;
-  font-size: 20px;
-  line-height: 1.8;
-  margin: 0;
-  font-family: 'Pixelify Sans', sans-serif;
-}
-
-.error-message {
-  background-color: rgba(255, 255, 255, 0);
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  border: 3px solid #fff;
-  animation: shake 0.5s;
-  text-align: center;
-}
-
-.error-message p {
-  color: #ffffff;
-  font-size: 18px;
-  margin: 0 0 20px 0;
-  font-family: 'Pixelify Sans', sans-serif;
-  font-weight: bold;
-}
-
-.retry-button {
+.shuffle-button {
   background-color: #fff;
   color: #d70000;
   border: 3px solid #fff;
@@ -94,54 +57,216 @@
   font-family: 'Pixelify Sans', sans-serif;
 }
 
-.retry-button:hover {
+.shuffle-button:hover {
   background-color: rgba(255, 255, 255, 0.9);
   transform: scale(1.05);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  75% { transform: translateX(10px); }
-}
-
-.choices {
+.puzzle-area {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-bottom: 30px;
+  flex-direction: row;
+  gap: 2rem;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
 }
 
-.choice-button {
-  background-color: #fff;
-  color: #d70000;
-  border: 3px solid #fff;
-  padding: 20px;
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 12px;
-  cursor: pointer;
+.board-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-left: 240px;
+}
+
+.puzzle-board {
+  margin-top: -20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 4px;
+  background: #990000;
+  padding: 4px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  max-width: 400px;
+  width: 100%;
+  aspect-ratio: 4 / 6;
+}
+
+.board-slot {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.3s ease;
+}
+
+.board-slot.empty {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.board-slot.filled {
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+}
+
+.board-slot:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.slot-number {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 20px;
+  font-weight: bold;
   font-family: 'Pixelify Sans', sans-serif;
-  text-align: left;
-  line-height: 1.4;
 }
 
-.choice-button:hover {
-  background-color: rgba(255, 255, 255, 0.9);
-  transform: translateX(10px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+.puzzle-piece {
+  width: 100%;
+  height: 100%;
+  background-color: #d70000;
+  background-repeat: no-repeat;
+  cursor: grab;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
-.stage-indicator {
-  text-align: center;
+.puzzle-piece:active {
+  cursor: grabbing;
+  opacity: 0.7;
+}
+
+.puzzle-piece:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+.puzzle-piece.placed {
+  cursor: grab;
+}
+
+.puzzle-piece.locked {
+  cursor: not-allowed;
+}
+
+.puzzle-piece.locked:hover {
+  transform: none;
+}
+
+.puzzle-piece.used {
+  opacity: 0.3;
+  cursor: not-allowed !important;
+}
+
+.puzzle-piece.used:hover {
+  transform: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.board-slot.complete .puzzle-piece {
+  cursor: default;
+  animation: piecePlaced 0.5s ease;
+}
+
+@keyframes piecePlaced {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.pieces-container {
+  background: rgba(255, 255, 255, 0.1);
+  margin-top: 90px;
+  padding: 1.5rem;
+  border-radius: 20px;
+  max-width: 400px;
+  flex-shrink: 0;
+}
+
+.pieces-container h3 {
   color: #fff;
-  font-size: 16px;
+  margin-bottom: 15px;
+  font-size: 20px;
   font-family: 'Pixelify Sans', sans-serif;
-  opacity: 0.8;
 }
 
+.pieces-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 4px;
+  background: #990000;
+  padding: 4px;
+  border-radius: 10px;
+  aspect-ratio: 4 / 6;
+}
+
+.pieces-grid .puzzle-piece {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.piece-number {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #d70000;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: 'Pixelify Sans', sans-serif;
+  pointer-events: none;
+}
+
+.puzzle-piece.used .piece-number {
+  opacity: 0.3;
+}
+
+.completion-message {
+  margin-top: 0px;
+  color: #fff;
+  font-size: 24px;
+  font-weight: bold;
+  font-family: 'Pixelify Sans', sans-serif;
+  animation: fadeInScale 0.5s ease;
+  text-align: center;
+  position: relative;
+  z-index: 100;
+  width: 100%;
+}
+
+.completion-message .continue-button {
+  margin: 0 auto;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Info Section */
 .info-section {
   background-color: #d70000;
   padding: 40px;
@@ -151,8 +276,14 @@
 }
 
 @keyframes slideDown {
-  0% { transform: translateY(-20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .info-title {
@@ -164,64 +295,12 @@
   text-align: center;
 }
 
-.game4-success {
-  background: #d70000;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.success-content {
-  background-color: #d70000;
-  padding: 60px;
-  border-radius: 12px;
-  text-align: center;
-  max-width: 700px;
-  animation: popIn 0.5s ease;
-}
-
-@keyframes popIn {
-  0% { transform: scale(0.8); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-.success-content h2 {
-  font-size: 48px;
-  color: #ffffff;
-  margin-bottom: 20px;
-  font-family: 'Pixelify Sans', sans-serif;
-}
-
-.reward-word {
-  font-size: 24px;
-  color: #ffffff;
-  margin-bottom: 30px;
-  display: block;
-}
-
-.reward-word strong {
-  font-size: 40px;
-  color: #ffffff;
-  display: block;
-  margin-top: 10px;
-}
-
-.reward-label {
-  font-size: 20px;
-  font-weight: normal;
-  display: block;
-  margin-bottom: 10px;
-}
-
 .info-text {
   color: #ffffff;
   font-size: 19px;
   line-height: 1.8;
   margin-bottom: 30px;
   font-family: 'Open Sans', sans-serif;
-
 }
 
 .info-text p {
@@ -252,23 +331,131 @@
   transform: scale(1.05);
 }
 
+/* Success Screen */
+.game5-success {
+  background: #d70000;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.success-content {
+  background-color: #d70000;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  animation: successSlideIn 0.5s ease;
+  max-width: 600px;
+}
+
+@keyframes successSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.success-content h2 {
+  font-size: 40px;
+  color: #ffffff;
+  margin-bottom: 30px;
+  font-family: 'Pixelify Sans', sans-serif;
+  font-weight: bold;
+}
+
+.reward-word {
+  font-size: 24px;
+  color: #ffffff;
+  margin-bottom: 30px;
+  font-family: 'Pixelify Sans', sans-serif;
+}
+
+.reward-label {
+  display: block;
+  font-size: 25px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.reward-word strong {
+  font-size: 40px;
+  color: #ffffff;
+  display: block;
+  margin-top: 10px;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .game4-title {
+  .game5-title {
     font-size: 28px;
   }
 
-  .story-text p {
+  .game5-instructions {
     font-size: 18px;
   }
 
-  .choice-button {
-    font-size: 16px;
-    padding: 15px;
+  .puzzle-area {
+    flex-direction: column;
+    align-items: center;
   }
 
-  .progress-dot {
-    width: 35px;
-    height: 35px;
-    font-size: 14px;
+  .board-wrapper {
+    width: 100%;
+  }
+
+  .puzzle-board {
+    max-width: 300px;
+  }
+
+  .pieces-container {
+    max-width: 400px;
+    width: 100%;
+  }
+
+  .pieces-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+  }
+
+  .info-section {
+    padding: 30px 20px;
+  }
+
+  .info-title {
+    font-size: 28px;
+  }
+
+  .info-text {
+    font-size: 17px;
+  }
+
+  .success-content {
+    padding: 30px 25px;
+  }
+
+  .success-content h2 {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .puzzle-board {
+    max-width: 250px;
+  }
+
+  .game5-title {
+    font-size: 24px;
+  }
+
+  .pieces-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(6, 1fr);
   }
 }

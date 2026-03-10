@@ -132,7 +132,7 @@
 
 .success-message {
   margin-top: 20px;
-  color: #2e7d32;
+  color: #ffffff;
   font-size: 18px;
   font-weight: bold;
   animation: popIn 0.3s ease;
@@ -162,10 +162,11 @@
 .hints-list li {
   color: #fff;
   font-size: 18px;
-  padding: 10px;
+  padding: 15px;
   margin-bottom: 10px;
-  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
+  font-family: 'Pixelify Sans', sans-serif;
+  line-height: 1.6;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -173,16 +174,17 @@
 
 .hints-list li.obscured {
   user-select: none;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.hints-list li.obscured:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .hints-list li.obscured .hint-text {
   filter: blur(8px);
   color: transparent;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-}
-
-.hints-list li.obscured:hover {
-  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .hints-list li.revealed .hint-text {

@@ -13,6 +13,7 @@ import {
   FeedbackSuccess,
   FeedbackError,
   TimerBar,
+  GameNavbar,
 } from "../gymnasiumGames/components/GameUI";
 
 const PIXEL_LEVELS = [0.03, 0.06, 0.12, 0.25, 0.5, 1.0];
@@ -195,6 +196,7 @@ export default function Game4() {
 
   return (
     <>
+      <GameNavbar gameTitle="Pixeljakten" />
       <TimerBar
         secondsLeft={secondsLeft}
         totalTimeLimit={totalTimeLimit}

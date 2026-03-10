@@ -12,6 +12,7 @@ import {
   FeedbackSuccess,
   FeedbackError,
   TimerBar,
+  GameNavbar,
 } from "../gymnasiumGames/components/GameUI";
 
 export default function Game3() {
@@ -116,6 +117,7 @@ export default function Game3() {
 
   return (
     <>
+      <GameNavbar gameTitle="Digital Säkerhet" />
       <TimerBar secondsLeft={secondsLeft} totalTimeLimit={totalTimeLimit} />
       <GameContainer>
         <div style={styles.roundInfo}>

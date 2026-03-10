@@ -1,19 +1,10 @@
-// Selection page for difficulty level
-import React, { useState } from 'react';
-import './SelectPage.css';
-import GymnasiumWelcomePage from './GymnasiumWelcomePage.jsx';
-import HogskolaWelcomePage from './HogskolaWelcomePage.jsx';
+// Fil: src/pages/SelectPage.jsx
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import "./SelectPage.css"; // Importerar din CSS
 
 export default function SelectPage() {
-  const [selectedLevel, setSelectedLevel] = useState(null);
-
-  if (selectedLevel === 'gymnasium') {
-    return <GymnasiumWelcomePage />;
-  }
-
-  if (selectedLevel === 'hogskola') {
-    return <HogskolaWelcomePage />;
-  }
+  const navigate = useNavigate();
 
   return (
     <div className="select-container">
@@ -29,15 +20,18 @@ export default function SelectPage() {
         <h1 className="select-title">Välj</h1>
         
         <div className="select-button-container">
-          <button 
+          {/* Knapp för Gymnasium -> Går till /gymnasium */}
+          <button
             className="select-button"
-            onClick={() => setSelectedLevel('gymnasium')}
+            onClick={() => navigate("/gymnasium")}
           >
             Gymnasium
           </button>
-          <button 
+
+          {/* Knapp för Högskola -> Går till /hogskola */}
+          <button
             className="select-button"
-            onClick={() => setSelectedLevel('hogskola')}
+            onClick={() => navigate("/hogskola")}
           >
             Högskola
           </button>

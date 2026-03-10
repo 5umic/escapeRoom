@@ -1,2 +1,8 @@
 node_modules/
-
+bin/
+obj/
+*.user
+.vs/
+node_modules/
+*.dll
+*.exe

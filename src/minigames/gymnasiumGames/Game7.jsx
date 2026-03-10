@@ -180,14 +180,6 @@ export default function Game7() {
       ctx.stroke();
     }
 
-    // 6: Det RÖDA ljuset tänds (Topp)
-    if (mistakes >= 6) {
-      ctx.beginPath();
-      ctx.fillStyle = "#ff1744"; // Klar röd
-      ctx.arc(100, 45, 7, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
     // 7: Det GULA ljuset tänds (Mitten)
     if (mistakes >= 7) {
       ctx.beginPath();
@@ -197,10 +189,18 @@ export default function Game7() {
     }
 
     // 8: Det GRÖNA ljuset tänds (Botten)
-    if (mistakes >= 8) {
+    if (mistakes >= 6) {
       ctx.beginPath();
       ctx.fillStyle = "#00e676"; // Klar grön
       ctx.arc(100, 85, 7, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 8: Det RÖDA ljuset tänds (Topp)
+    if (mistakes >= 8) {
+      ctx.beginPath();
+      ctx.fillStyle = "#ff1744"; // Klar röd
+      ctx.arc(100, 45, 7, 0, Math.PI * 2);
       ctx.fill();
     }
 

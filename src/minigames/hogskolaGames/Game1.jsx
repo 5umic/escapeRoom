@@ -13,8 +13,9 @@ export default function Game1() {
   const correctAnswer = "DistanceKM / SpeedkmH";
   
   const codeOptions = [
-    "DistanceKM / SpeedkmH",
+
     "DistanceKM * SpeedkmH",
+    "DistanceKM / SpeedkmH",
     "SpeedkmH - DistanceKM",
     "DistanceKM + SpeedkmH"
   ];

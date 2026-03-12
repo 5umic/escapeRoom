@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const formatTimeWithTenths = (totalSeconds) => {
   if (totalSeconds === undefined || isNaN(totalSeconds)) return "0:00.0";
@@ -16,6 +17,14 @@ export function useGameTimer(
   penaltySeconds = 0,
 ) {
   const [secondsLeft, setSecondsLeft] = useState(totalTimeLimit);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const sessionActive = sessionStorage.getItem("gameSessionActive");
+    if (!sessionActive) {
+      window.location.href = "/";
+    }
+  }, []);
 
   useEffect(() => {
     if (

@@ -14,13 +14,13 @@ export default function StartScreen() {
       setError("Ditt namn måste vara minst 2 bokstäver långt!");
       return;
     }
-    sessionStorage.removeItem("totalGameTime");
-    sessionStorage.removeItem("isScoreSaved");
-    sessionStorage.removeItem("activeGameSequence");
+
+    sessionStorage.clear();
 
     sessionStorage.setItem("playerName", playerName.trim());
     sessionStorage.setItem("totalGameTime", "0");
     sessionStorage.setItem("isScoreSaved", "false");
+    sessionStorage.setItem("gameSessionActive", "true");
 
     try {
       // 1. Hämta de spel som är "On" just nu

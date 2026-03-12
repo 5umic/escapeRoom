@@ -13,4 +13,5 @@ public class Game
     public List<Challenge> Challenges { get; set; } = new();
     public bool IsActive { get; set; } = true;
     public int SortOrder { get; set; }
+    public string SuccessMessage { get; set; }
 }

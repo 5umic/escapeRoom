@@ -6,6 +6,7 @@ import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
+  fetchGameDetails,
 } from "../gymnasiumGames/api/gameApi";
 import { useGameTimer } from "../gymnasiumGames/hooks/useGameTimer";
 import {
@@ -113,6 +114,7 @@ export default function Game5() {
   const [categories, setCategories] = useState([]);
   const [containers, setContainers] = useState({ pool: [] });
   const [totalTimeLimit, setTotalTimeLimit] = useState(60);
+  const [gameData, setGameData] = useState(null);
 
   const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
     useGameTimer(totalTimeLimit, status, setStatus);
@@ -122,15 +124,25 @@ export default function Game5() {
   useEffect(() => {
     const initGame = async () => {
       setStatus("loading");
+
+      // 1. Hämta ID
       const id = await fetchGameIdByTitle("gymnasium", "Game 5");
+
       if (id) {
-        const data = await fetchUniqueChallenges(id, 1);
-        if (data.length > 0) setupChallenge(data[0]);
+        // 2. Hämta ALLT parallellt (Spelinfo + Utmaning)
+        const [info, challenges] = await Promise.all([
+          fetchGameDetails(id),
+          fetchUniqueChallenges(id, 1),
+        ]);
+
+        // 3. Spara ner allt
+        if (info) setGameData(info);
+        if (challenges.length > 0) setupChallenge(challenges[0]);
       }
+      setStatus("playing");
     };
     initGame();
   }, []);
-
   const setupChallenge = (data) => {
     setChallenge(data);
     const limit = data.timeLimitSeconds || 60;
@@ -278,6 +290,7 @@ export default function Game5() {
 
           {status === "success" && (
             <FeedbackSuccess
+              successMessage={gameData?.successMessage}
               title={
                 lastGame ? "Fantastiskt! Du klarade allt!" : "Snyggt jobbat!"
               }

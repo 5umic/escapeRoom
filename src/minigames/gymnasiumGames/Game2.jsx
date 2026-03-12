@@ -5,6 +5,7 @@ import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
+  fetchGameDetails,
 } from "../gymnasiumGames/api/gameApi";
 import { useGameTimer } from "../gymnasiumGames/hooks/useGameTimer";
 import {
@@ -28,6 +29,7 @@ export default function Game2() {
   const [lastPenalty, setLastPenalty] = useState(0);
   const lastGame = isLastActiveGame("Risk & Säkerhet (Game 2)");
   const nextPath = getNextGameInfo("Risk & Säkerhet (Game 2)");
+  const [gameData, setGameData] = useState(null);
 
   const totalTimeLimit = 60; // Fast tid för detta spel
 
@@ -38,27 +40,27 @@ export default function Game2() {
   // 1. Hämta all data vid start
   useEffect(() => {
     const initGame = async () => {
-      setStatus("loading");
-      const id = await fetchGameIdByTitle("gymnasium", "Game 2");
-      if (id) {
-        // ÄNDRING HÄR: Ta bort siffran 3. Nu hämtar den ALLA den kan hitta!
-        const data = await fetchUniqueChallenges(id);
-        setChallenges(data);
-        setSecondsLeft(totalTimeLimit);
-        setStatus("playing");
+      try {
+        setStatus("loading");
+        const id = await fetchGameIdByTitle("gymnasium", "Game 2");
+
+        if (id) {
+          const [info, data] = await Promise.all([
+            fetchGameDetails(id),
+            fetchUniqueChallenges(id),
+          ]);
+
+          setGameData(info); // Spara spelinfon
+          setChallenges(data);
+          setSecondsLeft(totalTimeLimit);
+          setStatus("playing");
+        }
+      } catch (err) {
+        console.error("Fel vid laddning av spel:", err);
       }
     };
     initGame();
   }, [setSecondsLeft]);
-
-  // 2. Hantera val i rullgardinsmenyn
-  const handleSelectChange = (challengeId, selectedValue) => {
-    // Lås upp knappen om de rättar till ett fel
-    if (status === "check_failed") {
-      submissionLocked.current = false;
-    }
-    setUserAnswers((prev) => ({ ...prev, [challengeId]: selectedValue }));
-  };
 
   // 3. Rätta Svar
   const checkAnswers = () => {
@@ -97,6 +99,19 @@ export default function Game2() {
     setStatus("playing");
     setLastPenalty(0);
     submissionLocked.current = false;
+  };
+
+  const handleSelectChange = (challengeId, selectedValue) => {
+    console.log("Valt värde:", selectedValue, "för ID:", challengeId); // Bra för felsökning!
+
+    if (status === "check_failed") {
+      submissionLocked.current = false;
+    }
+
+    setUserAnswers((prev) => ({
+      ...prev, // Kopiera alla gamla svar
+      [challengeId]: selectedValue, // Lägg till/uppdatera det nya svaret
+    }));
   };
 
   // --- RENDER ---
@@ -172,6 +187,7 @@ export default function Game2() {
           {/* --- DRY Feedback-komponenter --- */}
           {status === "success" && (
             <FeedbackSuccess
+              successMessage={gameData?.successMessage}
               title={
                 lastGame
                   ? "Grattis du klarade sista spelet!"

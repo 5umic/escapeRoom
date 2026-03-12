@@ -52,6 +52,7 @@ export default function EditChallenges() {
       options: ["", ""],
       imageUrl: "",
       timeLimitSeconds: 30,
+      succesMessage: "",
     };
 
     try {
@@ -90,6 +91,24 @@ export default function EditChallenges() {
     }
   };
 
+  const handleSaveGameInfo = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/games/${gameId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(gameInfo), // Skickar all gameInfo
+      });
+
+      if (res.ok) {
+        alert("Vinstmeddelandet för spelet har sparats! 🎉");
+      } else {
+        alert("Kunde inte spara. Kontrollera backenden.");
+      }
+    } catch (err) {
+      console.error("Fel vid sparning av spelinfo:", err);
+    }
+  };
+
   const handleDelete = async (challengeId) => {
     if (!window.confirm("Radera permanent?")) return;
     const res = await fetch(`${API_BASE}/api/games/challenges/${challengeId}`, {
@@ -105,7 +124,7 @@ export default function EditChallenges() {
 
     return (
       <div style={styles.previewContainer}>
-        <h4 style={styles.previewTitle}>👁️ Förhandsgranskning</h4>
+        <h4 style={styles.previewTitle}>Förhandsgranskning</h4>
         <div style={styles.previewCard}>
           {editingChallenge.imageUrl && (
             <img
@@ -175,6 +194,23 @@ export default function EditChallenges() {
                 ))}
               </div>
             )}
+          {editingChallenge.successMessage && (
+            <div
+              style={{
+                marginTop: "20px",
+                padding: "10px",
+                backgroundColor: "#fff9c4",
+                borderRadius: "5px",
+                borderLeft: "4px solid #fbc02d",
+                fontSize: "13px",
+              }}
+            >
+              <strong>Snyggt! (Modal-text):</strong>
+              <p style={{ margin: "5px 0 0 0", fontStyle: "italic" }}>
+                {editingChallenge.successMessage}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -382,6 +418,49 @@ export default function EditChallenges() {
         ))}
       </div>
 
+      {/* --- VINSTMEDDELANDE FÖR HELA SPELET --- */}
+      <div
+        style={{
+          marginTop: "40px",
+          padding: "20px",
+          backgroundColor: "white",
+          borderRadius: "12px",
+          borderTop: "5px solid #333",
+        }}
+      >
+        <label style={{ ...styles.label, fontSize: "16px", color: "#b10000" }}>
+          🏁 Vinstmeddelande för hela {gameInfo?.title}
+        </label>
+        <p style={{ fontSize: "12px", color: "#666", marginBottom: "10px" }}>
+          Denna text visas i en modal när spelaren har klarat ALLA frågor i
+          detta spel.
+        </p>
+        <textarea
+          style={{
+            ...styles.input,
+            minHeight: "120px",
+            width: "100%",
+            boxSizing: "border-box",
+          }}
+          value={gameInfo?.successMessage || ""}
+          onChange={(e) =>
+            setGameInfo({ ...gameInfo, successMessage: e.target.value })
+          }
+          placeholder="Skriv texten som visas innan man går till nästa bana..."
+        />
+        <button
+          onClick={handleSaveGameInfo}
+          style={{
+            ...styles.saveBtn,
+            marginTop: "10px",
+            width: "auto",
+            padding: "10px 30px",
+          }}
+        >
+          Spara Vinstmeddelande
+        </button>
+      </div>
+
       {editingChallenge && (
         <div style={styles.modalOverlay}>
           <div
@@ -401,7 +480,7 @@ export default function EditChallenges() {
                     onClick={() => setShowPreview(!showPreview)}
                     style={styles.previewToggle}
                   >
-                    {showPreview ? "Dölj Preview" : "Visa Preview 👁️"}
+                    {showPreview ? "Dölj Preview" : "Visa Preview"}
                   </button>
                 </div>
 

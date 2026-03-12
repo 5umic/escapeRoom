@@ -15,6 +15,7 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
+  fetchGameDetails,
 } from "../gymnasiumGames/api/gameApi";
 import { useGameTimer } from "../gymnasiumGames/hooks/useGameTimer";
 import {
@@ -75,6 +76,7 @@ export default function Game6() {
   const [validation, setValidation] = useState({});
   const [items, setItems] = useState([]);
   const [totalTimeLimit, setTotalTimeLimit] = useState(30);
+  const [gameData, setGameData] = useState(null);
 
   const lastGame = isLastActiveGame("Bilda Ordet (Game 6)");
   const nextPath = getNextGameInfo("Bilda Ordet (Game 6)");
@@ -88,11 +90,34 @@ export default function Game6() {
     const initGame = async () => {
       setStatus("loading");
       const id = await fetchGameIdByTitle("gymnasium", "Game 6");
+
       if (id) {
-        // Hämtar alla unika ordbyggar-frågor
-        const data = await fetchUniqueChallenges(id);
-        setChallenges(data);
-        loadRound(data[0]);
+        try {
+          const [info, allChallenges] = await Promise.all([
+            fetchGameDetails(id),
+            fetch(`http://localhost:5261/api/games/${id}/challenges/all`).then(
+              (res) => res.json(),
+            ),
+          ]);
+
+          setGameData(info);
+
+          if (allChallenges && allChallenges.length > 0) {
+            const shuffled = [...allChallenges].sort(() => Math.random() - 0.5);
+            setChallenges(shuffled);
+            setCurrentIndex(0);
+
+            const firstChallenge = shuffled[0];
+
+            setItems(shuffleArray(firstChallenge.options));
+
+            setTotalTimeLimit(firstChallenge.timeLimitSeconds || 30);
+            setSecondsLeft(firstChallenge.timeLimitSeconds || 30);
+            setStatus("playing");
+          }
+        } catch (err) {
+          console.error("Kunde inte ladda spelet:", err);
+        }
       }
     };
     initGame();
@@ -217,6 +242,7 @@ export default function Game6() {
 
         {status === "success" && (
           <FeedbackSuccess
+            successMessage={gameData?.successMessage}
             title={
               lastGame && isLastQuestion
                 ? "Grattis, du klarade sista spelet!"

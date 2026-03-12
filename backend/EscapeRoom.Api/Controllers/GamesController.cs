@@ -97,6 +97,21 @@ public class GamesController : ControllerBase
         return Ok(challenge);
     }
 
+   // Uppdaterar grundinfo för spelet (inkl. vinstmeddelande)
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> UpdateGame(Guid id, [FromBody] Game updatedGame)
+    {
+        var game = await _db.Games.FindAsync(id);
+        if (game == null) return NotFound();
+
+        game.Title = updatedGame.Title;
+        game.IsActive = updatedGame.IsActive;
+        game.SuccessMessage = updatedGame.SuccessMessage; 
+
+        await _db.SaveChangesAsync();
+        return Ok(game);
+    }
+
     // 5. Admin: Toggle
     [HttpPut("{id:guid}/toggle-active")]
     public async Task<IActionResult> ToggleGameActive(Guid id, [FromBody] bool isActive)
@@ -130,7 +145,7 @@ public class GamesController : ControllerBase
     public async Task<IActionResult> GetGame(Guid id)
     {
         var game = await _db.Games
-            .Select(g => new { g.Id, g.Title, g.IsActive })
+            .Select(g => new { g.Id, g.Title, g.IsActive, g.SuccessMessage })
             .FirstOrDefaultAsync(g => g.Id == id);
 
         if (game == null) return NotFound();
@@ -139,6 +154,7 @@ public class GamesController : ControllerBase
 
     // 8. Admin: Ladda upp en bild
     [HttpPost("upload-image")]
+    [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadImage([FromForm] IFormFile file, [FromForm] string folder)
     {
         if (file == null || file.Length == 0) return BadRequest("Ingen fil vald.");

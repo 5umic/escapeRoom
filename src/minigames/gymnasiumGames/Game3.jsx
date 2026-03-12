@@ -5,6 +5,7 @@ import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
+  fetchGameDetails,
 } from "../gymnasiumGames/api/gameApi";
 import { useGameTimer } from "../gymnasiumGames/hooks/useGameTimer";
 import {
@@ -26,6 +27,7 @@ export default function Game3() {
   const [totalTimeLimit, setTotalTimeLimit] = useState(15);
   const lastGame = isLastActiveGame("Digital Säkerhet (Game 3)");
   const nextPath = getNextGameInfo("Digital Säkerhet (Game 3)");
+  const [gameData, setGameData] = useState(null);
 
   const challenge = challenges[currentIndex];
 
@@ -37,11 +39,38 @@ export default function Game3() {
   useEffect(() => {
     const initGame = async () => {
       setStatus("loading");
+
+      // 1. Hämta ID för spelet
       const id = await fetchGameIdByTitle("gymnasium", "Game 3");
+
       if (id) {
-        const data = await fetchUniqueChallenges(id);
-        setChallenges(data);
-        startRound(data[0]);
+        try {
+          // 2. Hämta spelinfo och ALLA frågor samtidigt
+          const [info, allChallenges] = await Promise.all([
+            fetchGameDetails(id),
+            fetch(`http://localhost:5261/api/games/${id}/challenges/all`).then(
+              (res) => res.json(),
+            ),
+          ]);
+
+          setGameData(info);
+
+          if (allChallenges && allChallenges.length > 0) {
+            // Blanda frågorna så de kommer i slumpmässig ordning
+            const shuffled = [...allChallenges].sort(() => Math.random() - 0.5);
+
+            setChallenges(shuffled);
+            setCurrentIndex(0);
+
+            // Starta första rundan
+            const firstChallenge = shuffled[0];
+            setTotalTimeLimit(firstChallenge.timeLimitSeconds || 20);
+            setSecondsLeft(firstChallenge.timeLimitSeconds || 20);
+            setStatus("playing");
+          }
+        } catch (err) {
+          console.error("Kunde inte ladda spelet:", err);
+        }
       }
     };
     initGame();
@@ -162,6 +191,7 @@ export default function Game3() {
         {/* --- DRY Feedback-komponenter --- */}
         {status === "answered_correctly" && (
           <FeedbackSuccess
+            successMessage={gameData?.successMessage}
             title={
               lastGame && isLastQuestion
                 ? "Grattis, du klarade alla frågor!"

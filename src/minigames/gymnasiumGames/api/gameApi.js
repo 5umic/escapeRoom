@@ -90,3 +90,15 @@ export const fetchGamesByMode = async (modeKey) => {
   if (!response.ok) throw new Error("Kunde inte hämta spel");
   return await response.json();
 };
+
+// Hämta all info om ett specifikt spel
+export const fetchGameDetails = async (gameId) => {
+  try {
+    const res = await fetch(`${API_BASE}/api/games/${gameId}`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    console.error("Fel vid hämtning av speldetaljer:", error);
+    return null;
+  }
+};

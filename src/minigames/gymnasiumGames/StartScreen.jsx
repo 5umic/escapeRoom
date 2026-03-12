@@ -81,7 +81,7 @@ export default function StartScreen() {
           {error && <p style={styles.errorText}>{error}</p>}
 
           <button type="submit" style={styles.startBtn}>
-            Börja Hacka 🚀
+            Börja Spela 🎮
           </button>
         </form>
 
@@ -90,7 +90,7 @@ export default function StartScreen() {
           onClick={() => navigate("/gymnasium/leaderboard")}
           style={styles.leaderboardBtn}
         >
-          🏆 Visa Leaderboard
+          Visa Leaderboard 🏆
         </button>
       </div>
     </div>

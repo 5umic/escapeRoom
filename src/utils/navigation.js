@@ -25,3 +25,15 @@ export const getNextGameInfo = (currentTitle) => {
 export const isLastActiveGame = (currentTitle) => {
   return getNextGameInfo(currentTitle).isLast;
 };
+
+export const getFirstActiveGamePath = (allGames) => {
+  const activeGames = allGames
+    .filter((g) => g.isActive)
+    .sort((a, b) => a.order - b.order);
+
+  if (activeGames.length > 0) {
+    // Returnerar sökvägen till det första spelet som faktiskt får spelas
+    return `/game${activeGames[0].id}`;
+  }
+  return "/"; // Om inget spel är aktivt
+};

@@ -32,7 +32,8 @@ export function GameSuccessModal({
 
 export const GameNavbar = ({ gameTitle }) => {
   // Hämta den totala tiden från sessionStorage annars 00:00
-  const totalTime = sessionStorage.getItem("totalGameTime") || "00:00";
+  const totalTimeRaw = sessionStorage.getItem("totalGameTime");
+  const totalTime = totalTimeRaw ? parseFloat(totalTimeRaw) : 0;
 
   return (
     <nav style={navStyles.navbar}>

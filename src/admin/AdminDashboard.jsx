@@ -107,6 +107,13 @@ export default function AdminDashboard() {
         Vill du lägga till bild? Tryck här! 📸
       </button>
 
+      <button
+        style={styles.infoEditorBtn}
+        onClick={() => navigate("/admin/hogskola-info")}
+      >
+        Redigera Hogskola infotexter
+      </button>
+
       {/* MODAL FÖR UPPLADDNING */}
       {uploadModal && (
         <div style={styles.modalOverlay}>
@@ -311,6 +318,18 @@ const styles = {
     borderRadius: "8px",
     fontWeight: "bold",
     cursor: "pointer",
+    marginBottom: "30px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+  },
+  infoEditorBtn: {
+    backgroundColor: "#1f2937",
+    color: "white",
+    border: "none",
+    padding: "12px 20px",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    marginLeft: "10px",
     marginBottom: "30px",
     boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
   },

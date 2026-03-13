@@ -2,6 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import './Game5.css';
 import Game6 from './Game6';
+import PostGameInfo from './components/PostGameInfo.jsx';
+
+const FALLBACK_INFO = {
+  heading: 'UTMÄRKT!',
+  paragraphs: [
+    'Varje symbol i detta memory-spel representerar en viktig del av vårt transportsystem. Från bilar och bussar till tåg och järnvägar - allt är sammankopplat i ett komplext nätverk som Trafikverket ansvarar för att planera, bygga och underhålla.',
+    'Trafikmärken och vägskyltar är centrala för trafiksäkerheten. De kommunicerar snabbt och tydligt med alla trafikanter, oavsett språk. Att förstå och respektera dessa symboler är avgörande för ett säkert transportsystem.',
+    'Som IT-specialist på Trafikverket kan du arbeta med digitala lösningar för allt från trafikstyrning och vägväder till reseinformation och järnvägssignaler. Våra system hanterar miljontals datapunkter varje dag för att hålla Sverige i rörelse.',
+  ],
+};
 
 export default function Game5() {
   // 9 olika emojis för trafikrelaterade saker (9 par = 18 kort)
@@ -95,29 +105,12 @@ export default function Game5() {
       <div className="game6-container">
         <div className="game6-content">
           <div className="info-section">
-            <h2 className="info-title">UTMÄRKT!</h2>
-            
-            <div className="info-text">
-              <p>
-                Varje symbol i detta memory-spel representerar en viktig del av vårt transportsystem. 
-                Från bilar och bussar till tåg och järnvägar - allt är sammankopplat i ett komplext nätverk 
-                som Trafikverket ansvarar för att planera, bygga och underhålla.
-              </p>
-              <p>
-                Trafikmärken och vägskyltar är centrala för trafiksäkerheten. De kommunicerar snabbt och 
-                tydligt med alla trafikanter, oavsett språk. Att förstå och respektera dessa symboler är 
-                avgörande för ett säkert transportsystem.
-              </p>
-              <p>
-                Som IT-specialist på Trafikverket kan du arbeta med digitala lösningar för allt från 
-                trafikstyrning och vägväder till reseinformation och järnvägssignaler. Våra system hanterar 
-                miljontals datapunkter varje dag för att hålla Sverige i rörelse.
-              </p>
-            </div>
-
-            <button className="continue-button" onClick={() => setShowSuccess(true)}>
-              Fortsätt
-            </button>
+            <PostGameInfo
+              gameKey="game5"
+              fallbackHeading={FALLBACK_INFO.heading}
+              fallbackParagraphs={FALLBACK_INFO.paragraphs}
+              onContinue={() => setShowSuccess(true)}
+            />
           </div>
         </div>
       </div>

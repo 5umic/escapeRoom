@@ -137,7 +137,106 @@ public class GamesController : ControllerBase
         return Ok(game);
     }
 
-    // 8. Admin: Ladda upp en bild
+    // 8. Högskola: Hämta infotext för ett spel
+    [HttpGet("hogskola-info/{gameKey}")]
+    public async Task<IActionResult> GetHogskolaInfo(string gameKey)
+    {
+        var normalizedKey = gameKey.Trim().ToLowerInvariant();
+        var info = await _db.HogskolaInfoContents
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.GameKey == normalizedKey);
+
+        if (info == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(new
+        {
+            info.Id,
+            info.GameKey,
+            info.Heading,
+            info.Body,
+            info.UpdatedAtUtc
+        });
+    }
+
+    public sealed class UpdateHogskolaInfoRequest
+    {
+        public string Heading { get; set; } = "";
+        public string Body { get; set; } = "";
+    }
+
+    // 9. Högskola: Uppdatera infotext för ett spel
+    [HttpPut("hogskola-info/{gameKey}")]
+    public async Task<IActionResult> UpdateHogskolaInfo(string gameKey, [FromBody] UpdateHogskolaInfoRequest request)
+    {
+        if (request == null) return BadRequest();
+
+        var normalizedKey = gameKey.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(normalizedKey)) return BadRequest("Ogiltig gameKey.");
+
+        var heading = request.Heading?.Trim() ?? "";
+        var body = request.Body?.Trim() ?? "";
+        if (string.IsNullOrWhiteSpace(heading) || string.IsNullOrWhiteSpace(body))
+        {
+            return BadRequest("Heading och Body är obligatoriska.");
+        }
+
+        var info = await _db.HogskolaInfoContents
+            .FirstOrDefaultAsync(c => c.GameKey == normalizedKey);
+
+        if (info == null)
+        {
+            info = new HogskolaInfoContent
+            {
+                GameKey = normalizedKey,
+                Heading = heading,
+                Body = body,
+                UpdatedAtUtc = DateTime.UtcNow
+            };
+            _db.HogskolaInfoContents.Add(info);
+        }
+        else
+        {
+            info.Heading = heading;
+            info.Body = body;
+            info.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        await _db.SaveChangesAsync();
+
+        return Ok(new
+        {
+            info.Id,
+            info.GameKey,
+            info.Heading,
+            info.Body,
+            info.UpdatedAtUtc
+        });
+    }
+
+    // 10. Högskola: Lista alla infotexter för admin
+    [HttpGet("hogskola-info")]
+    public async Task<IActionResult> GetAllHogskolaInfo()
+    {
+        var all = await _db.HogskolaInfoContents
+            .AsNoTracking()
+            .OrderBy(c => c.GameKey)
+            .Select(c => new
+            {
+                c.Id,
+                c.GameKey,
+                c.Heading,
+                c.Body,
+                c.UpdatedAtUtc
+            })
+            .ToListAsync();
+
+        return Ok(all);
+    }
+
+    // 11. Admin: Ladda upp en bild
     [HttpPost("upload-image")]
     public async Task<IActionResult> UploadImage([FromForm] IFormFile file, [FromForm] string folder)
     {

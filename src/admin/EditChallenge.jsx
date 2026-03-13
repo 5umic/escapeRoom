@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_BASE } from "../config/apiBase.js";
 
-const API_BASE = "http://localhost:5261";
-
-export default function EditChallenges() {
+export default function EditChallenge() {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const [challenges, setChallenges] = useState([]);

@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5261";
+import { API_BASE } from "../../../config/apiBase.js";
 
 export const fetchHogskolaInfo = async (gameKey) => {
   const response = await fetch(`${API_BASE}/api/games/hogskola-info/${gameKey}`);

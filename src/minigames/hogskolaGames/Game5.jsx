@@ -1,7 +1,7 @@
 // Memory Game - Trafikverket tema
 import React, { useState, useEffect } from 'react';
 import './Game5.css';
-import Game6 from './Game6';
+import Game6 from './Game6.jsx';
 import PostGameInfo from './components/PostGameInfo.jsx';
 
 const FALLBACK_INFO = {

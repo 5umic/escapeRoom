@@ -17,7 +17,7 @@ export const GameNavbar = ({ gameTitle }) => {
       {/* MITTEN: Logga och Speltitel */}
       <div style={navStyles.navCenter}>
         <img
-          src="/images/trafikverket_horisontal_logo_RGB.png"
+          src="/assets/images/logos/trafikverket_horisontal_logo_RGB.png"
           alt="Trafikverket"
           style={navStyles.logo}
         />

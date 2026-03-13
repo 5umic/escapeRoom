@@ -242,8 +242,17 @@ public class GamesController : ControllerBase
     {
         if (file == null || file.Length == 0) return BadRequest("Ingen fil vald.");
 
-        // Dynamisk sökväg
-        var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "public", "images", folder);
+        var normalizedFolder = (folder ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "pixels" => "pixel",
+            "pixel" => "pixel",
+            "signs" => "signs",
+            "logos" => "logos",
+            _ => "minigame-assets"
+        };
+
+        // Store uploads in canonical frontend assets location.
+        var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "public", "assets", "images", normalizedFolder);
 
         // Skapa mappen om den inte finns (viktigt!)
         if (!Directory.Exists(rootPath))
@@ -259,8 +268,7 @@ public class GamesController : ControllerBase
             await file.CopyToAsync(stream);
         }
 
-        // URL:en som frontend använder (eftersom 'public' är root i webbläsaren)
-        var imageUrl = $"/images/{folder}/{fileName}";
+        var imageUrl = $"/assets/images/{normalizedFolder}/{fileName}";
         
         return Ok(new { url = imageUrl });
     }

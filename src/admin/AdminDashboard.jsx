@@ -10,7 +10,7 @@ export default function AdminDashboard() {
   const [message, setMessage] = useState("");
   const [uploadModal, setUploadModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [targetFolder, setTargetFolder] = useState("pixels");
+  const [targetFolder, setTargetFolder] = useState("pixel");
   const [generatedUrl, setGeneratedUrl] = useState("");
 
   useEffect(() => {
@@ -129,8 +129,9 @@ export default function AdminDashboard() {
                 onChange={(e) => setTargetFolder(e.target.value)}
                 style={styles.input}
               >
-                <option value="pixels">pixels</option>
+                <option value="pixel">pixel</option>
                 <option value="signs">signs</option>
+                <option value="logos">logos</option>
               </select>
             </div>
 

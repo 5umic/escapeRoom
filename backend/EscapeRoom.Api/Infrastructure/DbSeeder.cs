@@ -11,6 +11,7 @@ public static class DbSeeder
         if (await db.Challenges.CountAsync() > 20)
         {
             await SeedHogskolaInfoContentAsync(db);
+            await NormalizeLegacyImageUrlsAsync(db);
             return;
         }
 
@@ -84,7 +85,7 @@ public static class DbSeeder
         if (!await db.Challenges.AnyAsync(c => c.GameId == game1.Id))
         {
             newChallenges.Add(CreateChallenge(game1, "Vilket är det säkraste sättet att färdas på?", "Flygplan", 15, new List<string> { "Bil", "Cykel", "Flygplan", "Båt" }, ChallengeType.Question));
-            newChallenges.Add(CreateChallenge(game1, "Vad betyder vägmärket på bilden?", "Huvudled", 15, new List<string> { "Stop", "Huvudled", "Väjningsplikt", "Förbud mot infart" }, ChallengeType.ImageQuestion, "/images/signs/huvudled.png"));
+            newChallenges.Add(CreateChallenge(game1, "Vad betyder vägmärket på bilden?", "Huvudled", 15, new List<string> { "Stop", "Huvudled", "Väjningsplikt", "Förbud mot infart" }, ChallengeType.ImageQuestion, "/assets/images/signs/huvudled.png"));
             newChallenges.Add(CreateChallenge(game1, "Lös rebusen: 🛑 + 🚦 + 🚧 Vad blir ordet?", "Trafiksäkerhet", 20, new List<string> { "Trafiksäkerhet", "Vägunderhåll", "Trafikstockning", "Vägarbete" }, ChallengeType.Riddle));
         }
 
@@ -115,9 +116,9 @@ public static class DbSeeder
         // ---------------------------------------------------
         if (!await db.Challenges.AnyAsync(c => c.GameId == game4.Id))
         {
-            newChallenges.Add(CreateChallenge(game4, "Vad döljer sig bakom pixlarna?", "Snabbtåg", 30, new List<string> { "Godståg", "Snabbtåg", "Spårvagn" }, ChallengeType.PixelHunt, "/images/pixel/train.jpg"));
-            newChallenges.Add(CreateChallenge(game4, "Vilken teknisk utrustning ser du?", "Fartkamera", 30, new List<string> { "Gatubelysning", "Fartkamera", "Trafikljus" }, ChallengeType.PixelHunt, "/images/pixel/camera.jpg"));
-            newChallenges.Add(CreateChallenge(game4, "Vad är detta för objekt?", "Vägkon", 30, new List<string> { "Vägkon", "Hinder", "Stolpe" }, ChallengeType.PixelHunt, "/images/pixel/cone.jpg"));
+            newChallenges.Add(CreateChallenge(game4, "Vad döljer sig bakom pixlarna?", "Snabbtåg", 30, new List<string> { "Godståg", "Snabbtåg", "Spårvagn" }, ChallengeType.PixelHunt, "/assets/images/pixel/train.jpg"));
+            newChallenges.Add(CreateChallenge(game4, "Vilken teknisk utrustning ser du?", "Fartkamera", 30, new List<string> { "Gatubelysning", "Fartkamera", "Trafikljus" }, ChallengeType.PixelHunt, "/assets/images/pixel/camera.jpg"));
+            newChallenges.Add(CreateChallenge(game4, "Vad är detta för objekt?", "Vägkon", 30, new List<string> { "Vägkon", "Hinder", "Stolpe" }, ChallengeType.PixelHunt, "/assets/images/pixel/cone.jpg"));
         }
 
         // ---------------------------------------------------
@@ -183,6 +184,26 @@ public static class DbSeeder
         }
 
         await SeedHogskolaInfoContentAsync(db);
+        await NormalizeLegacyImageUrlsAsync(db);
+    }
+
+    private static async Task NormalizeLegacyImageUrlsAsync(AppDbContext db)
+    {
+        var challenges = await db.Challenges
+            .Where(c => c.ImageUrl != null && c.ImageUrl.StartsWith("/images/"))
+            .ToListAsync();
+
+        if (challenges.Count == 0) return;
+
+        foreach (var challenge in challenges)
+        {
+            challenge.ImageUrl = challenge.ImageUrl!
+                .Replace("/images/signs/", "/assets/images/signs/")
+                .Replace("/images/pixel/", "/assets/images/pixel/")
+                .Replace("/images/logos/", "/assets/images/logos/");
+        }
+
+        await db.SaveChangesAsync();
     }
 
     private static async Task SeedHogskolaInfoContentAsync(AppDbContext db)

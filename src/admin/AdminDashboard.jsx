@@ -10,36 +10,13 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [uploadModal, setUploadModal] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+
   const [targetFolder, setTargetFolder] = useState("pixels");
   const [generatedUrl, setGeneratedUrl] = useState("");
 
   useEffect(() => {
     fetchGames();
   }, []);
-
-  const handleFileUpload = async () => {
-    if (!selectedFile) return alert("Välj en fil först!");
-
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("folder", targetFolder);
-
-    try {
-      const response = await fetch(`${API_BASE}/api/games/upload-image`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setGeneratedUrl(data.url);
-        alert("Bilden har sparats!");
-      }
-    } catch (error) {
-      console.error("Fel vid uppladdning:", error);
-    }
-  };
 
   const fetchGames = async () => {
     try {
@@ -97,65 +74,21 @@ export default function AdminDashboard() {
         </p>
       </header>
 
-      <button
-        style={styles.uploadTriggerBtn}
-        onClick={() => {
-          setUploadModal(true);
-          setGeneratedUrl("");
-        }}
-      >
-        Vill du lägga till bild? Tryck här! 📸
-      </button>
+      <div style={{ display: "flex", gap: "10px" }}>
+        <button
+          style={{ ...styles.uploadTriggerBtn }}
+          onClick={() => navigate("/admin/leaderboard")} // Se till att du har denna route i App.js
+        >
+          Kolla leaderboard 🏆
+        </button>
 
-      {/* MODAL FÖR UPPLADDNING */}
-      {uploadModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modal}>
-            <h3>Ladda upp bild</h3>
-            <p style={{ fontSize: "12px" }}>
-              Bilden sparas i: public/assets/images/{targetFolder}
-            </p>
-
-            <div style={{ margin: "20px 0" }}>
-              <label>Välj mapp: </label>
-              <select
-                value={targetFolder}
-                onChange={(e) => setTargetFolder(e.target.value)}
-                style={styles.input}
-              >
-                <option value="pixels">pixels</option>
-                <option value="signs">signs</option>
-              </select>
-            </div>
-
-            <input
-              type="file"
-              onChange={(e) => setSelectedFile(e.target.files[0])}
-              style={{ marginBottom: "20px" }}
-            />
-
-            {generatedUrl && (
-              <div style={styles.urlBox}>
-                <strong>Kopiera URL:</strong>
-                <br />
-                <code>{generatedUrl}</code>
-              </div>
-            )}
-
-            <div style={styles.modalActions}>
-              <button onClick={handleFileUpload} style={styles.saveBtn}>
-                Ladda upp
-              </button>
-              <button
-                onClick={() => setUploadModal(false)}
-                style={styles.cancelBtn}
-              >
-                Stäng
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        <button
+          style={{ ...styles.uploadTriggerBtn }}
+          onClick={() => navigate("/admin/gallery")} // Se till att du har denna route i App.js
+        >
+          Ladda upp ny bild 📸
+        </button>
+      </div>
 
       {message && <div style={styles.alert}>{message}</div>}
 

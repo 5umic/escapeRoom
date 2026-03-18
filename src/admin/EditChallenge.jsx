@@ -250,26 +250,88 @@ export default function EditChallenges() {
     }
 
     if (title.includes("Game 5") || title.includes("Sortera")) {
+      // 1. Försök tolka nuvarande JSON till ett objekt, annars starta tomt
+      let categories = {};
+      try {
+        categories = JSON.parse(editingChallenge.answer || "{}");
+      } catch (e) {
+        categories = {}; // Om JSON är trasig, visa tomt istället för att krascha
+      }
+
+      // 2. Funktion för att uppdatera JSON-strängen när admin ändrar något
+      const updateJson = (newObj) => {
+        setEditingChallenge({
+          ...editingChallenge,
+          answer: JSON.stringify(newObj, null, 2), // Sparar som snygg JSON-text
+        });
+      };
+
       return (
         <div style={styles.editorBox}>
           <h4 style={styles.editorTitle}>🧩 Sorterings-inställningar</h4>
-          <label style={styles.label}>JSON-Svar (Kategorier):</label>
-          <textarea
-            style={{
-              ...styles.input,
-              minHeight: "80px",
-              fontFamily: "monospace",
+          <p style={{ fontSize: "12px", color: "#666", marginBottom: "10px" }}>
+            Skapa kategorier och skriv orden separerade med kommatecken.
+          </p>
+
+          {Object.keys(categories).map((catName, index) => (
+            <div key={index} style={styles.categoryRow}>
+              <input
+                style={{ ...styles.input, width: "30%", fontWeight: "bold" }}
+                value={catName}
+                placeholder="Kategorinamn..."
+                onChange={(e) => {
+                  const newObj = { ...categories };
+                  const words = newObj[catName];
+                  delete newObj[catName];
+                  newObj[e.target.value] = words;
+                  updateJson(newObj);
+                }}
+              />
+              <input
+                style={{ ...styles.input, width: "60%" }}
+                value={categories[catName].join(", ")}
+                placeholder="Ord1, Ord2, Ord3..."
+                onChange={(e) => {
+                  const newObj = { ...categories };
+                  newObj[catName] = e.target.value
+                    .split(",")
+                    .map((s) => s.trim());
+                  updateJson(newObj);
+                }}
+              />
+              <button
+                onClick={() => {
+                  const newObj = { ...categories };
+                  delete newObj[catName];
+                  updateJson(newObj);
+                }}
+                style={styles.deleteMiniBtn}
+              >
+                ❌
+              </button>
+            </div>
+          ))}
+
+          <button
+            style={styles.addBtn}
+            onClick={() => {
+              const newObj = { ...categories, "Ny Kategori": [] };
+              updateJson(newObj);
             }}
-            value={editingChallenge.answer}
-            onChange={(e) =>
-              setEditingChallenge({
-                ...editingChallenge,
-                answer: e.target.value,
-              })
-            }
-            placeholder='{"Kategori":["Ord"]}'
+          >
+            + Lägg till kategori
+          </button>
+
+          <hr
+            style={{
+              margin: "20px 0",
+              border: "none",
+              borderTop: "1px solid #eee",
+            }}
           />
-          {renderOptionsList("Alla ord som ska dras")}
+          {renderOptionsList(
+            "Alla ord som ska dras (måste matcha orden i kategorierna ovan)",
+          )}
         </div>
       );
     }
@@ -789,5 +851,25 @@ const styles = {
     fontSize: "24px",
     cursor: "pointer",
     color: "#999",
+  },
+  categoryRow: {
+    display: "flex",
+    gap: "10px",
+    marginBottom: "10px",
+    alignItems: "center",
+  },
+  addBtn: {
+    padding: "8px 15px",
+    backgroundColor: "#2ea44f",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  deleteMiniBtn: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "16px",
   },
 };

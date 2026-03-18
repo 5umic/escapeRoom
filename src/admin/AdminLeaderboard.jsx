@@ -58,7 +58,7 @@ export default function AdminLeaderboard() {
     <div style={styles.container}>
       <header style={styles.header}>
         <button onClick={() => navigate("/admin")} style={styles.backBtn}>
-          ← Tillbaka
+          ⬅ Tillbaka
         </button>
         <h1 style={{ color: "white", margin: 0 }}>Hantera Leaderboard</h1>
         <button onClick={handleClearAll} style={styles.clearBtn}>
@@ -127,14 +127,7 @@ const styles = {
     maxWidth: "900px",
     margin: "0 auto 30px auto",
   },
-  backBtn: {
-    background: "none",
-    border: "1px solid white",
-    color: "white",
-    padding: "10px 20px",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
+  backBtn: { padding: "10px", cursor: "pointer" },
   clearBtn: {
     background: "white",
     color: "#b10000",

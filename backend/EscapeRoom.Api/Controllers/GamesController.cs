@@ -159,6 +159,8 @@ public class GamesController : ControllerBase
         // Sökväg till mapparna 
         var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "public", "images", folder);
 
+        Console.WriteLine($"Letar efter bilder i: {rootPath}");
+
         if (!Directory.Exists(rootPath))
         {
             return Ok(new List<string>()); // Tom lista om mappen inte finns än
@@ -167,6 +169,7 @@ public class GamesController : ControllerBase
         // Hämta alla filnamn (jpg, png, webp, etc.)
         var files = Directory.GetFiles(rootPath)
             .Select(Path.GetFileName)
+            .Where(f => f != null && !f.StartsWith("."))
             .ToList();
 
         return Ok(files);
@@ -200,5 +203,28 @@ public class GamesController : ControllerBase
         var imageUrl = $"/images/{folder}/{fileName}";
         
         return Ok(new { url = imageUrl });
+    }
+
+    // 10. Admin: Ta bort en bild
+    [HttpDelete("delete-image")]
+    public IActionResult DeleteImage([FromQuery] string folder, [FromQuery] string fileName)
+    {
+        try
+        {
+            // Sökvägen till filen
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "public", "images", folder, fileName);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+                return Ok(new { message = "Bilden raderad!" });
+            }
+
+            return NotFound(new { message = "Filen hittades inte." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = "Kunde inte radera filen: " + ex.Message });
+        }
     }
 }

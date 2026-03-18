@@ -34,6 +34,7 @@ export default function Game4() {
   // Gameplay State
   const [status, setStatus] = useState("loading");
   const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
   const [pixelIndex, setPixelIndex] = useState(0);
   const [penaltySeconds, setPenaltySeconds] = useState(0);
   const [totalTimeLimit, setTotalTimeLimit] = useState(30);
@@ -190,7 +191,7 @@ export default function Game4() {
     setSelectedOption(optionText);
     const spent = getTimeTaken();
 
-    if (index === challenge.correctOptionIndex) {
+    if (optionText.trim() === challenge.answer.trim()) {
       setPixelIndex(PIXEL_LEVELS.length - 1); // Visa hela bilden skarp
       addTimeToSession(spent);
       setStatus("answered_correctly");

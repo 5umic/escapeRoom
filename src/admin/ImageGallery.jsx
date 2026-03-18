@@ -57,6 +57,31 @@ export default function ImageGallery() {
     }
   };
 
+  const handleDelete = async (e, fileName) => {
+    e.stopPropagation(); // Hindra att "Kopiera URL" körs samtidigt!
+
+    if (!window.confirm(`Är du säker på att du vill radera ${fileName}?`))
+      return;
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/games/delete-image?folder=${folder}&fileName=${fileName}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      if (res.ok) {
+        alert("Bilden är borta!");
+        fetchImages(folder); // Uppdaterar listan direkt
+      } else {
+        alert("Kunde inte radera bilden.");
+      }
+    } catch (err) {
+      console.error("Fel vid radering:", err);
+    }
+  };
+
   const copyToClipboard = (url) => {
     navigator.clipboard.writeText(url);
     alert(`URL Kopierad: ${url}`);
@@ -68,7 +93,7 @@ export default function ImageGallery() {
         <button onClick={() => navigate("/admin")} style={styles.backBtn}>
           ⬅ Tillbaka
         </button>
-        <h1 style={{ flex: 1 }}>Bildgalleri 🖼️</h1>
+        <h1 style={{ flex: 1, color: "#fff" }}>Bildgalleri 🖼️</h1>
 
         <button
           onClick={() => {
@@ -132,6 +157,13 @@ export default function ImageGallery() {
               style={styles.card}
               onClick={() => copyToClipboard(url)}
             >
+              <button
+                onClick={(e) => handleDelete(e, fileName)}
+                style={styles.deleteBtn}
+                title="Radera bild"
+              >
+                🗑️
+              </button>
               <img src={url} alt={fileName} style={styles.img} />
               <div style={styles.info}>
                 <code>{url}</code>
@@ -168,16 +200,34 @@ const styles = {
   select: { padding: "10px" },
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
     gap: "20px",
   },
   card: {
+    position: "relative",
     backgroundColor: "white",
     padding: "10px",
     borderRadius: "10px",
     boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-    cursor: "pointer",
+    cursor: "copy",
     textAlign: "center",
+  },
+  deleteBtn: {
+    position: "absolute",
+    top: "5px",
+    right: "5px",
+    background: "rgba(255,255,255,0.8)",
+    border: "1px solid #ddd",
+    borderRadius: "50%",
+    width: "30px",
+    height: "30px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    fontSize: "14px",
+    zIndex: 10,
+    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
   },
   img: {
     width: "100%",

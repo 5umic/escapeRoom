@@ -14,13 +14,13 @@ export default function StartScreen() {
       setError("Ditt namn måste vara minst 2 bokstäver långt!");
       return;
     }
-    sessionStorage.removeItem("totalGameTime");
-    sessionStorage.removeItem("isScoreSaved");
-    sessionStorage.removeItem("activeGameSequence");
+
+    sessionStorage.clear();
 
     sessionStorage.setItem("playerName", playerName.trim());
     sessionStorage.setItem("totalGameTime", "0");
     sessionStorage.setItem("isScoreSaved", "false");
+    sessionStorage.setItem("gameSessionActive", "true");
 
     try {
       // 1. Hämta de spel som är "On" just nu
@@ -81,7 +81,7 @@ export default function StartScreen() {
           {error && <p style={styles.errorText}>{error}</p>}
 
           <button type="submit" style={styles.startBtn}>
-            Börja Hacka 🚀
+            Börja Spela 🎮
           </button>
         </form>
 
@@ -90,7 +90,7 @@ export default function StartScreen() {
           onClick={() => navigate("/gymnasium/leaderboard")}
           style={styles.leaderboardBtn}
         >
-          🏆 Visa Leaderboard
+          Visa Leaderboard 🏆
         </button>
       </div>
     </div>

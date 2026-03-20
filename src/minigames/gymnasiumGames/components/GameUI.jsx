@@ -1,13 +1,39 @@
-import React, { use, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatTimeWithTenths } from "../hooks/useGameTimer";
 import { getNextGameInfo } from "../../../utils/navigation";
 import { savePlayerScore } from "../api/gameApi";
 
+export function GameSuccessModal({
+  message,
+  onNext,
+  onClose,
+  buttonText = "Gå vidare",
+}) {
+  if (!message) return null;
+
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modalContent}>
+        <div style={styles.messageBody}>
+          <button onClick={onClose} style={styles.closeX}>
+            ✕
+          </button>
+          {message.split("\n").map((line, i) => (
+            <p key={i} style={styles.modalText}>
+              {line}
+            </p>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export const GameNavbar = ({ gameTitle }) => {
   // Hämta den totala tiden från sessionStorage annars 00:00
-
-  const totalTime = sessionStorage.getItem("totalGameTime") || "00:00";
+  const totalTimeRaw = sessionStorage.getItem("totalGameTime");
+  const totalTime = totalTimeRaw ? parseFloat(totalTimeRaw) : 0;
 
   return (
     <nav style={navStyles.navbar}>
@@ -80,21 +106,25 @@ export function GameContainer({ children, secondsLeft }) {
 // --- FEEDBACK BOX: SUCCESS ---
 export function FeedbackSuccess({
   title,
+  successMessage,
   timeTaken,
   totalTime,
-  penaltyTime = 0, // Default 0
-  onNext, // Används för nästa FRÅGA i samma spel
+  penaltyTime = 0,
+  onNext,
   currentGameTitle,
   isLastQuestion,
 }) {
   const navigate = useNavigate();
   const hasSaved = useRef(false);
 
-  // Hämta dynamisk info om var vi är i hela spelserien
+  // State för att styra om modalen ska synas
+  const [showModal, setShowModal] = React.useState(
+    !!successMessage && isLastQuestion,
+  );
+
   const { isLast, nextPath } = getNextGameInfo(currentGameTitle);
 
   useEffect(() => {
-    // Spara endast om det är sista frågan i det absolut sista aktiva spelet
     const isFinalEnding = isLast && isLastQuestion;
     const alreadySaved = sessionStorage.getItem("isScoreSaved") === "true";
 
@@ -102,77 +132,74 @@ export function FeedbackSuccess({
       const playerName =
         sessionStorage.getItem("playerName") || "Anonym Spelare";
       const finalTime = parseFloat(totalTime || 0);
-
       sessionStorage.setItem("isScoreSaved", "true");
       hasSaved.current = true;
-
-      console.log("🏆 Mål! Sparar slutgiltig tid...", {
-        playerName,
-        finalTime,
-      });
       savePlayerScore(playerName, finalTime);
     }
   }, [isLast, isLastQuestion, totalTime, currentGameTitle]);
 
   const handleButtonClick = () => {
     if (isLastQuestion) {
-      // Om sista frågan i spelet: Gå till nextPath (Leaderboard eller nästa spel)
       navigate(nextPath);
     } else {
-      // Annars: Kör spelets lokala onNext för att byta fråga
       onNext();
     }
   };
 
-  // Dynamisk text på knappen
-  const getButtonText = () => {
-    if (isLast && isLastQuestion) return "Se Resultat 🏆";
-    if (isLastQuestion) return "Nästa Utmaning ➡️";
-    return "Nästa Fråga";
-  };
-
   return (
-    <div style={styles.feedbackBoxSuccess}>
-      <h3>
-        {isLast && isLastQuestion ? "Grattis, du klarade allt!" : title} ✅
-      </h3>
-
-      {timeTaken !== undefined && (
-        <div style={styles.timeInfoBox}>
-          {penaltyTime > 0 && (
-            <>
-              <p>
-                ⏳ Grundtid:{" "}
-                <strong>{(timeTaken - penaltyTime).toFixed(1)}s</strong>
-              </p>
-              <p style={{ color: "#c62828" }}>
-                ⚠️ Straff: <strong>+{penaltyTime}s</strong>
-              </p>
-              <hr
-                style={{
-                  margin: "8px 0",
-                  border: "none",
-                  borderTop: "1px solid rgba(0,0,0,0.1)",
-                }}
-              />
-            </>
-          )}
-
-          <p>
-            ⏱️ {penaltyTime > 0 ? "Total tid för momentet:" : "Tid:"}{" "}
-            <strong>{timeTaken}s</strong>
-          </p>
-          <p>
-            📊 Din totala tid:{" "}
-            <strong>{formatTimeWithTenths(totalTime)}</strong>
-          </p>
-        </div>
+    <>
+      {showModal && (
+        <GameSuccessModal
+          message={successMessage}
+          onClose={() => setShowModal(false)}
+        />
       )}
 
-      <button onClick={handleButtonClick} style={styles.btnSuccess}>
-        {getButtonText()}
-      </button>
-    </div>
+      <div style={styles.feedbackBoxSuccess}>
+        <h3>
+          {isLast && isLastQuestion ? "Grattis, du klarade allt!" : title} ✅
+        </h3>
+
+        {timeTaken !== undefined && (
+          <div style={styles.timeInfoBox}>
+            {penaltyTime > 0 && (
+              <>
+                <p>
+                  ⏳ Grundtid:{" "}
+                  <strong>{(timeTaken - penaltyTime).toFixed(1)}s</strong>
+                </p>
+                <p style={{ color: "#c62828" }}>
+                  ⚠️ Straff: <strong>+{penaltyTime}s</strong>
+                </p>
+                <hr
+                  style={{
+                    margin: "8px 0",
+                    border: "none",
+                    borderTop: "1px solid rgba(0,0,0,0.1)",
+                  }}
+                />
+              </>
+            )}
+            <p>
+              ⏱️ {penaltyTime > 0 ? "Total tid för momentet:" : "Tid:"}{" "}
+              <strong>{timeTaken}s</strong>
+            </p>
+            <p>
+              📊 Din totala tid:{" "}
+              <strong>{formatTimeWithTenths(totalTime)}</strong>
+            </p>
+          </div>
+        )}
+
+        <button onClick={handleButtonClick} style={styles.btnSuccess}>
+          {isLast && isLastQuestion
+            ? "Se Resultat 🏆"
+            : isLastQuestion
+              ? "Nästa Utmaning ➡️"
+              : "Nästa Fråga"}
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -253,6 +280,62 @@ const navStyles = {
 };
 
 const styles = {
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 3000,
+    backdropFilter: "blur(4px)", // Ger en snygg suddig effekt bakom
+  },
+  modalContent: {
+    backgroundColor: "white",
+    // padding: "40px",
+    borderRadius: "15px",
+    maxWidth: "600px",
+    width: "90%",
+    textAlign: "center",
+    boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
+    borderTop: "8px solid #b10000", // Trafikverkets röda tråd
+  },
+  modalText: {
+    fontSize: "1.2rem",
+    lineHeight: "1.6",
+    color: "#333",
+    marginBottom: "20px",
+    fontWeight: "500",
+  },
+  messageBody: {
+    position: "relative",
+    padding: "40px",
+  },
+  modalBtn: {
+    padding: "12px 35px",
+    backgroundColor: "#b10000",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    fontSize: "1rem",
+    fontWeight: "bold",
+    cursor: "pointer",
+    textTransform: "uppercase",
+    marginTop: "10px",
+  },
+  closeX: {
+    position: "absolute",
+    top: "15px",
+    right: "15px",
+    background: "none",
+    border: "none",
+    fontSize: "20px",
+    cursor: "pointer",
+    color: "#999",
+  },
   timerBackground: {
     width: "95%",
     height: "24px",

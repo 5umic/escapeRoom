@@ -6,6 +6,7 @@ import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
+  fetchGameDetails,
 } from "../gymnasiumGames/api/gameApi";
 import { useGameTimer } from "../gymnasiumGames/hooks/useGameTimer";
 import {
@@ -28,10 +29,12 @@ export default function Game4() {
   const [challenges, setChallenges] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const challenge = challenges[currentIndex];
+  const [gameData, setGameData] = useState(null);
 
   // Gameplay State
   const [status, setStatus] = useState("loading");
   const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
   const [pixelIndex, setPixelIndex] = useState(0);
   const [penaltySeconds, setPenaltySeconds] = useState(0);
   const [totalTimeLimit, setTotalTimeLimit] = useState(30);
@@ -50,11 +53,44 @@ export default function Game4() {
   // 1. Hämta all data vid start
   useEffect(() => {
     const initGame = async () => {
-      setStatus("loading");
-      const id = await fetchGameIdByTitle("gymnasium", "Game 4");
-      if (id) {
-        const data = await fetchUniqueChallenges(id);
-        setChallenges(data);
+      try {
+        setStatus("loading");
+
+        const id = await fetchGameIdByTitle("gymnasium", "Game 4");
+
+        if (!id) {
+          console.error(
+            "Kunde inte hitta spelet. Kontrollera att titeln matchar Admin.",
+          );
+          return;
+        }
+
+        // Hämta info och alla frågor parallellt
+        const [info, allChallenges] = await Promise.all([
+          fetchGameDetails(id),
+          fetch(`http://localhost:5261/api/games/${id}/challenges/all`).then(
+            (res) => res.json(),
+          ),
+        ]);
+
+        setGameData(info);
+
+        if (allChallenges && allChallenges.length > 0) {
+          // Slumpa ordningen på frågorna
+          const shuffled = [...allChallenges].sort(() => Math.random() - 0.5);
+
+          setChallenges(shuffled);
+          setCurrentIndex(0);
+
+          // Starta första frågan
+          const first = shuffled[0];
+          setTotalTimeLimit(first.timeLimitSeconds || 20);
+          setSecondsLeft(first.timeLimitSeconds || 20);
+          setSelectedOptionIndex(null);
+          setStatus("playing");
+        }
+      } catch (err) {
+        console.error("Fel vid laddning av spel:", err);
       }
     };
     initGame();
@@ -155,7 +191,7 @@ export default function Game4() {
     setSelectedOption(optionText);
     const spent = getTimeTaken();
 
-    if (index === challenge.correctOptionIndex) {
+    if (optionText.trim() === challenge.answer.trim()) {
       setPixelIndex(PIXEL_LEVELS.length - 1); // Visa hela bilden skarp
       addTimeToSession(spent);
       setStatus("answered_correctly");
@@ -255,6 +291,7 @@ export default function Game4() {
 
         {status === "answered_correctly" && (
           <FeedbackSuccess
+            successMessage={gameData?.successMessage}
             title={
               lastGame && isLastQuestion
                 ? "Grattis, du klarade hela pixeljakten!"

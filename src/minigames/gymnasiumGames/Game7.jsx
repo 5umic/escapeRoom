@@ -5,6 +5,7 @@ import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
+  fetchGameDetails,
 } from "../gymnasiumGames/api/gameApi";
 import { useGameTimer } from "../gymnasiumGames/hooks/useGameTimer";
 import {
@@ -63,40 +64,13 @@ export default function Game7() {
   const [mistakes, setMistakes] = useState(0);
   const maxMistakes = 9; // Ändrat från 10 till 9 försök
   const [totalTimeLimit, setTotalTimeLimit] = useState(60);
+  const [gameData, setGameData] = useState(null);
 
   // Dynamisk navigation
   const isLast = isLastActiveGame("Hänga Gubbe (Game 7)");
   const nextPath = getNextGameInfo("Hänga Gubbe (Game 7)");
 
-  // 1. Hämta Data vid start
-  useEffect(() => {
-    const initGame = async () => {
-      setStatus("loading");
-      // Vi letar efter det ID som är kopplat till originalnamnet
-      const id = await fetchGameIdByTitle("gymnasium", "Hänga Gubbe (Game 7)");
-      if (id) {
-        const data = await fetchUniqueChallenges(id, 1);
-        if (data.length > 0) setupChallenge(data[0]);
-      }
-    };
-    initGame();
-  }, []);
-
-  const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
-    useGameTimer(totalTimeLimit, status, setStatus);
-
-  const setupChallenge = (data) => {
-    if (!data) return;
-    setChallenge(data);
-    const limit = data.timeLimitSeconds || 60;
-    setTotalTimeLimit(limit);
-    setSecondsLeft(limit);
-    setGuessedLetters([]);
-    setMistakes(0);
-    setStatus("playing");
-  };
-
-  // --- 2. RITA TRAFIKLJUSET (ERSÄTTER GUBBEN) ---
+  // --- RITAR TRAFIKLJUSET ---
   useEffect(() => {
     if (!canvasRef.current) return;
     const ctx = canvasRef.current.getContext("2d");
@@ -222,6 +196,44 @@ export default function Game7() {
     }
   }, [mistakes]);
 
+  // 1. Hämta Data vid start
+  useEffect(() => {
+    const initGame = async () => {
+      setStatus("loading");
+
+      // 1. Hämta ID
+      const id = await fetchGameIdByTitle("gymnasium", "Hänga Gubbe");
+
+      if (id) {
+        // 2. Hämta ALLT parallellt (Spelinfo + Utmaning)
+        const [info, challenges] = await Promise.all([
+          fetchGameDetails(id),
+          fetchUniqueChallenges(id, 1),
+        ]);
+
+        // 3. Spara ner allt
+        if (info) setGameData(info);
+        if (challenges.length > 0) setupChallenge(challenges[0]);
+      }
+      setStatus("playing");
+    };
+    initGame();
+  }, []);
+
+  const { secondsLeft, setSecondsLeft, getTimeTaken, addTimeToSession } =
+    useGameTimer(totalTimeLimit, status, setStatus);
+
+  const setupChallenge = (data) => {
+    if (!data) return;
+    setChallenge(data);
+    const limit = data.timeLimitSeconds || 60;
+    setTotalTimeLimit(limit);
+    setSecondsLeft(limit);
+    setGuessedLetters([]);
+    setMistakes(0);
+    setStatus("playing");
+  };
+
   // --- 3. HANTERA GISSNING ---
   const handleGuess = (letter) => {
     if (status !== "playing" || guessedLetters.includes(letter)) return;
@@ -312,6 +324,7 @@ export default function Game7() {
         </div>
         {status === "answered_correctly" && (
           <FeedbackSuccess
+            successMessage={gameData?.successMessage}
             title={
               isLast
                 ? "Grattis, du tog dig genom pixel-trafiken!"

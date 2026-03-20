@@ -6,6 +6,7 @@ import { getNextGameInfo, isLastActiveGame } from "../../utils/navigation";
 import {
   fetchGameIdByTitle,
   fetchUniqueChallenges,
+  fetchGameDetails,
 } from "../gymnasiumGames/api/gameApi";
 import { useGameTimer } from "../gymnasiumGames/hooks/useGameTimer";
 import {
@@ -27,6 +28,7 @@ export default function Game1() {
   const [totalTimeLimit, setTotalTimeLimit] = useState(60);
   const lastGame = isLastActiveGame("Trafikverket (Gymnasium)");
   const nextPath = getNextGameInfo("Trafikverket (Gymnasium)");
+  const [gameData, setGameData] = useState(null);
 
   const challenge = challenges[currentIndex];
 
@@ -38,11 +40,38 @@ export default function Game1() {
   useEffect(() => {
     const initGame = async () => {
       setStatus("loading");
+
+      // 1. Hämta ID för spelet
       const id = await fetchGameIdByTitle("gymnasium", "Trafikverket");
+
       if (id) {
-        const data = await fetchUniqueChallenges(id);
-        setChallenges(data);
-        startRound(data[0]);
+        try {
+          // 2. Hämta spelinfo och ALLA frågor samtidigt
+          const [info, allChallenges] = await Promise.all([
+            fetchGameDetails(id),
+            fetch(`http://localhost:5261/api/games/${id}/challenges/all`).then(
+              (res) => res.json(),
+            ),
+          ]);
+
+          setGameData(info);
+
+          if (allChallenges && allChallenges.length > 0) {
+            // Blanda frågorna så de kommer i slumpmässig ordning
+            const shuffled = [...allChallenges].sort(() => Math.random() - 0.5);
+
+            setChallenges(shuffled);
+            setCurrentIndex(0);
+
+            // Starta första rundan
+            const firstChallenge = shuffled[0];
+            setTotalTimeLimit(firstChallenge.timeLimitSeconds || 20);
+            setSecondsLeft(firstChallenge.timeLimitSeconds || 20);
+            setStatus("playing");
+          }
+        } catch (err) {
+          console.error("Kunde inte ladda spelet:", err);
+        }
       }
     };
     initGame();
@@ -118,9 +147,7 @@ export default function Game1() {
         <div style={styles.roundInfo}>
           Fråga {currentIndex + 1} av {challenges.length}
         </div>
-
-        <h2>Trafikverket</h2>
-
+        <h2>Frågespelet</h2>
         {challenge.imageUrl && (
           <img
             src={challenge.imageUrl}
@@ -166,6 +193,7 @@ export default function Game1() {
 
         {status === "answered_correctly" && (
           <FeedbackSuccess
+            successMessage={gameData?.successMessage}
             title={
               lastGame && isLastQuestion
                 ? "Grattis du klarade sista spelet!"
@@ -186,7 +214,6 @@ export default function Game1() {
             isLastQuestion={isLastQuestion}
           />
         )}
-
         {status === "answered_wrong" && (
           <FeedbackError
             title="Fel svar"

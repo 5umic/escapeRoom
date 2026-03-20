@@ -14,6 +14,7 @@ import Game7 from "./minigames/gymnasiumGames/Game7.jsx";
 import StartScreen from "./minigames/gymnasiumGames/StartScreen.jsx";
 import Leaderboard from "./minigames/gymnasiumGames/Leaderboard.jsx";
 import AdminLeaderboard from "./admin/AdminLeaderboard.jsx";
+import ImageGallery from "./admin/ImageGallery.jsx";
 
 // Högskola games import
 import HogskolaGame1 from "./minigames/hogskolaGames/Game1.jsx";
@@ -37,6 +38,7 @@ function App() {
 
       {/* Admin-rutter */}
       <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/admin/gallery" element={<ImageGallery />} />
       <Route path="/admin/leaderboard" element={<AdminLeaderboard />} />
       <Route path="/admin/EditChallenge/:gameId" element={<EditChallenge />} />
       <Route path="/admin/hogskola-info" element={<HogskolaInfoEditor />} />

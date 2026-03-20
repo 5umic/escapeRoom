@@ -51,6 +51,7 @@ export default function EditChallenge() {
       options: ["", ""],
       imageUrl: "",
       timeLimitSeconds: 30,
+      succesMessage: "",
     };
 
     try {
@@ -89,6 +90,24 @@ export default function EditChallenge() {
     }
   };
 
+  const handleSaveGameInfo = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/games/${gameId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(gameInfo), // Skickar all gameInfo
+      });
+
+      if (res.ok) {
+        alert("Vinstmeddelandet för spelet har sparats! 🎉");
+      } else {
+        alert("Kunde inte spara. Kontrollera backenden.");
+      }
+    } catch (err) {
+      console.error("Fel vid sparning av spelinfo:", err);
+    }
+  };
+
   const handleDelete = async (challengeId) => {
     if (!window.confirm("Radera permanent?")) return;
     const res = await fetch(`${API_BASE}/api/games/challenges/${challengeId}`, {
@@ -104,7 +123,7 @@ export default function EditChallenge() {
 
     return (
       <div style={styles.previewContainer}>
-        <h4 style={styles.previewTitle}>👁️ Förhandsgranskning</h4>
+        <h4 style={styles.previewTitle}>Förhandsgranskning</h4>
         <div style={styles.previewCard}>
           {editingChallenge.imageUrl && (
             <img
@@ -174,6 +193,23 @@ export default function EditChallenge() {
                 ))}
               </div>
             )}
+          {editingChallenge.successMessage && (
+            <div
+              style={{
+                marginTop: "20px",
+                padding: "10px",
+                backgroundColor: "#fff9c4",
+                borderRadius: "5px",
+                borderLeft: "4px solid #fbc02d",
+                fontSize: "13px",
+              }}
+            >
+              <strong>Snyggt! (Modal-text):</strong>
+              <p style={{ margin: "5px 0 0 0", fontStyle: "italic" }}>
+                {editingChallenge.successMessage}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -213,26 +249,88 @@ export default function EditChallenge() {
     }
 
     if (title.includes("Game 5") || title.includes("Sortera")) {
+      // 1. Försök tolka nuvarande JSON till ett objekt, annars starta tomt
+      let categories = {};
+      try {
+        categories = JSON.parse(editingChallenge.answer || "{}");
+      } catch (e) {
+        categories = {}; // Om JSON är trasig, visa tomt istället för att krascha
+      }
+
+      // 2. Funktion för att uppdatera JSON-strängen när admin ändrar något
+      const updateJson = (newObj) => {
+        setEditingChallenge({
+          ...editingChallenge,
+          answer: JSON.stringify(newObj, null, 2), // Sparar som snygg JSON-text
+        });
+      };
+
       return (
         <div style={styles.editorBox}>
           <h4 style={styles.editorTitle}>🧩 Sorterings-inställningar</h4>
-          <label style={styles.label}>JSON-Svar (Kategorier):</label>
-          <textarea
-            style={{
-              ...styles.input,
-              minHeight: "80px",
-              fontFamily: "monospace",
+          <p style={{ fontSize: "12px", color: "#666", marginBottom: "10px" }}>
+            Skapa kategorier och skriv orden separerade med kommatecken.
+          </p>
+
+          {Object.keys(categories).map((catName, index) => (
+            <div key={index} style={styles.categoryRow}>
+              <input
+                style={{ ...styles.input, width: "30%", fontWeight: "bold" }}
+                value={catName}
+                placeholder="Kategorinamn..."
+                onChange={(e) => {
+                  const newObj = { ...categories };
+                  const words = newObj[catName];
+                  delete newObj[catName];
+                  newObj[e.target.value] = words;
+                  updateJson(newObj);
+                }}
+              />
+              <input
+                style={{ ...styles.input, width: "60%" }}
+                value={categories[catName].join(", ")}
+                placeholder="Ord1, Ord2, Ord3..."
+                onChange={(e) => {
+                  const newObj = { ...categories };
+                  newObj[catName] = e.target.value
+                    .split(",")
+                    .map((s) => s.trim());
+                  updateJson(newObj);
+                }}
+              />
+              <button
+                onClick={() => {
+                  const newObj = { ...categories };
+                  delete newObj[catName];
+                  updateJson(newObj);
+                }}
+                style={styles.deleteMiniBtn}
+              >
+                ❌
+              </button>
+            </div>
+          ))}
+
+          <button
+            style={styles.addBtn}
+            onClick={() => {
+              const newObj = { ...categories, "Ny Kategori": [] };
+              updateJson(newObj);
             }}
-            value={editingChallenge.answer}
-            onChange={(e) =>
-              setEditingChallenge({
-                ...editingChallenge,
-                answer: e.target.value,
-              })
-            }
-            placeholder='{"Kategori":["Ord"]}'
+          >
+            + Lägg till kategori
+          </button>
+
+          <hr
+            style={{
+              margin: "20px 0",
+              border: "none",
+              borderTop: "1px solid #eee",
+            }}
           />
-          {renderOptionsList("Alla ord som ska dras")}
+          {renderOptionsList(
+            "Alla ord som ska dras (måste matcha orden i kategorierna ovan)",
+          )}
         </div>
       );
     }
@@ -381,6 +479,49 @@ export default function EditChallenge() {
         ))}
       </div>
 
+      {/* --- VINSTMEDDELANDE FÖR HELA SPELET --- */}
+      <div
+        style={{
+          marginTop: "40px",
+          padding: "20px",
+          backgroundColor: "white",
+          borderRadius: "12px",
+          borderTop: "5px solid #333",
+        }}
+      >
+        <label style={{ ...styles.label, fontSize: "16px", color: "#b10000" }}>
+          🏁 Vinstmeddelande för hela {gameInfo?.title}
+        </label>
+        <p style={{ fontSize: "12px", color: "#666", marginBottom: "10px" }}>
+          Denna text visas i en modal när spelaren har klarat ALLA frågor i
+          detta spel.
+        </p>
+        <textarea
+          style={{
+            ...styles.input,
+            minHeight: "120px",
+            width: "100%",
+            boxSizing: "border-box",
+          }}
+          value={gameInfo?.successMessage || ""}
+          onChange={(e) =>
+            setGameInfo({ ...gameInfo, successMessage: e.target.value })
+          }
+          placeholder="Skriv texten som visas innan man går till nästa bana..."
+        />
+        <button
+          onClick={handleSaveGameInfo}
+          style={{
+            ...styles.saveBtn,
+            marginTop: "10px",
+            width: "auto",
+            padding: "10px 30px",
+          }}
+        >
+          Spara Vinstmeddelande
+        </button>
+      </div>
+
       {editingChallenge && (
         <div style={styles.modalOverlay}>
           <div
@@ -400,7 +541,7 @@ export default function EditChallenge() {
                     onClick={() => setShowPreview(!showPreview)}
                     style={styles.previewToggle}
                   >
-                    {showPreview ? "Dölj Preview" : "Visa Preview 👁️"}
+                    {showPreview ? "Dölj Preview" : "Visa Preview"}
                   </button>
                 </div>
 
@@ -709,5 +850,25 @@ const styles = {
     fontSize: "24px",
     cursor: "pointer",
     color: "#999",
+  },
+  categoryRow: {
+    display: "flex",
+    gap: "10px",
+    marginBottom: "10px",
+    alignItems: "center",
+  },
+  addBtn: {
+    padding: "8px 15px",
+    backgroundColor: "#2ea44f",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  deleteMiniBtn: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "16px",
   },
 };

@@ -30,7 +30,7 @@ export default function Leaderboard() {
     <div style={styles.container}>
       <div style={styles.content}>
         <h1 style={styles.title}>🏆 Leaderboard 🏆</h1>
-        <p style={styles.subtitle}>De snabbaste hackarna i systemet</p>
+        <p style={styles.subtitle}>De snabbaste spelarna i systemet</p>
 
         {loading ? (
           <p>Laddar resultat...</p>
@@ -43,7 +43,7 @@ export default function Leaderboard() {
             <thead>
               <tr style={styles.tableHead}>
                 <th style={styles.th}>Plats</th>
-                <th style={styles.th}>Hackarnamn</th>
+                <th style={styles.th}>Spelarnamn</th>
                 <th style={styles.th}>Total Tid</th>
               </tr>
             </thead>
@@ -75,13 +75,32 @@ export default function Leaderboard() {
           </table>
         )}
 
-        <button onClick={() => navigate("/")} style={styles.backBtn}>
-          Tillbaka till Startmenyn
-        </button>
+        <div style={styles.buttonGap}>
+          <button onClick={() => navigate("/gymnasium")} style={styles.playBtn}>
+            Börja spela
+          </button>
+
+          <button onClick={() => navigate("/")} style={styles.backBtn}>
+            Tillbaka till Startmenyn
+          </button>
+        </div>
       </div>
     </div>
   );
 }
+
+const baseBtn = {
+  width: "100%",
+  padding: "15px",
+  fontSize: "18px",
+  fontWeight: "bold",
+  background: "#333",
+  color: "white",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer",
+  transition: "0.2s",
+};
 
 const styles = {
   container: {
@@ -119,16 +138,15 @@ const styles = {
   firstPlace: { borderBottom: "1px solid #eee", backgroundColor: "#fff6b0" }, // Guld-bakgrund för 1:an!
   td: { padding: "15px 12px", textAlign: "left", fontSize: "18px" },
 
-  backBtn: {
-    width: "100%",
-    padding: "15px",
-    fontSize: "18px",
-    fontWeight: "bold",
-    background: "#333",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    transition: "0.2s",
+  backBtn: baseBtn,
+
+  playBtn: {
+    ...baseBtn,
+    background: "#0d74db",
+  },
+
+  buttonGap: {
+    display: "grid",
+    gap: "20px",
   },
 };

@@ -17,29 +17,6 @@ export default function AdminDashboard() {
     fetchGames();
   }, []);
 
-  const handleFileUpload = async () => {
-    if (!selectedFile) return alert("Välj en fil först!");
-
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("folder", targetFolder);
-
-    try {
-      const response = await fetch(`${API_BASE}/api/games/upload-image`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setGeneratedUrl(data.url);
-        alert("Bilden har sparats!");
-      }
-    } catch (error) {
-      console.error("Fel vid uppladdning:", error);
-    }
-  };
-
   const fetchGames = async () => {
     try {
       const response = await fetch(`${API_BASE}/api/games/list-all`);
@@ -141,28 +118,13 @@ export default function AdminDashboard() {
               style={{ marginBottom: "20px" }}
             />
 
-            {generatedUrl && (
-              <div style={styles.urlBox}>
-                <strong>Kopiera URL:</strong>
-                <br />
-                <code>{generatedUrl}</code>
-              </div>
-            )}
-
-            <div style={styles.modalActions}>
-              <button onClick={handleFileUpload} style={styles.saveBtn}>
-                Ladda upp
-              </button>
-              <button
-                onClick={() => setUploadModal(false)}
-                style={styles.cancelBtn}
-              >
-                Stäng
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        <button
+          style={{ ...styles.uploadTriggerBtn }}
+          onClick={() => navigate("/admin/gallery")} // Se till att du har denna route i App.js
+        >
+          Ladda upp ny bild 📸
+        </button>
+      </div>
 
       {message && <div style={styles.alert}>{message}</div>}
 

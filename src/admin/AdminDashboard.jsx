@@ -125,6 +125,8 @@ export default function AdminDashboard() {
           Ladda upp ny bild 📸
         </button>
       </div>
+      </div>
+      )}
 
       {message && <div style={styles.alert}>{message}</div>}
 
@@ -177,6 +179,7 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
 
 const styles = {
   adminContainer: {

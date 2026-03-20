@@ -3,6 +3,5 @@ bin/
 obj/
 *.user
 .vs/
-node_modules/
 *.dll
 *.exe

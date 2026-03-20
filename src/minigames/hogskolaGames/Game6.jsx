@@ -2,6 +2,16 @@
 import React, { useState } from 'react';
 import './Game6.css';
 import Game7 from './Game7.jsx';
+import PostGameInfo from './components/PostGameInfo.jsx';
+
+const FALLBACK_INFO = {
+  heading: 'SUPER BRA!',
+  paragraphs: [
+    'Säkerhet är en central del av Trafikverkets IT-verksamhet. Varje dag arbetar vi med att skydda känslig information och säkerställa att våra system är robusta mot hot.',
+    'Genom att använda webbläsarens utvecklarverktyg kan du inspektera hur webbsidor fungerar "bakom kulisserna". Detta är viktiga verktyg för utvecklare, men också för att förstå säkerhetsaspekter. Att kunna granska nätverkstrafik, läsa konsolmeddelanden och inspektera källkod är grundläggande färdigheter inom säker webbutveckling.',
+    'På Trafikverket använder vi dessa verktyg dagligen för att säkerställa att vår kod är säker och att inga känsliga uppgifter exponeras oavsiktligt.',
+  ],
+};
 
 export default function Game6() {
   const [userInput, setUserInput] = useState('');
@@ -62,23 +72,12 @@ export default function Game6() {
       <div className="game2-container">
         <div className="game2-content">
           <div className="info-section">
-            <h2 className="info-title">SUPER BRA!</h2>
-            
-            <div className="info-text">
-              <p>
-                Säkerhet är en central del av Trafikverkets IT-verksamhet. Varje dag arbetar vi med att skydda känslig information och säkerställa att våra system är robusta mot hot.
-              </p>
-              <p>
-                Genom att använda webbläsarens utvecklarverktyg kan du inspektera hur webbsidor fungerar "bakom kulisserna". Detta är viktiga verktyg för utvecklare, men också för att förstå säkerhetsaspekter. Att kunna granska nätverkstrafik, läsa konsolmeddelanden och inspektera källkod är grundläggande färdigheter inom säker webbutveckling.
-              </p>
-              <p>
-                På Trafikverket använder vi dessa verktyg dagligen för att säkerställa att vår kod är säker och att inga känsliga uppgifter exponeras oavsiktligt.
-              </p>
-            </div>
-
-            <button className="continue-button" onClick={() => setShowSuccess(true)}>
-              Fortsätt
-            </button>
+            <PostGameInfo
+              gameKey="game6"
+              fallbackHeading={FALLBACK_INFO.heading}
+              fallbackParagraphs={FALLBACK_INFO.paragraphs}
+              onContinue={() => setShowSuccess(true)}
+            />
           </div>
         </div>
       </div>

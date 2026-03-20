@@ -2,6 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import './Game2.css';
 import Game3 from './Game3.jsx';
+import PostGameInfo from './components/PostGameInfo.jsx';
+
+const FALLBACK_INFO = {
+  heading: 'Du är helt grym!',
+  paragraphs: [
+    '"Alla kommer fram smidigt, grönt och tryggt" - detta är en av Trafikverkets kärnvärden när det gäller trafikplanering och infrastruktur.',
+    'Smidighet i trafikflöden, gröna hållbara lösningar och trygghet för alla trafikanter är grundläggande principer i vårt arbete. Som IT-utvecklare på Trafikverket bidrar du till att skapa system som hjälper till att uppnå dessa mål.',
+    'Genom att utveckla intelligenta trafikstyrningssystem, realtidsövervakning och dataanalys hjälper vi till att göra Sveriges vägar och järnvägar säkrare och mer effektiva.',
+  ],
+};
 
 export default function Game2() {
   const targetSentence = ["Alla", "kommer", "fram", "smidigt,", "grönt", "och", "tryggt"];
@@ -157,23 +167,12 @@ export default function Game2() {
       <div className="game3-container">
         <div className="game3-content">
           <div className="info-section">
-            <h2 className="info-title">Du är helt grym!</h2>
-            
-            <div className="info-text">
-              <p>
-                "Alla kommer fram smidigt, grönt och tryggt" - detta är en av Trafikverkets kärnvärden när det gäller trafikplanering och infrastruktur.
-              </p>
-              <p>
-                Smidighet i trafikflöden, gröna hållbara lösningar och trygghet för alla trafikanter är grundläggande principer i vårt arbete. Som IT-utvecklare på Trafikverket bidrar du till att skapa system som hjälper till att uppnå dessa mål.
-              </p>
-              <p>
-                Genom att utveckla intelligenta trafikstyrningssystem, realtidsövervakning och dataanalys hjälper vi till att göra Sveriges vägar och järnvägar säkrare och mer effektiva.
-              </p>
-            </div>
-
-            <button className="continue-button" onClick={() => setShowSuccess(true)}>
-              Fortsätt
-            </button>
+            <PostGameInfo
+              gameKey="game2"
+              fallbackHeading={FALLBACK_INFO.heading}
+              fallbackParagraphs={FALLBACK_INFO.paragraphs}
+              onContinue={() => setShowSuccess(true)}
+            />
           </div>
         </div>
       </div>

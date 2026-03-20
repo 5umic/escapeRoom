@@ -2,6 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import './Game4.css';
 import Game5 from './Game5.jsx';
+import PostGameInfo from './components/PostGameInfo.jsx';
+
+const FALLBACK_INFO = {
+  heading: 'UTMÄRKT!',
+  paragraphs: [
+    'Vår logotyp symboliserar det ansvar vi bär och den service vi levererar till svenska folket varje dag. Vi är stolta över att representera Trafikverket och att vara en del av Sveriges infrastruktur. Genom vårt arbete bidrar vi till ett samhälle där människor kan resa säkert, hållbart och effektivt - det är ett uppdrag vi tar på största allvar och utför med stolthet.',
+    'Trafikverket är en myndighet under Infrastrukturdepartementet med ansvar för långsiktig planering av transportsystemet för vägtrafik, järnvägstrafik, sjöfart och luftfart. Vi ansvarar för byggande, drift och underhåll av statliga vägar och järnvägar.',
+    'Vårt uppdrag är att svara för den samlade sektorsuppföljningen och för samordning, planering och samverkan för att nå målen i transportpolitiken. Vi arbetar för ett tillgängligt Sverige med en hållbar och jämlik transportförsörjning där hänsyn tas till människors säkerhet och miljön.',
+    'Genom innovation och digitalisering utvecklar vi smarta lösningar för framtidens transporter. IKT och cybersäkerhet är centrala delar i denna utveckling där vi kontinuerligt arbetar med att skydda våra system samtidigt som vi gör dem mer effektiva och tillgängliga.',
+  ],
+};
 
 export default function Game4() {
   const GRID_COLS = 4;
@@ -178,26 +189,12 @@ export default function Game4() {
       <div className="game5-container">
         <div className="game5-content">
           <div className="info-section">
-            <h2 className="info-title">UTMÄRKT!</h2>
-            
-            <div className="info-text">
-              <p>
-                Vår logotyp symboliserar det ansvar vi bär och den service vi levererar till svenska folket varje dag. Vi är stolta över att representera Trafikverket och att vara en del av Sveriges infrastruktur. Genom vårt arbete bidrar vi till ett samhälle där människor kan resa säkert, hållbart och effektivt - det är ett uppdrag vi tar på största allvar och utför med stolthet.
-              </p>
-              <p>
-                Trafikverket är en myndighet under Infrastrukturdepartementet med ansvar för långsiktig planering av transportsystemet för vägtrafik, järnvägstrafik, sjöfart och luftfart. Vi ansvarar för byggande, drift och underhåll av statliga vägar och järnvägar.
-              </p>
-              <p>
-                Vårt uppdrag är att svara för den samlade sektorsuppföljningen och för samordning, planering och samverkan för att nå målen i transportpolitiken. Vi arbetar för ett tillgängligt Sverige med en hållbar och jämlik transportförsörjning där hänsyn tas till människors säkerhet och miljön.
-              </p>
-              <p>
-                Genom innovation och digitalisering utvecklar vi smarta lösningar för framtidens transporter. IKT och cybersäkerhet är centrala delar i denna utveckling där vi kontinuerligt arbetar med att skydda våra system samtidigt som vi gör dem mer effektiva och tillgängliga.
-              </p>
-            </div>
-
-            <button className="continue-button" onClick={() => setShowSuccess(true)}>
-              Fortsätt
-            </button>
+            <PostGameInfo
+              gameKey="game4"
+              fallbackHeading={FALLBACK_INFO.heading}
+              fallbackParagraphs={FALLBACK_INFO.paragraphs}
+              onContinue={() => setShowSuccess(true)}
+            />
           </div>
         </div>
       </div>

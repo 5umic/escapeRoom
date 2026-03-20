@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import './Game7.css';
+import PostGameInfo from './components/PostGameInfo.jsx';
+
+const FALLBACK_INFO = {
+  heading: 'Otroligt bra!',
+  paragraphs: [
+    'Du har framgångsrikt kartlagt nätverksarkitekturen. I moderna system följer data en logisk väg från klient till server, genom säkerhetslager och cache-system, innan den slutligen når databaser och lagring.',
+    'På Trafikverket arbetar vi med komplexa nätverksarkitekturer för att säkerställa att våra system är både säkra och snabba. Varje komponent i kedjan har sin specifika roll - från lastbalansering till autentisering och caching.',
+    'Genom att förstå hur data flödar genom systemen kan vi bygga robusta lösningar som hanterar Sveriges transportinfrastruktur dygnet runt.',
+  ],
+};
 
 export default function Game7() {
-  const [selectedNodes, setSelectedNodes] = useState([0]); // Start with Client node selected
+  const [selectedNodes, setSelectedNodes] = useState([0]);
   const [isComplete, setIsComplete] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const [validationResult, setValidationResult] = useState(null); // 'correct' or 'incorrect'
-  const [lockedNodes, setLockedNodes] = useState([0]); // Client node is locked from the start
-  const [lives, setLives] = useState(8); // Player has 8 lives
-  const [hasNewConnection, setHasNewConnection] = useState(false); // Track if player made a new connection
-  const [losingLife, setLosingLife] = useState(false); // Track when losing a life for shake animation
+  const [validationResult, setValidationResult] = useState(null);
+  const [lockedNodes, setLockedNodes] = useState([0]);
+  const [lives, setLives] = useState(8);
+  const [hasNewConnection, setHasNewConnection] = useState(false);
+  const [losingLife, setLosingLife] = useState(false);
 
-  // Network nodes with positions (percentage-based for responsiveness)
   const nodes = [
     { id: 0, x: 20, y: 20, label: 'Client' },
     { id: 1, x: 50, y: 15, label: 'Load Balancer' },
@@ -25,87 +34,74 @@ export default function Game7() {
     { id: 7, x: 75, y: 85, label: 'File Storage' }
   ];
 
-  // Correct sequence: Client → Load Balancer → API Gateway → Auth Server → App Server → Cache → Database → File Storage
   const correctSequence = [0, 1, 2, 3, 4, 6, 5, 7];
 
-  // Handle node click
   const handleNodeClick = (nodeId) => {
-    if (isComplete || isValidating || validationResult) return;
-    if (lockedNodes.includes(nodeId)) return; // Can't click locked nodes
+    if (isComplete || isValidating) return;
+    if (validationResult === 'correct' || validationResult === 'gameover') return;
 
-    // If node is already selected, remove it and all nodes after it
-    if (selectedNodes.includes(nodeId)) {
-      const nodeIndex = selectedNodes.indexOf(nodeId);
-      const newSelection = selectedNodes.slice(0, nodeIndex);
-      setSelectedNodes(newSelection);
-      setHasNewConnection(false); // Removing nodes doesn't count as new connection
+    if (validationResult === 'incorrect') {
+      if (lockedNodes.includes(nodeId)) return;
+      setValidationResult(null);
+      setSelectedNodes([...lockedNodes, nodeId]);
+      setHasNewConnection(true);
       return;
     }
 
-    // Otherwise, add the node to the selection
-    const newSelection = [...selectedNodes, nodeId];
-    setSelectedNodes(newSelection);
-    setHasNewConnection(true); // Mark that a new connection was made
+    if (lockedNodes.includes(nodeId)) return;
+
+    if (selectedNodes.includes(nodeId)) {
+      const nodeIndex = selectedNodes.indexOf(nodeId);
+      setSelectedNodes(selectedNodes.slice(0, nodeIndex));
+      setHasNewConnection(false);
+      return;
+    }
+
+    setSelectedNodes([...selectedNodes, nodeId]);
+    setHasNewConnection(true);
   };
 
-  // Check the connection
   const handleCheck = () => {
-    if (selectedNodes.length === 0) return;
-    if (!hasNewConnection) return; // Don't allow check if no new connection was made
-    setHasNewConnection(false); // Reset the flag
+    if (selectedNodes.length === 0 || !hasNewConnection) return;
+    setHasNewConnection(false);
     validateSequence(selectedNodes);
   };
 
-  // Validate the sequence
   const validateSequence = (sequence) => {
     setIsValidating(true);
     
     setTimeout(() => {
-      // Check how many nodes from the start are correct
       let correctCount = 0;
       for (let i = 0; i < sequence.length; i++) {
-        if (sequence[i] === correctSequence[i]) {
-          correctCount++;
-        } else {
-          break; // Stop at first incorrect node
-        }
+        if (sequence[i] === correctSequence[i]) correctCount++;
+        else break;
       }
 
-      const allSelectedAreCorrect = correctCount === sequence.length;
-      const isFullyComplete = sequence.length === correctSequence.length && allSelectedAreCorrect;
-      
+      const allCorrect = correctCount === sequence.length;
+      const isFullyComplete = sequence.length === correctSequence.length && allCorrect;
+
       if (isFullyComplete) {
-        // All nodes connected correctly - game won!
         setValidationResult('correct');
         setLockedNodes([...sequence]);
         setIsComplete(true);
-      } else if (allSelectedAreCorrect) {
-        // Partial sequence but all correct so far - lock them and continue
+      } else if (allCorrect) {
         setLockedNodes([...sequence]);
-        // Don't set validationResult so the button stays visible
       } else {
-        // Wrong answer - lose a life
         const newLives = lives - 1;
-        setLosingLife(true); // Trigger shake animation
+        setLosingLife(true);
         setLives(newLives);
-        
-        // Reset shake animation after it completes
         setTimeout(() => setLosingLife(false), 500);
-        
         if (newLives <= 0) {
-          // Game over - reset everything
           setValidationResult('gameover');
         } else {
           setValidationResult('incorrect');
-          // Lock the correct prefix
           setLockedNodes(sequence.slice(0, correctCount));
         }
       }
       setIsValidating(false);
-    }, 500); // Brief delay for animation
+    }, 500);
   };
 
-  // Reset the game - only clears nodes after locked ones
   const handleReset = () => {
     setSelectedNodes([...lockedNodes]);
     setValidationResult(null);
@@ -113,31 +109,23 @@ export default function Game7() {
     setHasNewConnection(false);
   };
 
-  // Full reset when lives run out
   const handleFullReset = () => {
-    setSelectedNodes([0]); // Start with Client node selected
-    setLockedNodes([0]); // Client node is locked from the start
+    setSelectedNodes([0]);
+    setLockedNodes([0]);
     setValidationResult(null);
     setIsValidating(false);
     setLives(8);
     setHasNewConnection(false);
   };
 
-  // Get line color based on validation state and position
   const getLineColor = (lineIndex) => {
-    if (!validationResult) return '#888888'; // Gray while building
-    
-    // Check if this connection is in the locked (correct) section
-    if (lineIndex < lockedNodes.length - 1) {
-      return '#00ff00'; // Green for correct connections
-    }
-    
+    if (!validationResult) return '#888888';
+    if (lineIndex < lockedNodes.length - 1) return '#00ff00';
     if (validationResult === 'correct') return '#00ff00';
-    if (validationResult === 'incorrect') return '#ff0000'; // Red for incorrect
+    if (validationResult === 'incorrect') return '#ff0000';
     return '#888888';
   };
 
-  // Render lines between selected nodes
   const renderLines = () => {
     const lines = [];
     for (let i = 0; i < selectedNodes.length - 1; i++) {
@@ -165,34 +153,23 @@ export default function Game7() {
     return lines;
   };
 
-  // Info screen after completion
   if (showInfo && !showSuccess) {
     return (
       <div className="game7-container">
         <div className="game7-content">
           <div className="info-section">
-            <h2 className="info-title">Otroligt bra!</h2>
-            <div className="info-text">
-              <p>
-                Du har framgångsrikt kartlagt nätverksarkitekturen. I moderna system följer data en logisk väg från klient till server, genom säkerhetslager och cache-system, innan den slutligen når databaser och lagring.
-              </p>
-              <p>
-                På Trafikverket arbetar vi med komplexa nätverksarkitekturer för att säkerställa att våra system är både säkra och snabba. Varje komponent i kedjan har sin specifika roll - från lastbalansering till autentisering och caching.
-              </p>
-              <p>
-                Genom att förstå hur data flödar genom systemen kan vi bygga robusta lösningar som hanterar Sveriges transportinfrastruktur dygnet runt.
-              </p>
-            </div>
-            <button onClick={() => setShowSuccess(true)} className="continue-button">
-              Fortsätt
-            </button>
+            <PostGameInfo
+              gameKey="game7"
+              fallbackHeading={FALLBACK_INFO.heading}
+              fallbackParagraphs={FALLBACK_INFO.paragraphs}
+              onContinue={() => setShowSuccess(true)}
+            />
           </div>
         </div>
       </div>
     );
   }
 
-  // Final success screen
   if (showSuccess) {
     return (
       <div className="game7-container final-screen">
@@ -216,8 +193,6 @@ export default function Game7() {
     );
   }
 
-  // Main game screen
-  // error-message
   return (
     <div className="game7-container">
       <div className="game7-header">
@@ -233,7 +208,6 @@ export default function Game7() {
         </p>
       </div>
 
-      {/* Lives display */}
       <div className="lives-container">
         {[...Array(8)].map((_, index) => (
           <img
@@ -247,10 +221,8 @@ export default function Game7() {
 
       <div className="game7-content">
         <svg className="network-canvas" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-          {/* Render connection lines */}
           {renderLines()}
 
-          {/* Render nodes */}
           {nodes.map((node) => {
             const isSelected = selectedNodes.includes(node.id);
             const isLocked = lockedNodes.includes(node.id);
@@ -258,7 +230,6 @@ export default function Game7() {
             
             return (
               <g key={node.id} className="node-group">
-                {/* Node circle */}
                 <circle
                   cx={`${node.x}%`}
                   cy={`${node.y}%`}
@@ -267,7 +238,6 @@ export default function Game7() {
                   onClick={() => handleNodeClick(node.id)}
                 />
                 
-                {/* Selection order number */}
                 {isSelected && (
                   <text
                     x={`${node.x}%`}
@@ -279,8 +249,6 @@ export default function Game7() {
                     {selectionOrder + 1}
                   </text>
                 )}
-                
-                {/* Node label */}
                 <text
                   x={`${node.x}%`}
                   y={`${node.y + 7}%`}
@@ -295,7 +263,6 @@ export default function Game7() {
         </svg>
       </div>
 
-      {/* Check button (shown when nodes are selected and not yet validated) */}
       {selectedNodes.length > 0 && !validationResult && (
         <div className="check-container">
           <button 
@@ -308,7 +275,6 @@ export default function Game7() {
         </div>
       )}
 
-      {/* Success button (shown when completed correctly) */}
       {isComplete && validationResult === 'correct' && (
         <div className="success-container">
           <p className="success-message">
@@ -320,7 +286,6 @@ export default function Game7() {
         </div>
       )}
 
-      {/* Reset button (shown when validation fails) */}
       {validationResult === 'incorrect' && (
         <div className="reset-container">
           <p className="error-message">
@@ -334,7 +299,6 @@ export default function Game7() {
         </div>
       )}
 
-      {/* Game over - all lives lost */}
       {validationResult === 'gameover' && (
         <div className="reset-container gameover">
           <p className="error-message gameover-message">

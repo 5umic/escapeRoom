@@ -152,38 +152,123 @@ public class GamesController : ControllerBase
         return Ok(game);
     }
 
-    // 8. Admin: Hämta bilder
-    [HttpGet("list-images")]
-    public IActionResult ListImages([FromQuery] string folder)
+    // 8. Högskola: Hämta infotext för ett spel
+    [HttpGet("hogskola-info/{gameKey}")]
+    public async Task<IActionResult> GetHogskolaInfo(string gameKey)
     {
-        // Sökväg till mapparna 
-        var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "public", "images", folder);
+        var normalizedKey = gameKey.Trim().ToLowerInvariant();
+        var info = await _db.HogskolaInfoContents
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.GameKey == normalizedKey);
 
-        Console.WriteLine($"Letar efter bilder i: {rootPath}");
-
-        if (!Directory.Exists(rootPath))
+        if (info == null)
         {
-            return Ok(new List<string>()); // Tom lista om mappen inte finns än
+            return NotFound();
         }
 
-        // Hämta alla filnamn (jpg, png, webp, etc.)
-        var files = Directory.GetFiles(rootPath)
-            .Select(Path.GetFileName)
-            .Where(f => f != null && !f.StartsWith("."))
-            .ToList();
-
-        return Ok(files);
+        return Ok(new
+        {
+            info.Id,
+            info.GameKey,
+            info.Heading,
+            info.Body,
+            info.UpdatedAtUtc
+        });
     }
 
-    // 9. Admin: Ladda upp en bild
+    public sealed class UpdateHogskolaInfoRequest
+    {
+        public string Heading { get; set; } = "";
+        public string Body { get; set; } = "";
+    }
+
+    // 9. Högskola: Uppdatera infotext för ett spel
+    [HttpPut("hogskola-info/{gameKey}")]
+    public async Task<IActionResult> UpdateHogskolaInfo(string gameKey, [FromBody] UpdateHogskolaInfoRequest request)
+    {
+        if (request == null) return BadRequest();
+
+        var normalizedKey = gameKey.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(normalizedKey)) return BadRequest("Ogiltig gameKey.");
+
+        var heading = request.Heading?.Trim() ?? "";
+        var body = request.Body?.Trim() ?? "";
+        if (string.IsNullOrWhiteSpace(heading) || string.IsNullOrWhiteSpace(body))
+        {
+            return BadRequest("Heading och Body är obligatoriska.");
+        }
+
+        var info = await _db.HogskolaInfoContents
+            .FirstOrDefaultAsync(c => c.GameKey == normalizedKey);
+
+        if (info == null)
+        {
+            info = new HogskolaInfoContent
+            {
+                GameKey = normalizedKey,
+                Heading = heading,
+                Body = body,
+                UpdatedAtUtc = DateTime.UtcNow
+            };
+            _db.HogskolaInfoContents.Add(info);
+        }
+        else
+        {
+            info.Heading = heading;
+            info.Body = body;
+            info.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        await _db.SaveChangesAsync();
+
+        return Ok(new
+        {
+            info.Id,
+            info.GameKey,
+            info.Heading,
+            info.Body,
+            info.UpdatedAtUtc
+        });
+    }
+
+    // 10. Högskola: Lista alla infotexter för admin
+    [HttpGet("hogskola-info")]
+    public async Task<IActionResult> GetAllHogskolaInfo()
+    {
+        var all = await _db.HogskolaInfoContents
+            .AsNoTracking()
+            .OrderBy(c => c.GameKey)
+            .Select(c => new
+            {
+                c.Id,
+                c.GameKey,
+                c.Heading,
+                c.Body,
+                c.UpdatedAtUtc
+            })
+            .ToListAsync();
+
+        return Ok(all);
+    }
+
+    // 11. Admin: Ladda upp en bild
     [HttpPost("upload-image")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadImage([FromForm] IFormFile file, [FromForm] string folder)
     {
         if (file == null || file.Length == 0) return BadRequest("Ingen fil vald.");
 
-        // Dynamisk sökväg
-        var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "public", "images", folder);
+        var normalizedFolder = (folder ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "pixels" => "pixel",
+            "pixel" => "pixel",
+            "signs" => "signs",
+            "logos" => "logos",
+            _ => "minigame-assets"
+        };
+
+        // Store uploads in canonical frontend assets location.
+        var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "public", "assets", "images", normalizedFolder);
 
         // Skapa mappen om den inte finns (viktigt!)
         if (!Directory.Exists(rootPath))
@@ -199,8 +284,7 @@ public class GamesController : ControllerBase
             await file.CopyToAsync(stream);
         }
 
-        // URL:en som frontend använder (eftersom 'public' är root i webbläsaren)
-        var imageUrl = $"/images/{folder}/{fileName}";
+        var imageUrl = $"/assets/images/{normalizedFolder}/{fileName}";
         
         return Ok(new { url = imageUrl });
     }

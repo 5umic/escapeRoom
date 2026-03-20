@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-const API_BASE = "http://localhost:5261";
+import { API_BASE } from "../config/apiBase.js";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -10,8 +9,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [uploadModal, setUploadModal] = useState(false);
-
-  const [targetFolder, setTargetFolder] = useState("pixels");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [targetFolder, setTargetFolder] = useState("pixel");
   const [generatedUrl, setGeneratedUrl] = useState("");
 
   useEffect(() => {
@@ -74,13 +73,50 @@ export default function AdminDashboard() {
         </p>
       </header>
 
-      <div style={{ display: "flex", gap: "10px" }}>
-        <button
-          style={{ ...styles.uploadTriggerBtn }}
-          onClick={() => navigate("/admin/leaderboard")} // Se till att du har denna route i App.js
-        >
-          Kolla leaderboard 🏆
-        </button>
+      <button
+        style={styles.uploadTriggerBtn}
+        onClick={() => {
+          setUploadModal(true);
+          setGeneratedUrl("");
+        }}
+      >
+        Vill du lägga till bild? Tryck här! 📸
+      </button>
+
+      <button
+        style={styles.infoEditorBtn}
+        onClick={() => navigate("/admin/hogskola-info")}
+      >
+        Redigera Högskola text!
+      </button>
+
+      {/* MODAL FÖR UPPLADDNING */}
+      {uploadModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <h3>Ladda upp bild</h3>
+            <p style={{ fontSize: "12px" }}>
+              Bilden sparas i: public/assets/images/{targetFolder}
+            </p>
+
+            <div style={{ margin: "20px 0" }}>
+              <label>Välj mapp: </label>
+              <select
+                value={targetFolder}
+                onChange={(e) => setTargetFolder(e.target.value)}
+                style={styles.input}
+              >
+                <option value="pixel">pixel</option>
+                <option value="signs">signs</option>
+                <option value="logos">logos</option>
+              </select>
+            </div>
+
+            <input
+              type="file"
+              onChange={(e) => setSelectedFile(e.target.files[0])}
+              style={{ marginBottom: "20px" }}
+            />
 
         <button
           style={{ ...styles.uploadTriggerBtn }}
@@ -89,6 +125,8 @@ export default function AdminDashboard() {
           Ladda upp ny bild 📸
         </button>
       </div>
+      </div>
+      )}
 
       {message && <div style={styles.alert}>{message}</div>}
 
@@ -141,6 +179,7 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
 
 const styles = {
   adminContainer: {
@@ -244,6 +283,18 @@ const styles = {
     borderRadius: "8px",
     fontWeight: "bold",
     cursor: "pointer",
+    marginBottom: "30px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+  },
+  infoEditorBtn: {
+    backgroundColor: "#1f2937",
+    color: "white",
+    border: "none",
+    padding: "12px 20px",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    marginLeft: "10px",
     marginBottom: "30px",
     boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
   },

@@ -73,15 +73,21 @@ export default function AdminDashboard() {
         </p>
       </header>
 
-      <button
-        style={styles.uploadTriggerBtn}
-        onClick={() => {
-          setUploadModal(true);
-          setGeneratedUrl("");
-        }}
-      >
-        Vill du lägga till bild? Tryck här! 📸
-      </button>
+     <div style={{ display: "flex", gap: "10px" }}>
+        <button
+          style={{ ...styles.uploadTriggerBtn }}
+          onClick={() => navigate("/admin/leaderboard")} // Se till att du har denna route i App.js
+        >
+          Kolla leaderboard 🏆
+        </button>
+ 
+        <button
+          style={{ ...styles.uploadTriggerBtn }}
+          onClick={() => navigate("/admin/gallery")} // Se till att du har denna route i App.js
+        >
+          Ladda upp ny bild 📸
+        </button>
+      </div>
 
       <button
         style={styles.infoEditorBtn}

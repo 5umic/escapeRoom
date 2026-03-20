@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Game7.css';
 import PostGameInfo from './components/PostGameInfo.jsx';
 
@@ -12,6 +13,7 @@ const FALLBACK_INFO = {
 };
 
 export default function Game7() {
+  const navigate = useNavigate();
   const [selectedNodes, setSelectedNodes] = useState([0]);
   const [isComplete, setIsComplete] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
@@ -185,8 +187,8 @@ export default function Game7() {
               Tack för att du spelade! Du är redo för nya tekniska utmaningar.
             </p>
           </div>
-          <button onClick={() => window.location.reload()} className="restart-button">
-            Spela igen
+          <button onClick={() => navigate('/')} className="restart-button">
+            Tillbaka till huvudmenyn
           </button>
         </div>
       </div>

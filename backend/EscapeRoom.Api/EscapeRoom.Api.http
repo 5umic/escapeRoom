@@ -1,6 +1,16 @@
 @EscapeRoom.Api_HostAddress = http://localhost:5261
 
-GET {{EscapeRoom.Api_HostAddress}}/weatherforecast/
+GET {{EscapeRoom.Api_HostAddress}}/api/modes
+Accept: application/json
+
+###
+
+GET {{EscapeRoom.Api_HostAddress}}/api/games/hogskola-info
+Accept: application/json
+
+###
+
+GET {{EscapeRoom.Api_HostAddress}}/api/games/hogskola-info/game1
 Accept: application/json
 
 ###

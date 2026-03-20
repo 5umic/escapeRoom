@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatTimeWithTenths } from "../minigames/gymnasiumGames/hooks/useGameTimer";
-
-const API_BASE = "http://localhost:5261";
+import { API_BASE } from "../config/apiBase.js";
 
 export default function AdminLeaderboard() {
   const [scores, setScores] = useState([]);

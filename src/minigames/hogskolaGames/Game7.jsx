@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import './Game7.css';
+import PostGameInfo from './components/PostGameInfo.jsx';
+
+const FALLBACK_INFO = {
+  heading: 'Otroligt bra!',
+  paragraphs: [
+    'Du har framgångsrikt kartlagt nätverksarkitekturen. I moderna system följer data en logisk väg från klient till server, genom säkerhetslager och cache-system, innan den slutligen når databaser och lagring.',
+    'På Trafikverket arbetar vi med komplexa nätverksarkitekturer för att säkerställa att våra system är både säkra och snabba. Varje komponent i kedjan har sin specifika roll - från lastbalansering till autentisering och caching.',
+    'Genom att förstå hur data flödar genom systemen kan vi bygga robusta lösningar som hanterar Sveriges transportinfrastruktur dygnet runt.',
+  ],
+};
 
 export default function Game7() {
   const [selectedNodes, setSelectedNodes] = useState([0]); // Start with Client node selected
@@ -171,21 +181,12 @@ export default function Game7() {
       <div className="game7-container">
         <div className="game7-content">
           <div className="info-section">
-            <h2 className="info-title">Otroligt bra!</h2>
-            <div className="info-text">
-              <p>
-                Du har framgångsrikt kartlagt nätverksarkitekturen. I moderna system följer data en logisk väg från klient till server, genom säkerhetslager och cache-system, innan den slutligen når databaser och lagring.
-              </p>
-              <p>
-                På Trafikverket arbetar vi med komplexa nätverksarkitekturer för att säkerställa att våra system är både säkra och snabba. Varje komponent i kedjan har sin specifika roll - från lastbalansering till autentisering och caching.
-              </p>
-              <p>
-                Genom att förstå hur data flödar genom systemen kan vi bygga robusta lösningar som hanterar Sveriges transportinfrastruktur dygnet runt.
-              </p>
-            </div>
-            <button onClick={() => setShowSuccess(true)} className="continue-button">
-              Fortsätt
-            </button>
+            <PostGameInfo
+              gameKey="game7"
+              fallbackHeading={FALLBACK_INFO.heading}
+              fallbackParagraphs={FALLBACK_INFO.paragraphs}
+              onContinue={() => setShowSuccess(true)}
+            />
           </div>
         </div>
       </div>

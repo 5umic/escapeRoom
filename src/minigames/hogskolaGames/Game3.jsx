@@ -3,6 +3,15 @@
 import React, { useState } from 'react';
 import './Game3.css';
 import Game4 from './Game4.jsx';
+import PostGameInfo from './components/PostGameInfo.jsx';
+
+const FALLBACK_INFO = {
+  heading: 'Fantastiskt!',
+  paragraphs: [
+    'Du har visat god kunskap om trafiksäkerhet. Varje år skadas och dör människor i trafiken på grund av misstag som kunde undvikas. Genom att följa säkerhetsrutiner, anpassa hastigheten och vara uppmärksam räddar du liv - både ditt eget och andras.',
+    'På Trafikverket arbetar vi kontinuerligt med att förbättra trafiksäkerheten genom utbildning, infrastruktur och smarta IT-lösningar. Varje decision vi tar i vårt arbete kan bidra till att göra Sveriges vägar och järnvägar säkrare för alla.',
+  ],
+};
 
 export default function Game3() {
   const [stage, setStage] = useState(0);
@@ -114,21 +123,12 @@ export default function Game3() {
       <div className="game4-container">
         <div className="game4-content">
           <div className="info-section">
-            <h2 className="info-title">Fantastiskt!</h2>
-            
-            <div className="info-text">
-              <p>
-                Du har visat god kunskap om trafiksäkerhet. Varje år skadas och dör människor i trafiken på grund av misstag som kunde undvikas. 
-                Genom att följa säkerhetsrutiner, anpassa hastigheten och vara uppmärksam räddar du liv - både ditt eget och andras.
-              </p>
-              <p>
-                På Trafikverket arbetar vi kontinuerligt med att förbättra trafiksäkerheten genom utbildning, infrastruktur och smarta IT-lösningar. 
-                Varje decision vi tar i vårt arbete kan bidra till att göra Sveriges vägar och järnvägar säkrare för alla.
-              </p>
-            </div>
-            <button className="continue-button" onClick={() => setShowSuccess(true)}>
-              Fortsätt
-            </button>
+            <PostGameInfo
+              gameKey="game3"
+              fallbackHeading={FALLBACK_INFO.heading}
+              fallbackParagraphs={FALLBACK_INFO.paragraphs}
+              onContinue={() => setShowSuccess(true)}
+            />
           </div>
         </div>
       </div>

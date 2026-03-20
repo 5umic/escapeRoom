@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5261";
+import { API_BASE } from "../../../config/apiBase.js";
 
 // 1. Hämta rätt Game ID baserat på titel
 export const fetchGameIdByTitle = async (modeKey, titleKeyword) => {

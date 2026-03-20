@@ -28,6 +28,7 @@ import HogskolaGame7 from "./minigames/hogskolaGames/Game7.jsx";
 // Admin imports
 import AdminDashboard from "./admin/AdminDashboard.jsx";
 import EditChallenge from "./admin/EditChallenge.jsx";
+import HogskolaInfoEditor from "./admin/HogskolaInfoEditor.jsx";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
       <Route path="/admin/gallery" element={<ImageGallery />} />
       <Route path="/admin/leaderboard" element={<AdminLeaderboard />} />
       <Route path="/admin/EditChallenge/:gameId" element={<EditChallenge />} />
+      <Route path="/admin/hogskola-info" element={<HogskolaInfoEditor />} />
 
       {/* 2. Gymnasium-flödet */}
       <Route

@@ -135,7 +135,7 @@ export default function HogskolaInfoEditor() {
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "#d70000",
+    background: "#ffffff",
     padding: "30px",
     fontFamily: "sans-serif",
   },
@@ -147,7 +147,6 @@ const styles = {
   },
   title: {
     margin: 0,
-    color: "#ffffff",
   },
   backBtn: {
     border: "1px solid #333",

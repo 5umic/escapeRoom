@@ -6,13 +6,13 @@ import {
 } from "../minigames/hogskolaGames/api/infoContentApi";
 
 const GAME_OPTIONS = [
-  { key: "game1", label: "Hogskola Game 1" },
-  { key: "game2", label: "Hogskola Game 2" },
-  { key: "game3", label: "Hogskola Game 3" },
-  { key: "game4", label: "Hogskola Game 4" },
-  { key: "game5", label: "Hogskola Game 5" },
-  { key: "game6", label: "Hogskola Game 6" },
-  { key: "game7", label: "Hogskola Game 7" },
+  { key: "game1", label: "Högskola Game 1" },
+  { key: "game2", label: "Högskola Game 2" },
+  { key: "game3", label: "Högskola Game 3" },
+  { key: "game4", label: "Högskola Game 4" },
+  { key: "game5", label: "Högskola Game 5" },
+  { key: "game6", label: "Högskola Game 6" },
+  { key: "game7", label: "Högskola Game 7" },
 ];
 
 export default function HogskolaInfoEditor() {
@@ -32,8 +32,8 @@ export default function HogskolaInfoEditor() {
         const data = await listHogskolaInfo();
         setAllContent(data);
       } catch (err) {
-        console.error("Kunde inte hamta infotexter:", err);
-        setMessage("Kunde inte hamta infotexter.");
+        console.error("Kunde inte hämta infotexter:", err);
+        setMessage("Kunde inte hämta infotexter.");
       } finally {
         setLoading(false);
       }
@@ -84,7 +84,7 @@ export default function HogskolaInfoEditor() {
   return (
     <div style={styles.page}>
       <div style={styles.headerRow}>
-        <h1 style={styles.title}>Hogskola - Infotext Editor</h1>
+        <h1 style={styles.title}>Högskola - Infotext Editor</h1>
         <button style={styles.backBtn} onClick={() => navigate("/admin")}>Tillbaka</button>
       </div>
 
@@ -110,7 +110,7 @@ export default function HogskolaInfoEditor() {
             style={styles.input}
             value={heading}
             onChange={(e) => setHeading(e.target.value)}
-            placeholder="Ex: Harligt!"
+            placeholder="Ex: Härligt!"
           />
 
           <label style={styles.label}>Text (stycken separeras med tom rad):</label>
@@ -118,7 +118,7 @@ export default function HogskolaInfoEditor() {
             style={styles.textarea}
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Skriv infotexten har..."
+            placeholder="Skriv infotexten här..."
           />
 
           {message && <p style={styles.message}>{message}</p>}
@@ -135,7 +135,7 @@ export default function HogskolaInfoEditor() {
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "#fafafa",
+    background: "#d70000",
     padding: "30px",
     fontFamily: "sans-serif",
   },
@@ -147,6 +147,7 @@ const styles = {
   },
   title: {
     margin: 0,
+    color: "#ffffff",
   },
   backBtn: {
     border: "1px solid #333",
@@ -178,6 +179,8 @@ const styles = {
     borderRadius: "6px",
     border: "1px solid #ccc",
   },
+
+
   textarea: {
     minHeight: "220px",
     padding: "10px",
@@ -195,6 +198,7 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
   },
+
   message: {
     margin: 0,
     color: "#0f5132",

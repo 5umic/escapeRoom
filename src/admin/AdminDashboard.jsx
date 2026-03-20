@@ -87,7 +87,7 @@ export default function AdminDashboard() {
         style={styles.infoEditorBtn}
         onClick={() => navigate("/admin/hogskola-info")}
       >
-        Redigera Hogskola infotexter
+        Redigera Högskola text!
       </button>
 
       {/* MODAL FÖR UPPLADDNING */}

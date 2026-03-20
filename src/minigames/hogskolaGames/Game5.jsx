@@ -1,4 +1,3 @@
-// Memory Game - Trafikverket tema
 import React, { useState, useEffect } from 'react';
 import './Game5.css';
 import Game6 from './Game6.jsx';
@@ -14,7 +13,7 @@ const FALLBACK_INFO = {
 };
 
 export default function Game5() {
-  // 9 olika emojis för trafikrelaterade saker (9 par = 18 kort)
+
   const emojis = ['🚗', '🚌', '🚂', '🚦', '⛔', '🛑', '🚧', '🛤️', '⚠️'];
   
   const [cards, setCards] = useState([]);
@@ -137,11 +136,11 @@ export default function Game5() {
                 onClick={() => handleCardClick(index)}
               >
                 <div className="card-inner">
-                  {/* Baksida - Trafikverkets logga */}
+
                   <div className="card-back">
                     <div className="logo-small"></div>
                   </div>
-                  {/* Framsida - Emoji */}
+
                   <div className="card-front">
                     <span className="emoji">{emoji}</span>
                   </div>
@@ -153,7 +152,7 @@ export default function Game5() {
 
         {isComplete && (
           <div className="completion-message">
-            <p>🎉 Grattis! Du hittade alla par!</p>
+            <p>Grattis! Du hittade alla par!</p>
             <button className="continue-button" onClick={() => setShowInfo(true)}>
               Gå vidare
             </button>

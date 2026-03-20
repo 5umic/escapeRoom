@@ -251,7 +251,30 @@ public class GamesController : ControllerBase
         return Ok(all);
     }
 
-    // 11. Admin: Ladda upp en bild
+      // 11. Admin: Hämta bilder
+    [HttpGet("list-images")]
+    public IActionResult ListImages([FromQuery] string folder)
+    {
+        // Sökväg till mapparna 
+        var rootPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "public", "images", folder);
+
+        Console.WriteLine($"Letar efter bilder i: {rootPath}");
+
+        if (!Directory.Exists(rootPath))
+        {
+            return Ok(new List<string>()); // Tom lista om mappen inte finns än
+        }
+
+        // Hämta alla filnamn (jpg, png, webp, etc.)
+        var files = Directory.GetFiles(rootPath)
+            .Select(Path.GetFileName)
+            .Where(f => f != null && !f.StartsWith("."))
+            .ToList();
+
+        return Ok(files);
+    }
+
+    // 12. Admin: Ladda upp en bild
     [HttpPost("upload-image")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadImage([FromForm] IFormFile file, [FromForm] string folder)
@@ -289,7 +312,7 @@ public class GamesController : ControllerBase
         return Ok(new { url = imageUrl });
     }
 
-    // 10. Admin: Ta bort en bild
+    // 13. Admin: Ta bort en bild
     [HttpDelete("delete-image")]
     public IActionResult DeleteImage([FromQuery] string folder, [FromQuery] string fileName)
     {
